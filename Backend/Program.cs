@@ -92,7 +92,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Vite dev server
+          policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175") // Vite dev server (5173, 5174, or 5175)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -100,6 +100,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Seed admin user
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
+    Infrastructure.Data.AdminSeeder.SeedAdminUserAsync(db).GetAwaiter().GetResult();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
