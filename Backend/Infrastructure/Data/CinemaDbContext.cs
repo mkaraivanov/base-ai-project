@@ -15,6 +15,7 @@ public class CinemaDbContext : DbContext
     public DbSet<CinemaHall> CinemaHalls => Set<CinemaHall>();
     public DbSet<Showtime> Showtimes => Set<Showtime>();
     public DbSet<Seat> Seats => Set<Seat>();
+    public DbSet<Reservation> Reservations => Set<Reservation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -151,6 +152,42 @@ public class CinemaDbContext : DbContext
                 .IsUnique();
 
             // Index for fast availability queries
+            entity.HasIndex(e => new { e.ShowtimeId, e.Status });
+
+            // Index for reservation-based seat lookups
+            entity.HasIndex(e => e.ReservationId);
+        });
+
+        // Reservation configuration
+        modelBuilder.Entity<Reservation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.TotalAmount)
+                .HasPrecision(10, 2);
+
+            entity.Property(e => e.SeatNumbers)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                )
+                .HasMaxLength(500);
+
+            entity.Property(e => e.Status)
+                .HasConversion<string>();
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Showtime)
+                .WithMany()
+                .HasForeignKey(e => e.ShowtimeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.UserId, e.Status });
+            entity.HasIndex(e => e.ExpiresAt); // Critical for cleanup job
             entity.HasIndex(e => new { e.ShowtimeId, e.Status });
         });
     }

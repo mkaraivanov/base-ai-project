@@ -3,9 +3,11 @@ using Application.Services;
 using Application.Validators;
 using Backend.Endpoints;
 using FluentValidation;
+using Infrastructure.BackgroundServices;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -34,13 +36,22 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<ICinemaHallRepository, CinemaHallRepository>();
 builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
+builder.Services.AddScoped<ISeatRepository, SeatRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ICinemaHallService, CinemaHallService>();
 builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddSingleton(TimeProvider.System);
+
+// Unit of Work
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Background Services
+builder.Services.AddHostedService<ExpiredReservationCleanupService>();
 
 // Validators
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
@@ -115,6 +126,10 @@ app.MapGroup("/api/halls")
 app.MapGroup("/api/showtimes")
     .MapShowtimeEndpoints()
     .WithTags("Showtimes");
+
+app.MapGroup("/api/bookings")
+    .MapBookingEndpoints()
+    .WithTags("Bookings");
 
 app.Run();
 

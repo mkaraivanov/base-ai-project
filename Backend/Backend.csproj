@@ -35,12 +35,15 @@
     <Compile Remove="Domain\**" />
     <Compile Remove="Application\**" />
     <Compile Remove="Infrastructure\**" />
+    <Compile Remove="Tests\**" />
     <EmbeddedResource Remove="Domain\**" />
     <EmbeddedResource Remove="Application\**" />
     <EmbeddedResource Remove="Infrastructure\**" />
+    <EmbeddedResource Remove="Tests\**" />
     <None Remove="Domain\**" />
     <None Remove="Application\**" />
     <None Remove="Infrastructure\**" />
+    <None Remove="Tests\**" />
   </ItemGroup>
 
 </Project>

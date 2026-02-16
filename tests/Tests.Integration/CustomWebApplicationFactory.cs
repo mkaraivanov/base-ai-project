@@ -1,3 +1,4 @@
+using DotNet.Testcontainers.Builders;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -12,6 +13,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     private readonly MsSqlContainer _dbContainer = new MsSqlBuilder()
         .WithImage("mcr.microsoft.com/azure-sql-edge:latest")
         .WithPassword("YourStrong@Passw0rd123")
+        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(1433))
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
