@@ -374,18 +374,62 @@ What you're adding and why.
 ## Testing
 How you tested this.
 
+## E2E Test Results
+```bash
+npx playwright test
+# Include test output showing all tests passed
+```
+
 ## Checklist
 - [ ] Follows format guidelines
 - [ ] Tested with Claude Code
+- [ ] **All E2E tests pass**
 - [ ] No sensitive info (API keys, paths)
 - [ ] Clear descriptions
 ```
 
-### 3. Review Process
+### 3. Testing Requirements
+
+**MANDATORY for all code contributions:**
+
+#### Before Submitting PR:
+1. Run all unit tests
+2. Run all integration tests
+3. **Run all E2E tests**: `npx playwright test`
+4. Fix any failing tests
+5. Include test results in PR description
+
+#### New Features:
+- Add E2E tests for new user flows
+- Update existing E2E tests if behavior changes
+- Test both happy paths and error scenarios
+- Verify error messages are user-friendly
+
+#### Bug Fixes:
+- Add E2E test that reproduces the bug
+- Verify test fails before fix
+- Verify test passes after fix
+- Run all E2E tests to ensure no regressions
+
+#### E2E Test Location:
+```
+e2e/
+├── auth-flow.spec.ts           # Login, logout, registration
+├── customer-movies.spec.ts      # Browse and view movies
+├── customer-booking-flow.spec.ts # Complete booking flow
+├── customer-my-bookings.spec.ts # View bookings
+├── admin-dashboard.spec.ts      # Admin overview
+├── admin-movies.spec.ts         # Manage movies
+├── admin-halls.spec.ts          # Manage halls
+└── admin-showtimes.spec.ts      # Manage showtimes
+```
+
+### 4. Review Process
 
 1. Maintainers review within 48 hours
 2. Address feedback if requested
-3. Once approved, merged to main
+3. **Verify E2E tests still pass after changes**
+4. Once approved, merged to main
 
 ---
 

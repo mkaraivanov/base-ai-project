@@ -1,0 +1,145 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]:
+      - link "🎬 CineBook" [ref=e5] [cursor=pointer]:
+        - /url: /
+      - link "Movies" [ref=e7] [cursor=pointer]:
+        - /url: /movies
+      - generic [ref=e9]:
+        - link "Login" [ref=e10] [cursor=pointer]:
+          - /url: /login
+        - link "Sign Up" [ref=e11] [cursor=pointer]:
+          - /url: /register
+  - main [ref=e12]:
+    - generic [ref=e14]:
+      - heading "Movies" [level=1] [ref=e15]
+      - generic [ref=e16]:
+        - textbox "Search movies..." [ref=e17]
+        - combobox [ref=e18] [cursor=pointer]:
+          - option "All Genres" [selected]
+          - option "Action"
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - img "Test Movie 1771276785465" [ref=e22]
+          - generic [ref=e23]:
+            - heading "Test Movie 1771276785465" [level=3] [ref=e24]
+            - generic [ref=e25]:
+              - generic [ref=e26]: Action
+              - generic [ref=e27]: 2h
+              - generic [ref=e28]: PG-13
+            - paragraph [ref=e29]: This is a test movie description
+            - link "View Showtimes" [ref=e30] [cursor=pointer]:
+              - /url: /movies/0ea080e0-0acf-4729-b9ac-131092ecc6dd
+        - generic [ref=e31]:
+          - img "Updated Movie 1771276839877" [ref=e33]
+          - generic [ref=e34]:
+            - heading "Updated Movie 1771276839877" [level=3] [ref=e35]
+            - generic [ref=e36]:
+              - generic [ref=e37]: Action
+              - generic [ref=e38]: 2h
+              - generic [ref=e39]: PG-13
+            - paragraph [ref=e40]: Description
+            - link "View Showtimes" [ref=e41] [cursor=pointer]:
+              - /url: /movies/3027def7-e006-447a-9d8a-3319b096284d
+        - generic [ref=e42]:
+          - img "Updated Movie 1771276647450" [ref=e44]
+          - generic [ref=e45]:
+            - heading "Updated Movie 1771276647450" [level=3] [ref=e46]
+            - generic [ref=e47]:
+              - generic [ref=e48]: Action
+              - generic [ref=e49]: 2h
+              - generic [ref=e50]: PG-13
+            - paragraph [ref=e51]: Description
+            - link "View Showtimes" [ref=e52] [cursor=pointer]:
+              - /url: /movies/24567f4e-5100-48f4-8396-33bfe1c998ad
+        - generic [ref=e53]:
+          - img "Test Movie 1771276631193" [ref=e55]
+          - generic [ref=e56]:
+            - heading "Test Movie 1771276631193" [level=3] [ref=e57]
+            - generic [ref=e58]:
+              - generic [ref=e59]: Action
+              - generic [ref=e60]: 2h
+              - generic [ref=e61]: PG-13
+            - paragraph [ref=e62]: This is a test movie description
+            - link "View Showtimes" [ref=e63] [cursor=pointer]:
+              - /url: /movies/f1a08f96-22ac-4533-93a8-6c179c1eee40
+        - generic [ref=e64]:
+          - img "Test Movie 1771276836545" [ref=e66]
+          - generic [ref=e67]:
+            - heading "Test Movie 1771276836545" [level=3] [ref=e68]
+            - generic [ref=e69]:
+              - generic [ref=e70]: Action
+              - generic [ref=e71]: 2h
+              - generic [ref=e72]: PG-13
+            - paragraph [ref=e73]: This is a test movie description
+            - link "View Showtimes" [ref=e74] [cursor=pointer]:
+              - /url: /movies/979ee89c-06ef-4278-be61-78490a643888
+        - generic [ref=e75]:
+          - img "Test Movie 1771276735892" [ref=e77]
+          - generic [ref=e78]:
+            - heading "Test Movie 1771276735892" [level=3] [ref=e79]
+            - generic [ref=e80]:
+              - generic [ref=e81]: Action
+              - generic [ref=e82]: 2h
+              - generic [ref=e83]: PG-13
+            - paragraph [ref=e84]: This is a test movie description
+            - link "View Showtimes" [ref=e85] [cursor=pointer]:
+              - /url: /movies/58cde0a6-f073-4553-b4d8-88c2824e4c4c
+        - generic [ref=e86]:
+          - img "Test Movie 1771278642391" [ref=e88]
+          - generic [ref=e89]:
+            - heading "Test Movie 1771278642391" [level=3] [ref=e90]
+            - generic [ref=e91]:
+              - generic [ref=e92]: Action
+              - generic [ref=e93]: 2h
+              - generic [ref=e94]: PG-13
+            - paragraph [ref=e95]: This is a test movie description
+            - link "View Showtimes" [ref=e96] [cursor=pointer]:
+              - /url: /movies/62d5f47c-b142-4471-92e7-aea47df48ba9
+        - generic [ref=e97]:
+          - img "Updated Movie 1771276788923" [ref=e99]
+          - generic [ref=e100]:
+            - heading "Updated Movie 1771276788923" [level=3] [ref=e101]
+            - generic [ref=e102]:
+              - generic [ref=e103]: Action
+              - generic [ref=e104]: 2h
+              - generic [ref=e105]: PG-13
+            - paragraph [ref=e106]: Description
+            - link "View Showtimes" [ref=e107] [cursor=pointer]:
+              - /url: /movies/452c3da3-c03c-492a-9f28-be8d55a6279a
+        - generic [ref=e108]:
+          - img "Updated Movie 1771278646389" [ref=e110]
+          - generic [ref=e111]:
+            - heading "Updated Movie 1771278646389" [level=3] [ref=e112]
+            - generic [ref=e113]:
+              - generic [ref=e114]: Action
+              - generic [ref=e115]: 2h
+              - generic [ref=e116]: PG-13
+            - paragraph [ref=e117]: Description
+            - link "View Showtimes" [ref=e118] [cursor=pointer]:
+              - /url: /movies/c724e8af-c816-43fd-9240-d7a884c93b46
+  - contentinfo [ref=e119]:
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - heading "🎬 CineBook" [level=4] [ref=e122]
+        - paragraph [ref=e123]: Your favorite movie booking platform.
+      - generic [ref=e124]:
+        - heading "Quick Links" [level=4] [ref=e125]
+        - list [ref=e126]:
+          - listitem [ref=e127]:
+            - link "Movies" [ref=e128] [cursor=pointer]:
+              - /url: /movies
+          - listitem [ref=e129]:
+            - link "Login" [ref=e130] [cursor=pointer]:
+              - /url: /login
+          - listitem [ref=e131]:
+            - link "Sign Up" [ref=e132] [cursor=pointer]:
+              - /url: /register
+      - generic [ref=e133]:
+        - heading "Contact" [level=4] [ref=e134]
+        - paragraph [ref=e135]: support@cinebook.com
+      - paragraph [ref=e137]: © 2026 CineBook. All rights reserved.
+```

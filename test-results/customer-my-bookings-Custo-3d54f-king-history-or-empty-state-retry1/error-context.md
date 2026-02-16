@@ -1,0 +1,44 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]:
+      - link "🎬 CineBook" [ref=e5] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e6]:
+        - link "Movies" [ref=e7] [cursor=pointer]:
+          - /url: /movies
+        - link "My Bookings" [ref=e8] [cursor=pointer]:
+          - /url: /my-bookings
+        - link "Admin" [ref=e9] [cursor=pointer]:
+          - /url: /admin
+      - generic [ref=e11]:
+        - generic [ref=e12]: Hi, Admin
+        - button "Logout" [ref=e13] [cursor=pointer]
+  - main [ref=e14]:
+    - generic [ref=e16]:
+      - heading "My Bookings" [level=1] [ref=e17]
+      - paragraph [ref=e18]: You haven't made any bookings yet.
+  - contentinfo [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - heading "🎬 CineBook" [level=4] [ref=e22]
+        - paragraph [ref=e23]: Your favorite movie booking platform.
+      - generic [ref=e24]:
+        - heading "Quick Links" [level=4] [ref=e25]
+        - list [ref=e26]:
+          - listitem [ref=e27]:
+            - link "Movies" [ref=e28] [cursor=pointer]:
+              - /url: /movies
+          - listitem [ref=e29]:
+            - link "Login" [ref=e30] [cursor=pointer]:
+              - /url: /login
+          - listitem [ref=e31]:
+            - link "Sign Up" [ref=e32] [cursor=pointer]:
+              - /url: /register
+      - generic [ref=e33]:
+        - heading "Contact" [level=4] [ref=e34]
+        - paragraph [ref=e35]: support@cinebook.com
+      - paragraph [ref=e37]: © 2026 CineBook. All rights reserved.
+```

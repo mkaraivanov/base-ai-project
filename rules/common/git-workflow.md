@@ -35,11 +35,44 @@ When creating PRs:
    - Refactor (IMPROVE)
    - Verify 80%+ coverage
 
-3. **Code Review**
+3. **E2E Testing (MANDATORY)**
+   - Run ALL E2E tests after implementing feature
+   - Create new E2E tests for new user flows
+   - Verify no regressions in existing flows
+   - Command: `npx playwright test`
+
+4. **Code Review**
    - Use **code-reviewer** agent immediately after writing code
    - Address CRITICAL and HIGH issues
    - Fix MEDIUM issues when possible
 
-4. **Commit & Push**
+5. **Commit & Push**
    - Detailed commit messages
    - Follow conventional commits format
+   - Include E2E test results in PR description
+
+## Pre-Commit Checklist
+
+Before every commit:
+- [ ] All unit tests pass
+- [ ] All integration tests pass
+- [ ] **All E2E tests pass** (`npx playwright test`)
+- [ ] Code reviewed (use **code-reviewer** agent)
+- [ ] No linting errors
+- [ ] Coverage is 80%+
+
+## E2E Test Workflow
+
+```bash
+# 1. Run all E2E tests
+npx playwright test
+
+# 2. If tests fail, debug
+npx playwright test --ui  # or --headed
+
+# 3. Fix issues and re-run
+npx playwright test
+
+# 4. Only commit when all tests pass
+git add . && git commit -m "feat: new feature"
+```
