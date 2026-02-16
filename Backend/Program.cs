@@ -38,12 +38,15 @@ builder.Services.AddScoped<ICinemaHallRepository, CinemaHallRepository>();
 builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ICinemaHallService, CinemaHallService>();
 builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
+builder.Services.AddScoped<IPaymentService, MockPaymentService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddSingleton(TimeProvider.System);
 

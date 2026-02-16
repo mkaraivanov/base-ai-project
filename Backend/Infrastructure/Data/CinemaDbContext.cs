@@ -16,6 +16,8 @@ public class CinemaDbContext : DbContext
     public DbSet<Showtime> Showtimes => Set<Showtime>();
     public DbSet<Seat> Seats => Set<Seat>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<Booking> Bookings => Set<Booking>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -189,6 +191,65 @@ public class CinemaDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.Status });
             entity.HasIndex(e => e.ExpiresAt); // Critical for cleanup job
             entity.HasIndex(e => new { e.ShowtimeId, e.Status });
+        });
+
+        // Payment configuration
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Amount)
+                .HasPrecision(10, 2);
+
+            entity.Property(e => e.PaymentMethod)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.TransactionId)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.HasOne(e => e.Booking)
+                .WithOne(b => b.Payment)
+                .HasForeignKey<Payment>(e => e.BookingId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.TransactionId).IsUnique();
+            entity.HasIndex(e => e.Status);
+        });
+
+        // Booking configuration
+        modelBuilder.Entity<Booking>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.BookingNumber)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            entity.Property(e => e.TotalAmount)
+                .HasPrecision(10, 2);
+
+            entity.Property(e => e.SeatNumbers)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                )
+                .HasMaxLength(500);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Showtime)
+                .WithMany()
+                .HasForeignKey(e => e.ShowtimeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.BookingNumber).IsUnique();
+            entity.HasIndex(e => new { e.UserId, e.Status });
+            entity.HasIndex(e => e.ShowtimeId);
         });
     }
 }

@@ -1,3 +1,5 @@
+using Application.DTOs.Bookings;
+using Application.DTOs.Payments;
 using Application.DTOs.Reservations;
 using Application.Services;
 using Domain.Entities;
@@ -18,6 +20,9 @@ public class BookingServiceTests
     private readonly Mock<ISeatRepository> _seatRepositoryMock;
     private readonly Mock<IReservationRepository> _reservationRepositoryMock;
     private readonly Mock<IShowtimeRepository> _showtimeRepositoryMock;
+    private readonly Mock<IPaymentService> _paymentServiceMock;
+    private readonly Mock<IPaymentRepository> _paymentRepositoryMock;
+    private readonly Mock<IBookingRepository> _bookingRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<BookingService>> _loggerMock;
     private readonly FakeTimeProvider _timeProvider;
@@ -28,6 +33,9 @@ public class BookingServiceTests
         _seatRepositoryMock = new Mock<ISeatRepository>();
         _reservationRepositoryMock = new Mock<IReservationRepository>();
         _showtimeRepositoryMock = new Mock<IShowtimeRepository>();
+        _paymentServiceMock = new Mock<IPaymentService>();
+        _paymentRepositoryMock = new Mock<IPaymentRepository>();
+        _bookingRepositoryMock = new Mock<IBookingRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<BookingService>>();
         _timeProvider = new FakeTimeProvider(new DateTime(2024, 1, 15, 10, 0, 0, DateTimeKind.Utc));
@@ -36,6 +44,9 @@ public class BookingServiceTests
             _seatRepositoryMock.Object,
             _reservationRepositoryMock.Object,
             _showtimeRepositoryMock.Object,
+            _paymentServiceMock.Object,
+            _paymentRepositoryMock.Object,
+            _bookingRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _loggerMock.Object,
             _timeProvider
@@ -520,6 +531,523 @@ public class BookingServiceTests
         Assert.False(result.IsSuccess);
         Assert.Equal("Failed to cancel reservation", result.Error);
         _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region ConfirmBookingAsync Tests
+
+    [Fact]
+    public async Task ConfirmBookingAsync_HappyPath_CreatesBooking()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var reservationId = Guid.NewGuid();
+        var showtimeId = Guid.NewGuid();
+        var dto = new ConfirmBookingDto(
+            reservationId,
+            "CreditCard",
+            "4111111111111111",
+            "John Doe",
+            "12/25",
+            "123"
+        );
+
+        var reservation = new Reservation
+        {
+            Id = reservationId,
+            UserId = userId,
+            ShowtimeId = showtimeId,
+            SeatNumbers = new List<string> { "A1", "A2" },
+            TotalAmount = 22m,
+            ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(3).DateTime,
+            Status = ReservationStatus.Pending,
+            CreatedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        var showtime = new Showtime
+        {
+            Id = showtimeId,
+            StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+            MovieId = Guid.NewGuid(),
+            CinemaHallId = Guid.NewGuid(),
+            BasePrice = 10m,
+            IsActive = true,
+            Movie = new Movie { Id = Guid.NewGuid(), Title = "Test Movie", Genre = "Action", Rating = "PG-13", DurationMinutes = 120, IsActive = true },
+            CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+        };
+
+        var paymentResult = new PaymentResultDto(
+            Guid.NewGuid(),
+            "TXN-12345678",
+            "Completed",
+            22m,
+            _timeProvider.GetUtcNow().DateTime
+        );
+
+        _reservationRepositoryMock
+            .Setup(x => x.GetByIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reservation);
+
+        _paymentServiceMock
+            .Setup(x => x.ProcessPaymentAsync(It.IsAny<ProcessPaymentDto>(), 22m, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Domain.Common.Result<PaymentResultDto>.Success(paymentResult));
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(showtime);
+
+        _seatRepositoryMock
+            .Setup(x => x.GetByReservationIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Seat>
+            {
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").WithReservationId(reservationId).Build(),
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A2").WithReservationId(reservationId).Build()
+            });
+
+        // Act
+        var result = await _bookingService.ConfirmBookingAsync(userId, dto);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.NotEmpty(result.Value.BookingNumber);
+        Assert.Equal(showtimeId, result.Value.ShowtimeId);
+        Assert.Equal(22m, result.Value.TotalAmount);
+        Assert.Equal("Confirmed", result.Value.Status);
+
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _paymentServiceMock.Verify(x => x.ProcessPaymentAsync(It.IsAny<ProcessPaymentDto>(), 22m, It.IsAny<CancellationToken>()), Times.Once);
+        _paymentRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Payment>(), It.IsAny<CancellationToken>()), Times.Once);
+        _bookingRepositoryMock.Verify(x => x.CreateAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmBookingAsync_ReservationNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var reservationId = Guid.NewGuid();
+        var dto = new ConfirmBookingDto(reservationId, "CreditCard", "4111111111111111", "John Doe", "12/25", "123");
+
+        _reservationRepositoryMock
+            .Setup(x => x.GetByIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Reservation?)null);
+
+        // Act
+        var result = await _bookingService.ConfirmBookingAsync(userId, dto);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Reservation not found", result.Error);
+        _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmBookingAsync_Unauthorized_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var differentUserId = Guid.NewGuid();
+        var reservationId = Guid.NewGuid();
+        var dto = new ConfirmBookingDto(reservationId, "CreditCard", "4111111111111111", "John Doe", "12/25", "123");
+
+        var reservation = new Reservation
+        {
+            Id = reservationId,
+            UserId = differentUserId, // Different user
+            ShowtimeId = Guid.NewGuid(),
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(3).DateTime,
+            Status = ReservationStatus.Pending,
+            CreatedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        _reservationRepositoryMock
+            .Setup(x => x.GetByIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reservation);
+
+        // Act
+        var result = await _bookingService.ConfirmBookingAsync(userId, dto);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Unauthorized", result.Error);
+        _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmBookingAsync_ExpiredReservation_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var reservationId = Guid.NewGuid();
+        var dto = new ConfirmBookingDto(reservationId, "CreditCard", "4111111111111111", "John Doe", "12/25", "123");
+
+        var reservation = new Reservation
+        {
+            Id = reservationId,
+            UserId = userId,
+            ShowtimeId = Guid.NewGuid(),
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(-1).DateTime, // Expired
+            Status = ReservationStatus.Pending,
+            CreatedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        _reservationRepositoryMock
+            .Setup(x => x.GetByIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reservation);
+
+        // Act
+        var result = await _bookingService.ConfirmBookingAsync(userId, dto);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Reservation has expired", result.Error);
+        _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmBookingAsync_PaymentFailure_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var reservationId = Guid.NewGuid();
+        var dto = new ConfirmBookingDto(reservationId, "CreditCard", "0000111122223333", "John Doe", "12/25", "123");
+
+        var reservation = new Reservation
+        {
+            Id = reservationId,
+            UserId = userId,
+            ShowtimeId = Guid.NewGuid(),
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(3).DateTime,
+            Status = ReservationStatus.Pending,
+            CreatedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        _reservationRepositoryMock
+            .Setup(x => x.GetByIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reservation);
+
+        _paymentServiceMock
+            .Setup(x => x.ProcessPaymentAsync(It.IsAny<ProcessPaymentDto>(), 10m, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Domain.Common.Result<PaymentResultDto>.Failure("Payment declined"));
+
+        // Act
+        var result = await _bookingService.ConfirmBookingAsync(userId, dto);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Payment failed", result.Error);
+        _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region CancelBookingAsync Tests
+
+    [Fact]
+    public async Task CancelBookingAsync_HappyPath_CancelsBooking()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookingId = Guid.NewGuid();
+        var showtimeId = Guid.NewGuid();
+
+        var booking = new Booking
+        {
+            Id = bookingId,
+            BookingNumber = "BK-240115-ABC12",
+            UserId = userId,
+            ShowtimeId = showtimeId,
+            SeatNumbers = new List<string> { "A1", "A2" },
+            TotalAmount = 22m,
+            Status = BookingStatus.Confirmed,
+            PaymentId = Guid.NewGuid(),
+            BookedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        var showtime = new Showtime
+        {
+            Id = showtimeId,
+            StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime, // Future showtime
+            MovieId = Guid.NewGuid(),
+            CinemaHallId = Guid.NewGuid(),
+            BasePrice = 10m,
+            IsActive = true,
+            Movie = new Movie { Id = Guid.NewGuid(), Title = "Test Movie", Genre = "Action", Rating = "PG-13", DurationMinutes = 120, IsActive = true },
+            CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(booking);
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(showtime);
+
+        _paymentServiceMock
+            .Setup(x => x.RefundPaymentAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Domain.Common.Result<PaymentResultDto>.Success(new PaymentResultDto(
+                booking.PaymentId.Value,
+                "RFN-12345678",
+                "Refunded",
+                0m,
+                _timeProvider.GetUtcNow().DateTime
+            )));
+
+        _seatRepositoryMock
+            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, booking.SeatNumbers, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Seat>
+            {
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").AsBooked().Build(),
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A2").AsBooked().Build()
+            });
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(userId, bookingId);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal("Cancelled", result.Value.Status);
+        Assert.NotNull(result.Value);
+
+        _unitOfWorkMock.Verify(x => x.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _paymentServiceMock.Verify(x => x.RefundPaymentAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
+        _bookingRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()), Times.Once);
+        _seatRepositoryMock.Verify(x => x.UpdateRangeAsync(It.IsAny<List<Seat>>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_BookingNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookingId = Guid.NewGuid();
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Booking?)null);
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(userId, bookingId);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Booking not found", result.Error);
+        _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_PastShowtime_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookingId = Guid.NewGuid();
+        var showtimeId = Guid.NewGuid();
+
+        var booking = new Booking
+        {
+            Id = bookingId,
+            BookingNumber = "BK-240115-ABC12",
+            UserId = userId,
+            ShowtimeId = showtimeId,
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            Status = BookingStatus.Confirmed,
+            PaymentId = Guid.NewGuid(),
+            BookedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        var showtime = new Showtime
+        {
+            Id = showtimeId,
+            StartTime = _timeProvider.GetUtcNow().AddHours(-1).DateTime, // Past showtime
+            MovieId = Guid.NewGuid(),
+            CinemaHallId = Guid.NewGuid(),
+            BasePrice = 10m,
+            IsActive = true
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(booking);
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(showtime);
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(userId, bookingId);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Cannot cancel past or ongoing showtimes", result.Error);
+        _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
+    #region GetMyBookingsAsync Tests
+
+    [Fact]
+    public async Task GetMyBookingsAsync_ReturnsUserBookings()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookings = new List<Booking>
+        {
+            new Booking
+            {
+                Id = Guid.NewGuid(),
+                BookingNumber = "BK-240115-ABC12",
+                UserId = userId,
+                ShowtimeId = Guid.NewGuid(),
+                SeatNumbers = new List<string> { "A1", "A2" },
+                TotalAmount = 22m,
+                Status = BookingStatus.Confirmed,
+                BookedAt = _timeProvider.GetUtcNow().DateTime,
+                Showtime = new Showtime
+                {
+                    Id = Guid.NewGuid(),
+                    StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                    MovieId = Guid.NewGuid(),
+                    CinemaHallId = Guid.NewGuid(),
+                    BasePrice = 10m,
+                    IsActive = true,
+                    Movie = new Movie { Id = Guid.NewGuid(), Title = "Test Movie", Genre = "Action", Rating = "PG-13", DurationMinutes = 120, IsActive = true },
+                    CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+                }
+            }
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bookings);
+
+        // Act
+        var result = await _bookingService.GetMyBookingsAsync(userId);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Single(result.Value);
+    }
+
+    #endregion
+
+    #region GetBookingByNumberAsync Tests
+
+    [Fact]
+    public async Task GetBookingByNumberAsync_ValidBookingNumber_ReturnsBooking()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookingNumber = "BK-240115-ABC12";
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            BookingNumber = bookingNumber,
+            UserId = userId,
+            ShowtimeId = Guid.NewGuid(),
+            SeatNumbers = new List<string> { "A1", "A2" },
+            TotalAmount = 22m,
+            Status = BookingStatus.Confirmed,
+            BookedAt = _timeProvider.GetUtcNow().DateTime,
+            Showtime = new Showtime
+            {
+                Id = Guid.NewGuid(),
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true,
+                Movie = new Movie { Id = Guid.NewGuid(), Title = "Test Movie", Genre = "Action", Rating = "PG-13", DurationMinutes = 120, IsActive = true },
+                CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+            }
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByBookingNumberAsync(bookingNumber, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(booking);
+
+        // Act
+        var result = await _bookingService.GetBookingByNumberAsync(userId, bookingNumber);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal(bookingNumber, result.Value.BookingNumber);
+    }
+
+    [Fact]
+    public async Task GetBookingByNumberAsync_BookingNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookingNumber = "BK-240115-ABC12";
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByBookingNumberAsync(bookingNumber, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Booking?)null);
+
+        // Act
+        var result = await _bookingService.GetBookingByNumberAsync(userId, bookingNumber);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Booking not found", result.Error);
+    }
+
+    [Fact]
+    public async Task GetBookingByNumberAsync_UnauthorizedUser_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var differentUserId = Guid.NewGuid();
+        var bookingNumber = "BK-240115-ABC12";
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            BookingNumber = bookingNumber,
+            UserId = differentUserId, // Different user
+            ShowtimeId = Guid.NewGuid(),
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            Status = BookingStatus.Confirmed,
+            BookedAt = _timeProvider.GetUtcNow().DateTime,
+            Showtime = new Showtime
+            {
+                Id = Guid.NewGuid(),
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true,
+                Movie = new Movie { Id = Guid.NewGuid(), Title = "Test Movie", Genre = "Action", Rating = "PG-13", DurationMinutes = 120, IsActive = true },
+                CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+            }
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByBookingNumberAsync(bookingNumber, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(booking);
+
+        // Act
+        var result = await _bookingService.GetBookingByNumberAsync(userId, bookingNumber);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Unauthorized", result.Error);
     }
 
     #endregion
