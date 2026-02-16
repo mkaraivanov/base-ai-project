@@ -31,9 +31,15 @@ builder.Services.AddDbContext<CinemaDbContext>(options =>
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<ICinemaHallRepository, CinemaHallRepository>();
+builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<ICinemaHallService, CinemaHallService>();
+builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Validators
@@ -62,7 +68,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -94,6 +103,18 @@ app.UseSerilogRequestLogging();
 app.MapGroup("/api/auth")
     .MapAuthEndpoints()
     .WithTags("Authentication");
+
+app.MapGroup("/api/movies")
+    .MapMovieEndpoints()
+    .WithTags("Movies");
+
+app.MapGroup("/api/halls")
+    .MapCinemaHallEndpoints()
+    .WithTags("Cinema Halls");
+
+app.MapGroup("/api/showtimes")
+    .MapShowtimeEndpoints()
+    .WithTags("Showtimes");
 
 app.Run();
 
