@@ -90,8 +90,19 @@ export const ShowtimesManagementPage: React.FC = () => {
       setShowForm(false);
       setForm(EMPTY_FORM);
       await loadData();
-    } catch {
-      setError('Failed to create showtime');
+    } catch (err: any) {
+      let message = 'Failed to create showtime';
+      if (err?.response?.data) {
+        const data = err.response.data;
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          message = data.errors.join('\n');
+        } else if (data.error) {
+          message = data.error;
+        } else if (data.message) {
+          message = data.message;
+        }
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -109,7 +120,7 @@ export const ShowtimesManagementPage: React.FC = () => {
           </button>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>

@@ -126,8 +126,19 @@ export const HallsManagementPage: React.FC = () => {
       setForm(EMPTY_FORM);
       setEditingId(null);
       await loadHalls();
-    } catch {
-      setError(editingId ? 'Failed to update hall' : 'Failed to create hall');
+    } catch (err: any) {
+      let message = editingId ? 'Failed to update hall' : 'Failed to create hall';
+      if (err?.response?.data) {
+        const data = err.response.data;
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          message = data.errors.join('\n');
+        } else if (data.error) {
+          message = data.error;
+        } else if (data.message) {
+          message = data.message;
+        }
+      }
+      setError(message);
     } finally {
       setSaving(false);
     }
@@ -145,7 +156,7 @@ export const HallsManagementPage: React.FC = () => {
           </button>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>

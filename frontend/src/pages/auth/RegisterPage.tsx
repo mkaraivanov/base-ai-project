@@ -48,8 +48,23 @@ export const RegisterPage: React.FC = () => {
       };
       await register(registerData);
       navigate('/');
-    } catch {
-      setError('Registration failed. Please try again.');
+    } catch (err: any) {
+      // Try to extract backend error message(s)
+      let message = 'Registration failed. Please try again.';
+      let details: string[] | null = null;
+      if (err && typeof err === 'object') {
+        if (err.response && err.response.data) {
+          const data = err.response.data;
+          if (Array.isArray(data.errors) && data.errors.length > 0) {
+            details = data.errors;
+          }
+          if (data.message) message = data.message;
+          else if (typeof data === 'string') message = data;
+        } else if (err.message) {
+          message = err.message;
+        }
+      }
+      setError(details ? details.join('\n') : message);
     } finally {
       setLoading(false);
     }
@@ -62,7 +77,9 @@ export const RegisterPage: React.FC = () => {
           <h1>Create Account</h1>
           <p className="auth-subtitle">Join CineBook to start booking tickets.</p>
 
-          {error && <div className="error-message">{error}</div>}
+          {error && (
+            <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>
+          )}
 
           <form onSubmit={handleSubmit} className="form">
             <div className="form-row">
