@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { bookingApi } from '../../api/bookingApi';
 import type { BookingDto } from '../../types';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const MyBookingsPage: React.FC = () => {
   const [bookings, setBookings] = useState<readonly BookingDto[]>([]);
@@ -13,8 +14,9 @@ export const MyBookingsPage: React.FC = () => {
       try {
         const data = await bookingApi.getMyBookings();
         setBookings(data);
-      } catch {
-        setError('Failed to load bookings');
+      } catch (err: unknown) {
+        const message = extractErrorMessage(err, 'Failed to load bookings');
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -30,13 +32,14 @@ export const MyBookingsPage: React.FC = () => {
       setBookings((prev) =>
         prev.map((b) => (b.id === bookingId ? updated : b)),
       );
-    } catch {
-      setError('Failed to cancel booking');
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, 'Failed to cancel booking');
+      setError(message);
     }
   };
 
   if (loading) return <div className="page"><div className="loading">Loading bookings...</div></div>;
-  if (error) return <div className="page"><div className="error-message">{error}</div></div>;
+  if (error) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
 
   return (
     <div className="page">

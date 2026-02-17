@@ -4,6 +4,7 @@ import { movieApi } from '../../api/movieApi';
 import { hallApi } from '../../api/hallApi';
 import type { ShowtimeDto, MovieDto, CinemaHallDto, CreateShowtimeDto } from '../../types';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 interface ShowtimeFormData {
   movieId: string;
@@ -69,8 +70,9 @@ export const ShowtimesManagementPage: React.FC = () => {
     try {
       await showtimeApi.delete(id);
       await loadData();
-    } catch {
-      setError('Failed to delete showtime');
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, 'Failed to delete showtime');
+      setError(message);
     }
   };
 
@@ -90,18 +92,8 @@ export const ShowtimesManagementPage: React.FC = () => {
       setShowForm(false);
       setForm(EMPTY_FORM);
       await loadData();
-    } catch (err: any) {
-      let message = 'Failed to create showtime';
-      if (err?.response?.data) {
-        const data = err.response.data;
-        if (Array.isArray(data.errors) && data.errors.length > 0) {
-          message = data.errors.join('\n');
-        } else if (data.error) {
-          message = data.error;
-        } else if (data.message) {
-          message = data.message;
-        }
-      }
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, 'Failed to create showtime');
       setError(message);
     } finally {
       setSaving(false);

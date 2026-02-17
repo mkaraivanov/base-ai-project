@@ -4,6 +4,7 @@ import { bookingApi } from '../../api/bookingApi';
 import { BookingTimer } from '../../components/BookingTimer/BookingTimer';
 import type { ReservationDto, ConfirmBookingDto } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 interface PaymentForm {
   paymentMethod: string;
@@ -65,16 +66,22 @@ export const CheckoutPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // Remove spaces and dashes from card number before sending
+      const cleanedCardNumber = form.cardNumber.replace(/[\s-]/g, '');
+
       const confirmData: ConfirmBookingDto = {
         reservationId,
-        ...form,
+        paymentMethod: form.paymentMethod,
+        cardNumber: cleanedCardNumber,
+        cardHolderName: form.cardHolderName,
+        expiryDate: form.expiryDate,
+        cvv: form.cvv,
       };
 
       const booking = await bookingApi.confirmBooking(confirmData);
       navigate(`/confirmation/${booking.bookingNumber}`);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Payment failed. Please try again.';
+      const message = extractErrorMessage(err, 'Payment failed. Please try again.');
       setError(message);
     } finally {
       setLoading(false);
@@ -105,7 +112,7 @@ export const CheckoutPage: React.FC = () => {
           </div>
         )}
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">

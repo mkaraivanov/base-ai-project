@@ -4,6 +4,7 @@ import { movieApi } from '../../api/movieApi';
 import { showtimeApi } from '../../api/showtimeApi';
 import type { MovieDto, ShowtimeDto } from '../../types';
 import { formatDate, formatDateTime, formatDuration, formatCurrency } from '../../utils/formatters';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const MovieDetailPage: React.FC = () => {
   const { movieId } = useParams<{ movieId: string }>();
@@ -23,8 +24,9 @@ export const MovieDetailPage: React.FC = () => {
         ]);
         setMovie(movieData);
         setShowtimes(showtimeData);
-      } catch {
-        setError('Failed to load movie details');
+      } catch (err: unknown) {
+        const message = extractErrorMessage(err, 'Failed to load movie details');
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -33,7 +35,7 @@ export const MovieDetailPage: React.FC = () => {
   }, [movieId]);
 
   if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
-  if (error) return <div className="page"><div className="error-message">{error}</div></div>;
+  if (error) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
   if (!movie) return <div className="page"><div className="error-message">Movie not found</div></div>;
 
   const activeShowtimes = showtimes.filter(

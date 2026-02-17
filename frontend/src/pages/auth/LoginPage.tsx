@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -23,8 +24,9 @@ export const LoginPage: React.FC = () => {
       setError(null);
       await login(email, password);
       navigate('/');
-    } catch {
-      setError('Invalid email or password.');
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, 'Invalid email or password.');
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ export const LoginPage: React.FC = () => {
           <h1>Login</h1>
           <p className="auth-subtitle">Welcome back! Sign in to your account.</p>
 
-          {error && <div className="error-message">{error}</div>}
+          {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
           <form onSubmit={handleSubmit} className="form">
             <div className="form-group">

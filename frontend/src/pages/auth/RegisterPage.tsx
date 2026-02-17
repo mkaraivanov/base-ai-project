@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import type { RegisterDto } from '../../types';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const RegisterPage: React.FC = () => {
   const [form, setForm] = useState({
@@ -48,23 +49,9 @@ export const RegisterPage: React.FC = () => {
       };
       await register(registerData);
       navigate('/');
-    } catch (err: any) {
-      // Try to extract backend error message(s)
-      let message = 'Registration failed. Please try again.';
-      let details: string[] | null = null;
-      if (err && typeof err === 'object') {
-        if (err.response && err.response.data) {
-          const data = err.response.data;
-          if (Array.isArray(data.errors) && data.errors.length > 0) {
-            details = data.errors;
-          }
-          if (data.message) message = data.message;
-          else if (typeof data === 'string') message = data;
-        } else if (err.message) {
-          message = err.message;
-        }
-      }
-      setError(details ? details.join('\n') : message);
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, 'Registration failed. Please try again.');
+      setError(message);
     } finally {
       setLoading(false);
     }

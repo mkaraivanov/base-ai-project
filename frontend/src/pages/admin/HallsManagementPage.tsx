@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { hallApi } from '../../api/hallApi';
 import type { CinemaHallDto, CreateCinemaHallDto, UpdateCinemaHallDto, SeatLayout, SeatDefinition } from '../../types';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 interface HallFormData {
   name: string;
@@ -93,8 +94,9 @@ export const HallsManagementPage: React.FC = () => {
     try {
       await hallApi.delete(id);
       await loadHalls();
-    } catch {
-      setError('Failed to delete hall');
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, 'Failed to delete hall');
+      setError(message);
     }
   };
 
@@ -126,18 +128,11 @@ export const HallsManagementPage: React.FC = () => {
       setForm(EMPTY_FORM);
       setEditingId(null);
       await loadHalls();
-    } catch (err: any) {
-      let message = editingId ? 'Failed to update hall' : 'Failed to create hall';
-      if (err?.response?.data) {
-        const data = err.response.data;
-        if (Array.isArray(data.errors) && data.errors.length > 0) {
-          message = data.errors.join('\n');
-        } else if (data.error) {
-          message = data.error;
-        } else if (data.message) {
-          message = data.message;
-        }
-      }
+    } catch (err: unknown) {
+      const message = extractErrorMessage(
+        err,
+        editingId ? 'Failed to update hall' : 'Failed to create hall'
+      );
       setError(message);
     } finally {
       setSaving(false);

@@ -7,6 +7,7 @@ import { showtimeApi } from '../../api/showtimeApi';
 import { useSeatSelection } from '../../hooks/useSeatSelection';
 import type { SeatAvailabilityDto, ReservationDto, ShowtimeDto, SeatDto } from '../../types';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const SeatSelectionPage: React.FC = () => {
   const { showtimeId } = useParams<{ showtimeId: string }>();
@@ -31,8 +32,9 @@ export const SeatSelectionPage: React.FC = () => {
         ]);
         setShowtime(showtimeData);
         setAvailability(availabilityData);
-      } catch {
-        setError('Failed to load seat availability');
+      } catch (err: unknown) {
+        const message = extractErrorMessage(err, 'Failed to load seat availability');
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -45,8 +47,9 @@ export const SeatSelectionPage: React.FC = () => {
     try {
       const data = await bookingApi.getSeatAvailability(showtimeId);
       setAvailability(data);
-    } catch {
-      setError('Failed to reload seat availability');
+    } catch (err: unknown) {
+      const message = extractErrorMessage(err, 'Failed to reload seat availability');
+      setError(message);
     }
   };
 
@@ -57,8 +60,7 @@ export const SeatSelectionPage: React.FC = () => {
       const res = await bookingApi.createReservation(showtimeId, selectedSeats);
       setReservation(res);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to reserve seats. Please try again.';
+      const message = extractErrorMessage(err, 'Failed to reserve seats. Please try again.');
       setError(message);
       await reloadAvailability();
       clearSelection();
@@ -79,7 +81,7 @@ export const SeatSelectionPage: React.FC = () => {
   };
 
   if (loading) return <div className="page"><div className="loading">Loading seats...</div></div>;
-  if (error && !availability) return <div className="page"><div className="error-message">{error}</div></div>;
+  if (error && !availability) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
   if (!availability) return <div className="page"><div className="error-message">No data available</div></div>;
 
   const allSeats: readonly SeatDto[] = [
@@ -105,7 +107,7 @@ export const SeatSelectionPage: React.FC = () => {
           </div>
         )}
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         {reservation && (
           <div className="reservation-banner">

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { bookingApi } from '../../api/bookingApi';
 import type { BookingDto } from '../../types';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
+import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const ConfirmationPage: React.FC = () => {
   const { bookingNumber } = useParams<{ bookingNumber: string }>();
@@ -16,8 +17,9 @@ export const ConfirmationPage: React.FC = () => {
       try {
         const data = await bookingApi.getByBookingNumber(bookingNumber);
         setBooking(data);
-      } catch {
-        setError('Failed to load booking details');
+      } catch (err: unknown) {
+        const message = extractErrorMessage(err, 'Failed to load booking details');
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -26,7 +28,7 @@ export const ConfirmationPage: React.FC = () => {
   }, [bookingNumber]);
 
   if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
-  if (error) return <div className="page"><div className="error-message">{error}</div></div>;
+  if (error) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
   if (!booking) return <div className="page"><div className="error-message">Booking not found</div></div>;
 
   return (
