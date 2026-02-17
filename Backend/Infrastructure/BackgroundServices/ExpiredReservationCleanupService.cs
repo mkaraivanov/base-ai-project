@@ -58,7 +58,7 @@ public class ExpiredReservationCleanupService : BackgroundService
         var seatRepo = scope.ServiceProvider.GetRequiredService<ISeatRepository>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var currentTime = _timeProvider.GetUtcNow().DateTime;
+        var currentTime = _timeProvider.GetUtcNow().UtcDateTime;
         var expiredReservations = await reservationRepo.GetExpiredReservationsAsync(currentTime, ct);
 
         if (!expiredReservations.Any())

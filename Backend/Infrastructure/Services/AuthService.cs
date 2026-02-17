@@ -55,15 +55,15 @@ public class AuthService : IAuthService
                 PhoneNumber = dto.PhoneNumber,
                 Role = UserRole.Customer,
                 IsActive = true,
-                CreatedAt = _timeProvider.GetUtcNow().DateTime,
-                LastLoginAt = _timeProvider.GetUtcNow().DateTime
+                CreatedAt = _timeProvider.GetUtcNow().UtcDateTime,
+                LastLoginAt = _timeProvider.GetUtcNow().UtcDateTime
             };
 
             var createdUser = await _userRepository.CreateAsync(user, ct);
 
             // Generate JWT token
             var token = GenerateJwtToken(createdUser);
-            var expiresAt = _timeProvider.GetUtcNow().AddHours(24).DateTime;
+            var expiresAt = _timeProvider.GetUtcNow().AddHours(24).UtcDateTime;
 
             _logger.LogInformation("User registered successfully: {Email}", dto.Email);
 
@@ -111,7 +111,7 @@ public class AuthService : IAuthService
 
             // Generate JWT token
             var token = GenerateJwtToken(user);
-            var expiresAt = _timeProvider.GetUtcNow().AddHours(24).DateTime;
+            var expiresAt = _timeProvider.GetUtcNow().AddHours(24).UtcDateTime;
 
             _logger.LogInformation("User logged in successfully: {Email}", dto.Email);
 
@@ -156,7 +156,7 @@ public class AuthService : IAuthService
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: _timeProvider.GetUtcNow().AddHours(24).DateTime,
+            expires: _timeProvider.GetUtcNow().AddHours(24).UtcDateTime,
             signingCredentials: credentials
         );
 

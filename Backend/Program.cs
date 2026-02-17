@@ -106,6 +106,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
     Infrastructure.Data.AdminSeeder.SeedAdminUserAsync(db).GetAwaiter().GetResult();
+    Infrastructure.Data.TestDataSeeder.SeedTestDataAsync(db).GetAwaiter().GetResult();
 }
 
 // Configure the HTTP request pipeline.
@@ -121,6 +122,10 @@ app.UseAuthorization();
 app.UseSerilogRequestLogging();
 
 // Map endpoints
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
+    .WithTags("Health")
+    .AllowAnonymous();
+
 app.MapGroup("/api/auth")
     .MapAuthEndpoints()
     .WithTags("Authentication");

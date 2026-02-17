@@ -40,16 +40,16 @@ test.describe('Main Flows', () => {
     test('should have login link when not authenticated', async ({ page }) => {
       await page.goto('/');
       
-      // Check for login link
-      const loginLink = page.locator('a[href="/login"]');
+      // Check for login link in navbar
+      const loginLink = page.locator('nav a[href="/login"]');
       await expect(loginLink).toBeVisible();
     });
 
     test('should have register link when not authenticated', async ({ page }) => {
       await page.goto('/');
       
-      // Check for register link
-      const registerLink = page.locator('a[href="/register"]');
+      // Check for register link in navbar
+      const registerLink = page.locator('nav a[href="/register"]');
       await expect(registerLink).toBeVisible();
     });
 

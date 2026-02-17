@@ -51,7 +51,15 @@ public class ReservationRepository : IReservationRepository
 
     public async Task<Reservation> UpdateAsync(Reservation reservation, CancellationToken ct = default)
     {
-        _context.Reservations.Update(reservation);
+        var tracked = _context.Reservations.Local.FirstOrDefault(e => e.Id == reservation.Id);
+        if (tracked != null && !ReferenceEquals(tracked, reservation))
+        {
+            _context.Entry(tracked).CurrentValues.SetValues(reservation);
+        }
+        else
+        {
+            _context.Reservations.Update(reservation);
+        }
         // SaveChangesAsync is called by UnitOfWork.CommitTransactionAsync
         await Task.CompletedTask;
         return reservation;

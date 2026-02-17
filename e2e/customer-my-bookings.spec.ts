@@ -50,8 +50,8 @@ test.describe('Customer - My Bookings Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Check if there are bookings or an empty state message
-    const bookingList = page.locator('[data-testid="booking-list"], .booking-list, .bookings');
-    const emptyState = page.locator('.empty-state, p').filter({ hasText: /no bookings|no tickets/i });
+    const bookingList = page.locator('.bookings-list');
+    const emptyState = page.locator('.empty-state');
     
     // Either bookings or empty state should be visible
     const hasBookings = await bookingList.isVisible().catch(() => false);

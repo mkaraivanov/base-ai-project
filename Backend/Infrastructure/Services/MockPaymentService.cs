@@ -41,7 +41,7 @@ public class MockPaymentService : IPaymentService
                 transactionId,
                 "Completed",
                 amount,
-                _timeProvider.GetUtcNow().DateTime
+                _timeProvider.GetUtcNow().UtcDateTime
             );
 
             _logger.LogInformation(
@@ -71,7 +71,7 @@ public class MockPaymentService : IPaymentService
                 transactionId,
                 "Refunded",
                 0, // Amount will be set by caller
-                _timeProvider.GetUtcNow().DateTime
+                _timeProvider.GetUtcNow().UtcDateTime
             );
 
             _logger.LogInformation("Mock refund processed: {TransactionId}", transactionId);

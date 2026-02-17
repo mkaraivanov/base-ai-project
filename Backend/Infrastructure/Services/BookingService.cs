@@ -112,7 +112,7 @@ public class BookingService : IBookingService
                 return Result<ReservationDto>.Failure("Showtime not found");
             }
 
-            if (showtime.StartTime <= _timeProvider.GetUtcNow().DateTime)
+            if (showtime.StartTime <= _timeProvider.GetUtcNow().UtcDateTime)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
                 return Result<ReservationDto>.Failure("Cannot book past or ongoing showtimes");
@@ -141,9 +141,9 @@ public class BookingService : IBookingService
                 ShowtimeId = dto.ShowtimeId,
                 SeatNumbers = dto.SeatNumbers,
                 TotalAmount = totalAmount,
-                ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(5).DateTime,
+                ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(5).UtcDateTime,
                 Status = ReservationStatus.Pending,
-                CreatedAt = _timeProvider.GetUtcNow().DateTime
+                CreatedAt = _timeProvider.GetUtcNow().UtcDateTime
             };
 
             // Update seat reservation IDs
@@ -213,7 +213,7 @@ public class BookingService : IBookingService
         var reservedSeats = seats.Select(s => s with
         {
             Status = SeatStatus.Reserved,
-            ReservedUntil = _timeProvider.GetUtcNow().AddMinutes(5).DateTime
+            ReservedUntil = _timeProvider.GetUtcNow().AddMinutes(5).UtcDateTime
         }).ToList();
 
         await _seatRepository.UpdateRangeAsync(reservedSeats, ct);
@@ -312,7 +312,7 @@ public class BookingService : IBookingService
                 return Result<BookingDto>.Failure("Reservation is no longer valid");
             }
 
-            if (reservation.ExpiresAt < _timeProvider.GetUtcNow().DateTime)
+            if (reservation.ExpiresAt < _timeProvider.GetUtcNow().UtcDateTime)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
                 return Result<BookingDto>.Failure("Reservation has expired");
@@ -349,7 +349,7 @@ public class BookingService : IBookingService
                 PaymentMethod = dto.PaymentMethod,
                 TransactionId = paymentResult.Value!.TransactionId,
                 Status = PaymentStatus.Completed,
-                CreatedAt = _timeProvider.GetUtcNow().DateTime,
+                CreatedAt = _timeProvider.GetUtcNow().UtcDateTime,
                 ProcessedAt = paymentResult.Value.ProcessedAt
             };
 
@@ -363,12 +363,12 @@ public class BookingService : IBookingService
                 TotalAmount = reservation.TotalAmount,
                 Status = BookingStatus.Confirmed,
                 PaymentId = paymentId,
-                BookedAt = _timeProvider.GetUtcNow().DateTime,
+                BookedAt = _timeProvider.GetUtcNow().UtcDateTime,
                 CancelledAt = null
             };
 
-            await _paymentRepository.CreateAsync(payment, ct);
             await _bookingRepository.CreateAsync(booking, ct);
+            await _paymentRepository.CreateAsync(payment, ct);
 
             // Update seat status to Booked
             var seats = await _seatRepository.GetByReservationIdAsync(dto.ReservationId, ct);
@@ -449,7 +449,7 @@ public class BookingService : IBookingService
 
             // Check if showtime is in the future
             var showtime = await _showtimeRepository.GetByIdAsync(booking.ShowtimeId, ct);
-            if (showtime is null || showtime.StartTime <= _timeProvider.GetUtcNow().DateTime)
+            if (showtime is null || showtime.StartTime <= _timeProvider.GetUtcNow().UtcDateTime)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
                 return Result<BookingDto>.Failure("Cannot cancel past or ongoing showtimes");
@@ -488,7 +488,7 @@ public class BookingService : IBookingService
                 Status = BookingStatus.Cancelled,
                 PaymentId = booking.PaymentId,
                 BookedAt = booking.BookedAt,
-                CancelledAt = _timeProvider.GetUtcNow().DateTime
+                CancelledAt = _timeProvider.GetUtcNow().UtcDateTime
             };
 
             await _bookingRepository.UpdateAsync(cancelledBooking, ct);

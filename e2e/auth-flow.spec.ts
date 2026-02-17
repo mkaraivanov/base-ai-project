@@ -31,7 +31,7 @@ test.describe('Authentication Flow', () => {
     });
 
     test('should have link to register page', async ({ page }) => {
-      const registerLink = page.locator('a[href="/register"]');
+      const registerLink = page.locator('a[href="/register"]').first();
       await expect(registerLink).toBeVisible();
     });
 
@@ -117,7 +117,7 @@ test.describe('Authentication Flow', () => {
       await page.waitForLoadState('networkidle');
 
       // Verify user is logged out - login link should be visible
-      const loginLink = page.locator('a[href="/login"]');
+      const loginLink = page.locator('nav a[href="/login"]');
       await expect(loginLink).toBeVisible({ timeout: 10000 });
     });
 

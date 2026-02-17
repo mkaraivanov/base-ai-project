@@ -39,7 +39,7 @@ test.describe('Admin - Dashboard Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Check for statistics/metrics cards
-    const statsCards = page.locator('[data-testid="stat-card"], .stat-card, .metric-card, .card');
+    const statsCards = page.locator('.admin-card');
     const cardCount = await statsCards.count();
     
     // Should have at least some statistics displayed
@@ -51,15 +51,15 @@ test.describe('Admin - Dashboard Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Check for navigation to movies management
-    const moviesLink = page.locator('a, button').filter({ hasText: /movies/i }).first();
+    const moviesLink = page.locator('.admin-card').filter({ hasText: /movies/i }).first();
     await expect(moviesLink).toBeVisible();
     
     // Check for navigation to halls management
-    const hallsLink = page.locator('a, button').filter({ hasText: /halls/i }).first();
+    const hallsLink = page.locator('.admin-card').filter({ hasText: /halls/i }).first();
     await expect(hallsLink).toBeVisible();
     
     // Check for navigation to showtimes management
-    const showtimesLink = page.locator('a, button').filter({ hasText: /showtimes/i }).first();
+    const showtimesLink = page.locator('.admin-card').filter({ hasText: /showtimes/i }).first();
     await expect(showtimesLink).toBeVisible();
   });
 
@@ -67,8 +67,8 @@ test.describe('Admin - Dashboard Page', () => {
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
     
-    // Click on movies management link
-    const moviesLink = page.locator('a, button').filter({ hasText: /movies/i }).first();
+    // Click on movies management link in admin grid
+    const moviesLink = page.locator('.admin-card').filter({ hasText: /movies/i }).first();
     await moviesLink.click();
     
     // Should navigate to movies management page
@@ -79,8 +79,8 @@ test.describe('Admin - Dashboard Page', () => {
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
     
-    // Click on halls management link
-    const hallsLink = page.locator('a, button').filter({ hasText: /halls/i }).first();
+    // Click on halls management link in admin grid
+    const hallsLink = page.locator('.admin-card').filter({ hasText: /halls/i }).first();
     await hallsLink.click();
     
     // Should navigate to halls management page
@@ -91,8 +91,8 @@ test.describe('Admin - Dashboard Page', () => {
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
     
-    // Click on showtimes management link
-    const showtimesLink = page.locator('a, button').filter({ hasText: /showtimes/i }).first();
+    // Click on showtimes management link in admin grid
+    const showtimesLink = page.locator('.admin-card').filter({ hasText: /showtimes/i }).first();
     await showtimesLink.click();
     
     // Should navigate to showtimes management page

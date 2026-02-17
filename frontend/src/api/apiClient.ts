@@ -24,9 +24,14 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('authUser');
-      window.location.href = '/login';
+      // Don't redirect on auth endpoints — let the caller handle the error
+      const requestUrl = error.config?.url ?? '';
+      const isAuthEndpoint = requestUrl.startsWith('/auth/');
+      if (!isAuthEndpoint) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   },

@@ -30,13 +30,13 @@ test.describe('Customer - Movies Pages', () => {
       await page.goto('/movies');
       await page.waitForLoadState('networkidle');
       
-      // Click on the first movie (adjust selector based on actual implementation)
-      const firstMovie = page.locator('[data-testid="movie-card"], .movie-card, article').first();
-      await firstMovie.waitFor({ state: 'visible', timeout: 10000 });
-      await firstMovie.click();
+      // Click on the "View Showtimes" link inside the first movie card
+      const firstMovieLink = page.locator('.movie-card a.btn').first();
+      await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+      await firstMovieLink.click();
       
-      // Should navigate to movie detail page
-      await expect(page).toHaveURL(/\/movies\/\d+/, { timeout: 10000 });
+      // Should navigate to movie detail page (IDs are GUIDs)
+      await expect(page).toHaveURL(/\/movies\/[a-f0-9-]+/, { timeout: 10000 });
     });
 
     test('should have search/filter functionality', async ({ page }) => {
@@ -59,13 +59,13 @@ test.describe('Customer - Movies Pages', () => {
       await page.goto('/movies');
       await page.waitForLoadState('networkidle');
       
-      // Click first movie to get to detail page
-      const firstMovie = page.locator('[data-testid="movie-card"], .movie-card, article').first();
-      await firstMovie.waitFor({ state: 'visible', timeout: 10000 });
-      await firstMovie.click();
+      // Click the "View Showtimes" link inside the first movie card
+      const firstMovieLink = page.locator('.movie-card a.btn').first();
+      await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+      await firstMovieLink.click();
       
-      // Wait for movie detail page to load
-      await page.waitForURL(/\/movies\/\d+/);
+      // Wait for movie detail page to load (IDs are GUIDs)
+      await page.waitForURL(/\/movies\/[a-f0-9-]+/);
       await page.waitForLoadState('networkidle');
       
       // Check for movie title (should be in h1 or h2)
@@ -81,15 +81,15 @@ test.describe('Customer - Movies Pages', () => {
       await page.goto('/movies');
       await page.waitForLoadState('networkidle');
       
-      const firstMovie = page.locator('[data-testid="movie-card"], .movie-card, article').first();
-      await firstMovie.waitFor({ state: 'visible', timeout: 10000 });
-      await firstMovie.click();
+      const firstMovieLink = page.locator('.movie-card a.btn').first();
+      await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+      await firstMovieLink.click();
       
-      await page.waitForURL(/\/movies\/\d+/);
+      await page.waitForURL(/\/movies\/[a-f0-9-]+/);
       await page.waitForLoadState('networkidle');
       
-      // Check for showtimes section
-      const showtimesSection = page.locator('[data-testid="showtimes"], .showtimes, section').first();
+      // Check for showtimes section (rendered as .showtime-list or section)
+      const showtimesSection = page.locator('.showtime-list, .empty-state, section.section').first();
       await expect(showtimesSection).toBeVisible({ timeout: 10000 });
     });
 
@@ -97,22 +97,22 @@ test.describe('Customer - Movies Pages', () => {
       await page.goto('/movies');
       await page.waitForLoadState('networkidle');
       
-      const firstMovie = page.locator('[data-testid="movie-card"], .movie-card, article').first();
-      await firstMovie.waitFor({ state: 'visible', timeout: 10000 });
-      await firstMovie.click();
+      const firstMovieLink = page.locator('.movie-card a.btn').first();
+      await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+      await firstMovieLink.click();
       
-      await page.waitForURL(/\/movies\/\d+/);
+      await page.waitForURL(/\/movies\/[a-f0-9-]+/);
       await page.waitForLoadState('networkidle');
       
-      // Click on a showtime button
-      const showtimeButton = page.locator('button').filter({ hasText: /book|select/i }).first();
-      const showtimeExists = await showtimeButton.isVisible().catch(() => false);
+      // Click on a showtime "Select Seats" link
+      const showtimeLink = page.locator('a.btn').filter({ hasText: /select seats/i }).first();
+      const showtimeExists = await showtimeLink.isVisible().catch(() => false);
       
       if (showtimeExists) {
-        await showtimeButton.click();
+        await showtimeLink.click();
         
         // Should either navigate to login (if not authenticated) or seat selection
-        await page.waitForURL(/\/(login|showtime\/\d+\/seats)/, { timeout: 10000 });
+        await page.waitForURL(/\/(login|showtime\/[a-f0-9-]+\/seats)/, { timeout: 10000 });
       }
     });
 
@@ -120,15 +120,15 @@ test.describe('Customer - Movies Pages', () => {
       await page.goto('/movies');
       await page.waitForLoadState('networkidle');
       
-      const firstMovie = page.locator('[data-testid="movie-card"], .movie-card, article').first();
-      await firstMovie.waitFor({ state: 'visible', timeout: 10000 });
-      await firstMovie.click();
+      const firstMovieLink = page.locator('.movie-card a.btn').first();
+      await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+      await firstMovieLink.click();
       
-      await page.waitForURL(/\/movies\/\d+/);
+      await page.waitForURL(/\/movies\/[a-f0-9-]+/);
       await page.waitForLoadState('networkidle');
       
-      // Check for movie image
-      const movieImage = page.locator('img').first();
+      // Check for movie image or poster placeholder
+      const movieImage = page.locator('img, .poster-placeholder').first();
       await expect(movieImage).toBeVisible();
     });
 
@@ -136,11 +136,11 @@ test.describe('Customer - Movies Pages', () => {
       await page.goto('/movies');
       await page.waitForLoadState('networkidle');
       
-      const firstMovie = page.locator('[data-testid="movie-card"], .movie-card, article').first();
-      await firstMovie.waitFor({ state: 'visible', timeout: 10000 });
-      await firstMovie.click();
+      const firstMovieLink = page.locator('.movie-card a.btn').first();
+      await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+      await firstMovieLink.click();
       
-      await page.waitForURL(/\/movies\/\d+/);
+      await page.waitForURL(/\/movies\/[a-f0-9-]+/);
       
       // Check for back button or navigation link
       const backButton = page.locator('button, a').filter({ hasText: /back|movies/i }).first();

@@ -6,7 +6,7 @@ test.describe('Sign Up Flow', () => {
     firstName: 'John',
     lastName: 'Doe',
     email: `test.user+${timestamp}@example.com`,
-    phoneNumber: '+1 (555) 123-4567',
+    phoneNumber: '+15551234567',
     password: 'Test123456',
   };
 
@@ -71,7 +71,7 @@ test.describe('Sign Up Flow', () => {
     const hasError = await page.locator('.error-message').isVisible().catch(() => false);
     
     // Test passes if either we navigated home OR got a registration-related error
-    expect(currentUrl === 'http://localhost:5174/' || hasError).toBeTruthy();
+    expect(currentUrl.endsWith('/') || hasError).toBeTruthy();
   });
 
   test('should have a link to login page', async ({ page }) => {

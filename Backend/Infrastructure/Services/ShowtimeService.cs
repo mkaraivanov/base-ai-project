@@ -134,7 +134,7 @@ public class ShowtimeService : IShowtimeService
                 EndTime = endTime,
                 BasePrice = dto.BasePrice,
                 IsActive = true,
-                CreatedAt = _timeProvider.GetUtcNow().DateTime
+                CreatedAt = _timeProvider.GetUtcNow().UtcDateTime
             };
 
             // Use transaction to create showtime and seats atomically

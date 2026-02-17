@@ -73,7 +73,7 @@ public class CinemaHallService : ICinemaHallService
                 TotalSeats = totalSeats,
                 SeatLayoutJson = seatLayoutJson,
                 IsActive = true,
-                CreatedAt = _timeProvider.GetUtcNow().DateTime
+                CreatedAt = _timeProvider.GetUtcNow().UtcDateTime
             };
 
             var created = await _hallRepository.CreateAsync(hall, ct);

@@ -72,8 +72,8 @@ public class MovieService : IMovieService
                 PosterUrl = dto.PosterUrl,
                 ReleaseDate = dto.ReleaseDate,
                 IsActive = true,
-                CreatedAt = _timeProvider.GetUtcNow().DateTime,
-                UpdatedAt = _timeProvider.GetUtcNow().DateTime
+                CreatedAt = _timeProvider.GetUtcNow().UtcDateTime,
+                UpdatedAt = _timeProvider.GetUtcNow().UtcDateTime
             };
 
             var created = await _movieRepository.CreateAsync(movie, ct);
@@ -108,7 +108,7 @@ public class MovieService : IMovieService
                 PosterUrl = dto.PosterUrl,
                 ReleaseDate = dto.ReleaseDate,
                 IsActive = dto.IsActive,
-                UpdatedAt = _timeProvider.GetUtcNow().DateTime
+                UpdatedAt = _timeProvider.GetUtcNow().UtcDateTime
             };
 
             var result = await _movieRepository.UpdateAsync(updated, ct);
