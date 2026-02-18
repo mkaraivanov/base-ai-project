@@ -38,9 +38,10 @@ public static class CinemaHallEndpoints
     private static async Task<IResult> GetAllHallsAsync(
         ICinemaHallService hallService,
         bool? activeOnly,
+        Guid? cinemaId,
         CancellationToken ct)
     {
-        var result = await hallService.GetAllHallsAsync(activeOnly ?? true, ct);
+        var result = await hallService.GetAllHallsAsync(activeOnly ?? true, cinemaId, ct);
 
         return result.IsSuccess
             ? Results.Ok(new ApiResponse<List<CinemaHallDto>>(true, result.Value, null))

@@ -6,6 +6,8 @@ public record ShowtimeDto(
     string MovieTitle,
     Guid CinemaHallId,
     string HallName,
+    Guid CinemaId,
+    string CinemaName,
     DateTime StartTime,
     DateTime EndTime,
     decimal BasePrice,

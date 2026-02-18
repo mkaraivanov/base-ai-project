@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Backend.csproj": {}
+    "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj": {}
   },
   "projects": {
-    "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/Application.csproj": {
+    "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/Application.csproj",
+        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj",
         "projectName": "Application",
-        "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/Application.csproj",
-        "packagesPath": "/Users/martin.karaivanov/.nuget/packages/",
-        "outputPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/obj/",
+        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj",
+        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
+        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/martin.karaivanov/.nuget/NuGet/NuGet.Config"
+          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -26,8 +26,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj": {
-                "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj"
+              "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
+                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj"
               }
             }
           }
@@ -42,7 +42,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -73,21 +73,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.202/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Backend.csproj": {
+    "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Backend.csproj",
+        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Backend.csproj",
-        "packagesPath": "/Users/martin.karaivanov/.nuget/packages/",
-        "outputPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/obj/",
+        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj",
+        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
+        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/martin.karaivanov/.nuget/NuGet/NuGet.Config"
+          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -99,14 +99,14 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/Application.csproj": {
-                "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/Application.csproj"
+              "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj": {
+                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj"
               },
-              "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj": {
-                "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj"
+              "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
+                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj"
               },
-              "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
-                "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Infrastructure/Infrastructure.csproj"
+              "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
+                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj"
               }
             }
           }
@@ -121,7 +121,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -191,21 +191,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.202/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj": {
+    "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj",
+        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj",
         "projectName": "Domain",
-        "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj",
-        "packagesPath": "/Users/martin.karaivanov/.nuget/packages/",
-        "outputPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/obj/",
+        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj",
+        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
+        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/martin.karaivanov/.nuget/NuGet/NuGet.Config"
+          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -229,7 +229,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -250,21 +250,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.202/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
+    "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
+        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
         "projectName": "Infrastructure",
-        "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
-        "packagesPath": "/Users/martin.karaivanov/.nuget/packages/",
-        "outputPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Infrastructure/obj/",
+        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
+        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
+        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/martin.karaivanov/.nuget/NuGet/NuGet.Config"
+          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -276,11 +276,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/Application.csproj": {
-                "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Application/Application.csproj"
+              "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj": {
+                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj"
               },
-              "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj": {
-                "projectPath": "/Users/martin.karaivanov/Projects/base-ai-project/Backend/Domain/Domain.csproj"
+              "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
+                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj"
               }
             }
           }
@@ -295,7 +295,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -338,7 +338,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.202/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

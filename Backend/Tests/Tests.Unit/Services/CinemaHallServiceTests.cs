@@ -43,7 +43,7 @@ public class CinemaHallServiceTests
         };
 
         _hallRepositoryMock
-            .Setup(x => x.GetAllAsync(true, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetAllAsync(true, It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(halls.Where(h => h.IsActive).ToList());
 
         // Act
@@ -131,6 +131,7 @@ public class CinemaHallServiceTests
         };
 
         var dto = new CreateCinemaHallDto(
+            CinemaId: Guid.NewGuid(),
             Name: "VIP Hall",
             SeatLayout: seatLayout
         );

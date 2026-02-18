@@ -67,6 +67,10 @@ public class BookingServiceTests
             new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A3").AsBooked().Build()
         };
 
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Showtime { Id = showtimeId, IsActive = true });
+
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(seats);
@@ -88,6 +92,11 @@ public class BookingServiceTests
     {
         // Arrange
         var showtimeId = Guid.NewGuid();
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Showtime { Id = showtimeId, IsActive = true });
+
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Seat>());
@@ -109,6 +118,11 @@ public class BookingServiceTests
     {
         // Arrange
         var showtimeId = Guid.NewGuid();
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Showtime { Id = showtimeId, IsActive = true });
+
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Database error"));
@@ -601,8 +615,8 @@ public class BookingServiceTests
             .Setup(x => x.GetByReservationIdAsync(reservationId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Seat>
             {
-                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").WithReservationId(reservationId).Build(),
-                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A2").WithReservationId(reservationId).Build()
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").AsReserved(reservationId, DateTime.UtcNow.AddMinutes(10)).Build(),
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A2").AsReserved(reservationId, DateTime.UtcNow.AddMinutes(10)).Build()
             });
 
         // Act

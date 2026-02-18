@@ -7,6 +7,9 @@ public class CreateCinemaHallDtoValidator : AbstractValidator<CreateCinemaHallDt
 {
     public CreateCinemaHallDtoValidator()
     {
+        RuleFor(x => x.CinemaId)
+            .NotEmpty().WithMessage("Cinema is required");
+
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Hall name is required")
             .MaximumLength(100).WithMessage("Hall name must not exceed 100 characters");
