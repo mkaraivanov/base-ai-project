@@ -291,6 +291,9 @@ public class CinemaDbContext : DbContext
             entity.HasIndex(e => e.BookingNumber).IsUnique();
             entity.HasIndex(e => new { e.UserId, e.Status });
             entity.HasIndex(e => e.ShowtimeId);
+
+            entity.Property(e => e.CarLicensePlate)
+                .HasMaxLength(10);
         });
     }
 }

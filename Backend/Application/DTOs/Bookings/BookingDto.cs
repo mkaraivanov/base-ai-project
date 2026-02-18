@@ -10,5 +10,6 @@ public record BookingDto(
     List<string> SeatNumbers,
     decimal TotalAmount,
     string Status,
-    DateTime BookedAt
+    DateTime BookedAt,
+    string? CarLicensePlate = null
 );

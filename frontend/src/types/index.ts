@@ -216,6 +216,7 @@ export interface ConfirmBookingDto {
   readonly cardHolderName: string;
   readonly expiryDate: string;
   readonly cvv: string;
+  readonly carLicensePlate?: string;
 }
 
 export interface BookingDto {
@@ -229,4 +230,5 @@ export interface BookingDto {
   readonly totalAmount: number;
   readonly status: string;
   readonly bookedAt: string;
+  readonly carLicensePlate?: string;
 }

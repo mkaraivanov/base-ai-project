@@ -40,5 +40,10 @@ public class ConfirmBookingDtoValidator : AbstractValidator<ConfirmBookingDto>
             .WithMessage("CVV is required")
             .Matches(@"^\d{3,4}$")
             .WithMessage("CVV must be 3 or 4 digits");
+
+        RuleFor(x => x.CarLicensePlate)
+            .Matches(@"^[A-Z]{1,2}\d{4}[A-Z]{2}$")
+            .WithMessage("Car license plate must be a valid Bulgarian format (e.g. CB1234AB)")
+            .When(x => !string.IsNullOrEmpty(x.CarLicensePlate));
     }
 }

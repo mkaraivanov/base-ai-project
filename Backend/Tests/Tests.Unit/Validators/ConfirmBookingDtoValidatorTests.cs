@@ -199,4 +199,90 @@ public class ConfirmBookingDtoValidatorTests
         // Assert
         Assert.True(result.IsValid);
     }
+
+    [Fact]
+    public async Task Validate_ValidBulgarianLicensePlate_Passes()
+    {
+        // Arrange
+        var dto = new ConfirmBookingDto(
+            Guid.NewGuid(),
+            "CreditCard",
+            "4111111111111111",
+            "John Doe",
+            "12/25",
+            "123",
+            "CB1234AB"
+        );
+
+        // Act
+        var result = await _validator.ValidateAsync(dto);
+
+        // Assert
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public async Task Validate_NullLicensePlate_Passes()
+    {
+        // Arrange - Plate is optional
+        var dto = new ConfirmBookingDto(
+            Guid.NewGuid(),
+            "CreditCard",
+            "4111111111111111",
+            "John Doe",
+            "12/25",
+            "123",
+            null
+        );
+
+        // Act
+        var result = await _validator.ValidateAsync(dto);
+
+        // Assert
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public async Task Validate_InvalidLicensePlateFormat_Fails()
+    {
+        // Arrange - Non-Bulgarian format
+        var dto = new ConfirmBookingDto(
+            Guid.NewGuid(),
+            "CreditCard",
+            "4111111111111111",
+            "John Doe",
+            "12/25",
+            "123",
+            "INVALID"
+        );
+
+        // Act
+        var result = await _validator.ValidateAsync(dto);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "CarLicensePlate");
+    }
+
+    [Fact]
+    public async Task Validate_LicensePlateWithLowercase_Fails()
+    {
+        // Arrange - Validator expects uppercase (normalization is done in service, not here)
+        var dto = new ConfirmBookingDto(
+            Guid.NewGuid(),
+            "CreditCard",
+            "4111111111111111",
+            "John Doe",
+            "12/25",
+            "123",
+            "cb1234ab"
+        );
+
+        // Act
+        var result = await _validator.ValidateAsync(dto);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "CarLicensePlate");
+    }
 }

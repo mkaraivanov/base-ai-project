@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj": {}
+    "/home/runner/work/base-ai-project/base-ai-project/Backend/Backend.csproj": {}
   },
   "projects": {
-    "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj": {
+    "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj",
+        "projectUniqueName": "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/Application.csproj",
         "projectName": "Application",
-        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj",
-        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
-        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/obj/",
+        "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/Application.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -26,8 +26,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
-                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj"
+              "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj": {
+                "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj"
               }
             }
           }
@@ -73,21 +73,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj": {
+    "/home/runner/work/base-ai-project/base-ai-project/Backend/Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj",
+        "projectUniqueName": "/home/runner/work/base-ai-project/base-ai-project/Backend/Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Backend.csproj",
-        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
-        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/obj/",
+        "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Backend.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -99,14 +99,14 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj": {
-                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj"
+              "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/Application.csproj": {
+                "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/Application.csproj"
               },
-              "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
-                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj"
+              "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj": {
+                "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj"
               },
-              "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
-                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj"
+              "/home/runner/work/base-ai-project/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
+                "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Infrastructure/Infrastructure.csproj"
               }
             }
           }
@@ -191,21 +191,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
+    "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj",
+        "projectUniqueName": "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj",
         "projectName": "Domain",
-        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj",
-        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
-        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/obj/",
+        "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -250,21 +250,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
+    "/home/runner/work/base-ai-project/base-ai-project/Backend/Infrastructure/Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
+        "projectUniqueName": "/home/runner/work/base-ai-project/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
         "projectName": "Infrastructure",
-        "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
-        "packagesPath": "/Users/yoanna.zheleva/.nuget/packages/",
-        "outputPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Infrastructure/obj/",
+        "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Infrastructure/Infrastructure.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Infrastructure/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/yoanna.zheleva/.nuget/NuGet/NuGet.Config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -276,11 +276,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj": {
-                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Application/Application.csproj"
+              "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/Application.csproj": {
+                "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Application/Application.csproj"
               },
-              "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj": {
-                "projectPath": "/Users/yoanna.zheleva/base-ai-project/Backend/Domain/Domain.csproj"
+              "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj": {
+                "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Domain/Domain.csproj"
               }
             }
           }
@@ -338,7 +338,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

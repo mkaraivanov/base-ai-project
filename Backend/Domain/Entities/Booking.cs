@@ -12,6 +12,7 @@ public class Booking
     public Guid? PaymentId { get; init; }
     public DateTime BookedAt { get; init; }
     public DateTime? CancelledAt { get; init; }
+    public string? CarLicensePlate { get; init; }
 
     // Navigation
     public User? User { get; init; }
