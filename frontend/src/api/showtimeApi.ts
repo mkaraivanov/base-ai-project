@@ -6,9 +6,9 @@ import type {
 } from '../types';
 
 export const showtimeApi = {
-  getAll: async (fromDate?: string, toDate?: string): Promise<readonly ShowtimeDto[]> => {
+  getAll: async (fromDate?: string, toDate?: string, cinemaId?: string): Promise<readonly ShowtimeDto[]> => {
     const response = await apiClient.get<ApiResponse<ShowtimeDto[]>>('/showtimes', {
-      params: { fromDate, toDate },
+      params: { fromDate, toDate, cinemaId },
     });
     return response.data.data ?? [];
   },
@@ -18,9 +18,10 @@ export const showtimeApi = {
     return response.data.data!;
   },
 
-  getByMovie: async (movieId: string): Promise<readonly ShowtimeDto[]> => {
+  getByMovie: async (movieId: string, cinemaId?: string): Promise<readonly ShowtimeDto[]> => {
     const response = await apiClient.get<ApiResponse<ShowtimeDto[]>>(
       `/showtimes/movie/${movieId}`,
+      { params: { cinemaId } },
     );
     return response.data.data ?? [];
   },

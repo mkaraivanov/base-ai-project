@@ -39,11 +39,12 @@ public class ShowtimeService : IShowtimeService
     public async Task<Result<List<ShowtimeDto>>> GetShowtimesAsync(
         DateTime? fromDate = null,
         DateTime? toDate = null,
+        Guid? cinemaId = null,
         CancellationToken ct = default)
     {
         try
         {
-            var showtimes = await _showtimeRepository.GetAllAsync(fromDate, toDate, ct);
+            var showtimes = await _showtimeRepository.GetAllAsync(fromDate, toDate, cinemaId, ct);
             var dtos = await MapToShowtimeDtosAsync(showtimes, ct);
             return Result<List<ShowtimeDto>>.Success(dtos);
         }
@@ -54,11 +55,11 @@ public class ShowtimeService : IShowtimeService
         }
     }
 
-    public async Task<Result<List<ShowtimeDto>>> GetShowtimesByMovieAsync(Guid movieId, CancellationToken ct = default)
+    public async Task<Result<List<ShowtimeDto>>> GetShowtimesByMovieAsync(Guid movieId, Guid? cinemaId = null, CancellationToken ct = default)
     {
         try
         {
-            var showtimes = await _showtimeRepository.GetByMovieIdAsync(movieId, ct);
+            var showtimes = await _showtimeRepository.GetByMovieIdAsync(movieId, cinemaId, ct);
             var dtos = await MapToShowtimeDtosAsync(showtimes, ct);
             return Result<List<ShowtimeDto>>.Success(dtos);
         }
@@ -161,6 +162,8 @@ public class ShowtimeService : IShowtimeService
                     movie.Title,
                     hall.Id,
                     hall.Name,
+                    hall.CinemaId,
+                    hall.Cinema?.Name ?? string.Empty,
                     created.StartTime,
                     created.EndTime,
                     created.BasePrice,
@@ -258,6 +261,8 @@ public class ShowtimeService : IShowtimeService
         showtime.Movie?.Title ?? string.Empty,
         showtime.CinemaHallId,
         showtime.CinemaHall?.Name ?? string.Empty,
+        showtime.CinemaHall?.CinemaId ?? Guid.Empty,
+        showtime.CinemaHall?.Cinema?.Name ?? string.Empty,
         showtime.StartTime,
         showtime.EndTime,
         showtime.BasePrice,

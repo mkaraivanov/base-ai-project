@@ -8,16 +8,22 @@ export const DashboardPage: React.FC = () => {
         <h1>Admin Dashboard</h1>
 
         <div className="admin-grid">
+          <Link to="/admin/cinemas" className="admin-card">
+            <div className="admin-card-icon">🏛️</div>
+            <h3>Cinemas</h3>
+            <p>Manage cinemas, locations and opening hours</p>
+          </Link>
+
+          <Link to="/admin/halls" className="admin-card">
+            <div className="admin-card-icon">🎟️</div>
+            <h3>Cinema Halls</h3>
+            <p>Manage halls, configure seat layouts</p>
+          </Link>
+
           <Link to="/admin/movies" className="admin-card">
             <div className="admin-card-icon">🎬</div>
             <h3>Movies</h3>
             <p>Manage movies, add new titles, update details</p>
-          </Link>
-
-          <Link to="/admin/halls" className="admin-card">
-            <div className="admin-card-icon">🏛️</div>
-            <h3>Cinema Halls</h3>
-            <p>Manage halls, configure seat layouts</p>
           </Link>
 
           <Link to="/admin/showtimes" className="admin-card">

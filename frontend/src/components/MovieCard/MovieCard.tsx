@@ -5,9 +5,11 @@ import { formatDuration } from '../../utils/formatters';
 
 interface MovieCardProps {
   readonly movie: MovieDto;
+  readonly detailPath?: string;
 }
 
-export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
+export const MovieCard: React.FC<MovieCardProps> = ({ movie, detailPath }) => {
+  const linkPath = detailPath ?? `/movies/${movie.id}`;
   return (
     <div className="movie-card">
       <div className="movie-poster">
@@ -31,7 +33,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
             ? `${movie.description.slice(0, 120)}...`
             : movie.description}
         </p>
-        <Link to={`/movies/${movie.id}`} className="btn btn-primary">
+        <Link to={linkPath} className="btn btn-primary">
           View Showtimes
         </Link>
       </div>

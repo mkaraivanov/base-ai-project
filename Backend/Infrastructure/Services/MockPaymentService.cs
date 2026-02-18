@@ -51,6 +51,10 @@ public class MockPaymentService : IPaymentService
 
             return Result<PaymentResultDto>.Success(result);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing mock payment");
@@ -77,6 +81,10 @@ public class MockPaymentService : IPaymentService
             _logger.LogInformation("Mock refund processed: {TransactionId}", transactionId);
 
             return Result<PaymentResultDto>.Success(result);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

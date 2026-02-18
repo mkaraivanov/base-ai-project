@@ -10,6 +10,7 @@ public class CinemaDbContext : DbContext
     {
     }
 
+    public DbSet<Cinema> Cinemas => Set<Cinema>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Movie> Movies => Set<Movie>();
     public DbSet<CinemaHall> CinemaHalls => Set<CinemaHall>();
@@ -81,6 +82,40 @@ public class CinemaDbContext : DbContext
             entity.HasIndex(e => e.Genre);
         });
 
+        // Cinema configuration
+        modelBuilder.Entity<Cinema>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Address)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(e => e.City)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Country)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(20);
+
+            entity.Property(e => e.Email)
+                .HasMaxLength(200);
+
+            entity.Property(e => e.LogoUrl)
+                .HasMaxLength(500);
+
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => new { e.Name, e.City });
+        });
+
         // CinemaHall configuration
         modelBuilder.Entity<CinemaHall>(entity =>
         {
@@ -94,7 +129,13 @@ public class CinemaDbContext : DbContext
                 .IsRequired()
                 .HasColumnType("nvarchar(max)");
 
+            entity.HasOne(e => e.Cinema)
+                .WithMany(c => c.Halls)
+                .HasForeignKey(e => e.CinemaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.CinemaId);
         });
 
         // Showtime configuration

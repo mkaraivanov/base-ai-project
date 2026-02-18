@@ -82,22 +82,31 @@ test.describe('Admin Cinema Halls Management', () => {
     await page.fill('input[name="rows"]', '8');
     await page.fill('input[name="seatsPerRow"]', '10');
     
-    await page.click('button[type="submit"]');
+    await page.locator('.modal button[type="submit"]').click();
     await page.waitForTimeout(1000);
-    
-    // Now edit it
-    await page.click(`text=${originalName} >> .. >> button:has-text("Edit")`).catch(() => {
-      page.click('button:has-text("Edit")').first();
-    });
-    
+
+    // Now edit it - find the table row containing the hall name and click its Edit button
+    // Wait for the modal to close first
+    await expect(page.locator('h2:has-text("Add Hall")')).not.toBeVisible({ timeout: 5000 });
+    const hallRow = page.locator('table tbody tr').filter({ hasText: originalName }).first();
+    await hallRow.waitFor({ state: 'visible', timeout: 8000 });
+    await hallRow.locator('button:has-text("Edit")').click();
+
+    // Clear and fill the name field - use triple-click then type to work with React controlled inputs
+    const nameInput = page.locator('input#name');
+    await nameInput.waitFor({ state: 'visible', timeout: 5000 });
+    await nameInput.click({ clickCount: 3 });
     const updatedName = `Updated Hall ${timestamp}`;
-    await page.fill('input[name="name"]', updatedName);
-    await page.click('button[type="submit"]');
-    
-    await page.waitForTimeout(1000);
-    
-    // Verify updated name appears
-    await expect(page.locator(`text=${updatedName}`)).toBeVisible();
+    await nameInput.fill(updatedName);
+    // Click the Update submit button scoped to the modal
+    await page.locator('.modal button[type="submit"]').click();
+
+    // Wait for modal to close and table to refresh
+    await expect(page.locator('h2:has-text("Edit Hall")')).not.toBeVisible({ timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Verify updated name appears in the table
+    await expect(page.locator('table tbody').getByText(updatedName)).toBeVisible({ timeout: 8000 });
   });
 
   test('should cancel hall creation', async ({ page }) => {

@@ -7,9 +7,9 @@ import type {
 } from '../types';
 
 export const hallApi = {
-  getAll: async (activeOnly = true): Promise<readonly CinemaHallDto[]> => {
+  getAll: async (activeOnly = true, cinemaId?: string): Promise<readonly CinemaHallDto[]> => {
     const response = await apiClient.get<ApiResponse<CinemaHallDto[]>>('/halls', {
-      params: { activeOnly },
+      params: { activeOnly, cinemaId },
     });
     return response.data.data ?? [];
   },

@@ -9,15 +9,42 @@ namespace Infrastructure.Data
 {
     public static class TestDataSeeder
     {
+        // Fixed Guid so migration data and seeder stay in sync
+        public static readonly Guid DefaultCinemaId = new("10000000-0000-0000-0000-000000000001");
+
         public static async Task SeedTestDataAsync(CinemaDbContext context)
         {
             // Only seed if no movies exist
             if (await context.Movies.AnyAsync()) return;
 
+            // Ensure we have a default Cinema
+            if (!await context.Cinemas.AnyAsync(c => c.Id == DefaultCinemaId))
+            {
+                var cinema = new Cinema
+                {
+                    Id = DefaultCinemaId,
+                    Name = "Default Cinema",
+                    Address = "123 Main Street",
+                    City = "Cityville",
+                    Country = "Countryland",
+                    PhoneNumber = "+1-000-000-0000",
+                    Email = "info@defaultcinema.local",
+                    LogoUrl = null,
+                    OpenTime = new TimeOnly(9, 0),
+                    CloseTime = new TimeOnly(23, 0),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                context.Cinemas.Add(cinema);
+                await context.SaveChangesAsync();
+            }
+
             // Create a cinema hall
             var hall = new CinemaHall
             {
                 Id = Guid.NewGuid(),
+                CinemaId = DefaultCinemaId,
                 Name = "Main Hall",
                 TotalSeats = 20,
                 SeatLayoutJson = "",

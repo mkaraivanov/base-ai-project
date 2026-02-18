@@ -86,8 +86,8 @@ test.describe('Customer - My Bookings Page', () => {
     const hasBookings = await bookingCard.isVisible().catch(() => false);
     
     if (hasBookings) {
-      // Check for booking reference/number
-      const bookingRef = page.locator('[data-testid="booking-number"], .booking-number, code').first();
+      // The booking card uses .booking-detail > strong for the booking number
+      const bookingRef = page.locator('.booking-card .booking-detail strong').first();
       await expect(bookingRef).toBeVisible();
     }
   });
@@ -135,8 +135,8 @@ test.describe('Customer - My Bookings Page', () => {
     const hasBookings = await bookingCard.isVisible().catch(() => false);
     
     if (hasBookings) {
-      // Check for seat information
-      const seatInfo = page.locator('.seat, [data-testid="seat-info"]').first();
+      // Seat numbers are shown as text within .booking-detail > strong (labelled "Seats")
+      const seatInfo = page.locator('.booking-card .booking-detail').filter({ hasText: /seats/i }).locator('strong').first();
       await expect(seatInfo).toBeVisible();
     }
   });

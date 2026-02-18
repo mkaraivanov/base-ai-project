@@ -14,6 +14,8 @@ namespace Tests.Unit.Services;
 
 public class ShowtimeServiceTests : IDisposable
 {
+    private static readonly Guid DefaultCinemaId = new("10000000-0000-0000-0000-000000000001");
+
     private readonly CinemaDbContext _context;
     private readonly IShowtimeRepository _showtimeRepository;
     private readonly IMovieRepository _movieRepository;
@@ -27,6 +29,22 @@ public class ShowtimeServiceTests : IDisposable
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _context = new CinemaDbContext(options);
+
+        // Seed a default cinema so CinemaHall FK includes resolve correctly in InMemory DB
+        _context.Cinemas.Add(new Domain.Entities.Cinema
+        {
+            Id = DefaultCinemaId,
+            Name = "Default Cinema",
+            Address = "Test Address",
+            City = "Test City",
+            Country = "Test Country",
+            OpenTime = new TimeOnly(9, 0),
+            CloseTime = new TimeOnly(23, 0),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
+        _context.SaveChanges();
 
         // Use real repositories with InMemory database
         _showtimeRepository = new ShowtimeRepository(_context);
@@ -86,6 +104,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = hallId,
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 6,
             SeatLayoutJson = JsonSerializer.Serialize(seatLayout),
@@ -224,6 +243,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = hallId,
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 0,
             SeatLayoutJson = JsonSerializer.Serialize(new SeatLayout { Rows = 0, SeatsPerRow = 0, Seats = [] }),
@@ -291,6 +311,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 0,
             SeatLayoutJson = "{}",
@@ -398,6 +419,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 0,
             SeatLayoutJson = "{}",
@@ -470,6 +492,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 0,
             SeatLayoutJson = "{}",
@@ -538,6 +561,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 0,
             SeatLayoutJson = "{}",
@@ -634,6 +658,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = hallId,
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 1,
             SeatLayoutJson = JsonSerializer.Serialize(seatLayout),
@@ -697,6 +722,7 @@ public class ShowtimeServiceTests : IDisposable
         var hall = new CinemaHall
         {
             Id = hallId,
+            CinemaId = DefaultCinemaId,
             Name = "Hall 1",
             TotalSeats = 4,
             SeatLayoutJson = JsonSerializer.Serialize(seatLayout),
