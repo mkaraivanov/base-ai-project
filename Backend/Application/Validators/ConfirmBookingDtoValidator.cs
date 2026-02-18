@@ -44,6 +44,6 @@ public class ConfirmBookingDtoValidator : AbstractValidator<ConfirmBookingDto>
         RuleFor(x => x.CarLicensePlate)
             .Matches(@"^[A-Z]{1,2}\d{4}[A-Z]{2}$")
             .WithMessage("Car license plate must be a valid Bulgarian format (e.g. CB1234AB)")
-            .When(x => !string.IsNullOrEmpty(x.CarLicensePlate));
+            .When(x => !string.IsNullOrWhiteSpace(x.CarLicensePlate));
     }
 }

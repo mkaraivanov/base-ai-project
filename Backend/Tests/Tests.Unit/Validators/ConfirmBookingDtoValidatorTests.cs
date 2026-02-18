@@ -267,7 +267,9 @@ public class ConfirmBookingDtoValidatorTests
     [Fact]
     public async Task Validate_LicensePlateWithLowercase_Fails()
     {
-        // Arrange - Validator expects uppercase (normalization is done in service, not here)
+        // Arrange - The validator requires uppercase. The service normalizes the value
+        // to uppercase before persisting, but validation runs on the raw DTO first.
+        // Clients are expected to send already-normalized (uppercase, trimmed) values.
         var dto = new ConfirmBookingDto(
             Guid.NewGuid(),
             "CreditCard",
