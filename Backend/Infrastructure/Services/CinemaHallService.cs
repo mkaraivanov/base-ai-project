@@ -25,11 +25,11 @@ public class CinemaHallService : ICinemaHallService
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
-    public async Task<Result<List<CinemaHallDto>>> GetAllHallsAsync(bool activeOnly = true, CancellationToken ct = default)
+    public async Task<Result<List<CinemaHallDto>>> GetAllHallsAsync(bool activeOnly = true, Guid? cinemaId = null, CancellationToken ct = default)
     {
         try
         {
-            var halls = await _hallRepository.GetAllAsync(activeOnly, ct);
+            var halls = await _hallRepository.GetAllAsync(activeOnly, cinemaId, ct);
             var dtos = halls.Select(MapToDto).ToList();
             return Result<List<CinemaHallDto>>.Success(dtos);
         }
@@ -69,6 +69,7 @@ public class CinemaHallService : ICinemaHallService
             var hall = new CinemaHall
             {
                 Id = Guid.NewGuid(),
+                CinemaId = dto.CinemaId,
                 Name = dto.Name,
                 TotalSeats = totalSeats,
                 SeatLayoutJson = seatLayoutJson,
@@ -149,6 +150,8 @@ public class CinemaHallService : ICinemaHallService
 
         return new CinemaHallDto(
             hall.Id,
+            hall.CinemaId,
+            hall.Cinema?.Name ?? string.Empty,
             hall.Name,
             hall.TotalSeats,
             seatLayout,

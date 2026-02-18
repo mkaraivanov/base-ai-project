@@ -13,12 +13,13 @@ public class ShowtimeRepository : IShowtimeRepository
         _context = context;
     }
 
-    public async Task<List<Showtime>> GetAllAsync(DateTime? fromDate = null, DateTime? toDate = null, CancellationToken ct = default)
+    public async Task<List<Showtime>> GetAllAsync(DateTime? fromDate = null, DateTime? toDate = null, Guid? cinemaId = null, CancellationToken ct = default)
     {
         var query = _context.Showtimes
             .AsNoTracking()
             .Include(s => s.Movie)
             .Include(s => s.CinemaHall)
+                .ThenInclude(h => h!.Cinema)
             .Where(s => s.IsActive);
 
         if (fromDate.HasValue)
@@ -31,18 +32,31 @@ public class ShowtimeRepository : IShowtimeRepository
             query = query.Where(s => s.StartTime <= toDate.Value);
         }
 
+        if (cinemaId.HasValue)
+        {
+            query = query.Where(s => s.CinemaHall!.CinemaId == cinemaId.Value);
+        }
+
         return await query
             .OrderBy(s => s.StartTime)
             .ToListAsync(ct);
     }
 
-    public async Task<List<Showtime>> GetByMovieIdAsync(Guid movieId, CancellationToken ct = default)
+    public async Task<List<Showtime>> GetByMovieIdAsync(Guid movieId, Guid? cinemaId = null, CancellationToken ct = default)
     {
-        return await _context.Showtimes
+        var query = _context.Showtimes
             .AsNoTracking()
             .Include(s => s.Movie)
             .Include(s => s.CinemaHall)
-            .Where(s => s.MovieId == movieId && s.IsActive)
+                .ThenInclude(h => h!.Cinema)
+            .Where(s => s.MovieId == movieId && s.IsActive);
+
+        if (cinemaId.HasValue)
+        {
+            query = query.Where(s => s.CinemaHall!.CinemaId == cinemaId.Value);
+        }
+
+        return await query
             .OrderBy(s => s.StartTime)
             .ToListAsync(ct);
     }
@@ -53,6 +67,7 @@ public class ShowtimeRepository : IShowtimeRepository
             .AsNoTracking()
             .Include(s => s.Movie)
             .Include(s => s.CinemaHall)
+                .ThenInclude(h => h!.Cinema)
             .FirstOrDefaultAsync(s => s.Id == id, ct);
     }
 

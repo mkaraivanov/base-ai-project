@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { hallApi } from '../../api/hallApi';
-import type { CinemaHallDto, CreateCinemaHallDto, UpdateCinemaHallDto, SeatLayout, SeatDefinition } from '../../types';
+import { cinemaApi } from '../../api/cinemaApi';
+import type { CinemaDto, CinemaHallDto, CreateCinemaHallDto, UpdateCinemaHallDto, SeatLayout, SeatDefinition } from '../../types';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 interface HallFormData {
+  cinemaId: string;
   name: string;
   rows: string;
   seatsPerRow: string;
@@ -11,6 +13,7 @@ interface HallFormData {
 }
 
 const EMPTY_FORM: HallFormData = {
+  cinemaId: '',
   name: '',
   rows: '8',
   seatsPerRow: '10',
@@ -38,6 +41,8 @@ const generateSeatLayout = (rows: number, seatsPerRow: number): SeatLayout => {
 
 export const HallsManagementPage: React.FC = () => {
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
+  const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
+  const [filterCinemaId, setFilterCinemaId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -45,10 +50,19 @@ export const HallsManagementPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const loadCinemas = async () => {
+    try {
+      const data = await cinemaApi.getAll(true);
+      setCinemas(data);
+    } catch {
+      // non-blocking
+    }
+  };
+
   const loadHalls = async () => {
     try {
       setLoading(true);
-      const data = await hallApi.getAll(false);
+      const data = await hallApi.getAll(false, filterCinemaId || undefined);
       setHalls(data);
     } catch {
       setError('Failed to load halls');
@@ -58,13 +72,18 @@ export const HallsManagementPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadHalls();
+    loadCinemas();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    loadHalls();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterCinemaId]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
-      setForm((prev) => ({ ...prev, [name]: e.target.checked }));
+      setForm((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -72,7 +91,7 @@ export const HallsManagementPage: React.FC = () => {
 
   const handleCreate = () => {
     setEditingId(null);
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, cinemaId: cinemas[0]?.id ?? '' });
     setShowForm(true);
     setError(null);
   };
@@ -80,6 +99,7 @@ export const HallsManagementPage: React.FC = () => {
   const handleEdit = (hall: CinemaHallDto) => {
     setEditingId(hall.id);
     setForm({
+      cinemaId: hall.cinemaId,
       name: hall.name,
       rows: hall.seatLayout.rows.toString(),
       seatsPerRow: hall.seatLayout.seatsPerRow.toString(),
@@ -119,6 +139,7 @@ export const HallsManagementPage: React.FC = () => {
         await hallApi.update(editingId, updateData);
       } else {
         const createData: CreateCinemaHallDto = {
+          cinemaId: form.cinemaId,
           name: form.name,
           seatLayout,
         };
@@ -151,6 +172,20 @@ export const HallsManagementPage: React.FC = () => {
           </button>
         </div>
 
+        <div className="filters">
+          <select
+            value={filterCinemaId}
+            onChange={(e) => setFilterCinemaId(e.target.value)}
+            className="input"
+            style={{ maxWidth: 260 }}
+          >
+            <option value="">All Cinemas</option>
+            {cinemas.map((c) => (
+              <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
+            ))}
+          </select>
+        </div>
+
         {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         {showForm && (
@@ -158,8 +193,19 @@ export const HallsManagementPage: React.FC = () => {
             <div className="modal" onClick={(e) => e.stopPropagation()}>
               <h2>{editingId ? 'Edit Hall' : 'Add Hall'}</h2>
               <form onSubmit={handleSubmit} className="form">
+                {!editingId && (
+                  <div className="form-group">
+                    <label htmlFor="cinemaId">Cinema *</label>
+                    <select id="cinemaId" name="cinemaId" value={form.cinemaId} onChange={handleInputChange} className="input" required>
+                      <option value="">Select Cinema</option>
+                      {cinemas.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="form-group">
-                  <label htmlFor="name">Hall Name</label>
+                  <label htmlFor="name">Hall Name *</label>
                   <input id="name" name="name" value={form.name} onChange={handleInputChange} className="input" required />
                 </div>
                 <div className="form-row">
@@ -177,7 +223,7 @@ export const HallsManagementPage: React.FC = () => {
                   <div className="form-group form-check">
                     <label>
                       <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleInputChange} />
-                      Active
+                      {' '}Active
                     </label>
                   </div>
                 )}
@@ -196,6 +242,7 @@ export const HallsManagementPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
+                <th>Cinema</th>
                 <th>Name</th>
                 <th>Total Seats</th>
                 <th>Layout</th>
@@ -206,6 +253,7 @@ export const HallsManagementPage: React.FC = () => {
             <tbody>
               {halls.map((hall) => (
                 <tr key={hall.id}>
+                  <td>{hall.cinemaName}</td>
                   <td>{hall.name}</td>
                   <td>{hall.totalSeats}</td>
                   <td>{hall.seatLayout.rows} x {hall.seatLayout.seatsPerRow}</td>

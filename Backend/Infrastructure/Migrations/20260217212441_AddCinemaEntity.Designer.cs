@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CinemaDbContext))]
-    partial class CinemaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260217212441_AddCinemaEntity")]
+    partial class AddCinemaEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,40 +73,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId", "Status");
 
                     b.ToTable("Bookings");
-                });
-
-            modelBuilder.Entity("Domain.Entities.BookingTicket", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SeatNumber")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<decimal>("SeatPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<Guid>("TicketTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("TicketTypeId");
-
-                    b.ToTable("BookingTickets");
                 });
 
             modelBuilder.Entity("Domain.Entities.Cinema", b =>
@@ -166,95 +135,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Name", "City");
 
                     b.ToTable("Cinemas");
-                });
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-<<<<<<< HEAD
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SeatNumber")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<decimal>("SeatPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<Guid>("TicketTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("TicketTypeId");
-
-                    b.ToTable("BookingTickets");
-=======
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<TimeOnly>("CloseTime")
-                        .HasColumnType("time");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LogoUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<TimeOnly>("OpenTime")
-                        .HasColumnType("time");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("Name", "City");
-
-                    b.ToTable("Cinemas");
->>>>>>> 0299ae64453c3bad2e735f13669906f15ac56d41
                 });
 
             modelBuilder.Entity("Domain.Entities.CinemaHall", b =>
@@ -435,40 +315,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Reservations");
                 });
 
-            modelBuilder.Entity("Domain.Entities.ReservationTicket", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ReservationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SeatNumber")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<decimal>("SeatPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<Guid>("TicketTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReservationId");
-
-                    b.HasIndex("TicketTypeId");
-
-                    b.ToTable("ReservationTickets");
-                });
-
             modelBuilder.Entity("Domain.Entities.Seat", b =>
                 {
                     b.Property<Guid>("Id")
@@ -561,76 +407,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Showtimes");
                 });
 
-            modelBuilder.Entity("Domain.Entities.TicketType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("PriceModifier")
-                        .HasPrecision(5, 4)
-                        .HasColumnType("decimal(5,4)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("SortOrder");
-
-                    b.ToTable("TicketTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Standard adult ticket",
-                            IsActive = true,
-                            Name = "Adult",
-                            PriceModifier = 1.0m,
-                            SortOrder = 1
-                        },
-                        new
-                        {
-                            Id = new Guid("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Children ticket (up to 12 years) — 50% discount",
-                            IsActive = true,
-                            Name = "Children",
-                            PriceModifier = 0.5m,
-                            SortOrder = 2
-                        },
-                        new
-                        {
-                            Id = new Guid("c3d4e5f6-a7b8-9012-cdef-123456789012"),
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Senior ticket (65+) — 25% discount",
-                            IsActive = true,
-                            Name = "Senior",
-                            PriceModifier = 0.75m,
-                            SortOrder = 3
-                        });
-                });
-
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -701,23 +477,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.BookingTicket", b =>
-                {
-                    b.HasOne("Domain.Entities.Booking", null)
-                        .WithMany("Tickets")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.TicketType", "TicketType")
-                        .WithMany()
-                        .HasForeignKey("TicketTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("TicketType");
-                });
-
             modelBuilder.Entity("Domain.Entities.CinemaHall", b =>
                 {
                     b.HasOne("Domain.Entities.Cinema", "Cinema")
@@ -727,7 +486,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Cinema");
-                });
                 });
 
             modelBuilder.Entity("Domain.Entities.Payment", b =>
@@ -758,17 +516,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Showtime");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entities.ReservationTicket", b =>
-                {
-                    b.HasOne("Domain.Entities.TicketType", "TicketType")
-                        .WithMany()
-                        .HasForeignKey("TicketTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("TicketType");
                 });
 
             modelBuilder.Entity("Domain.Entities.Seat", b =>
@@ -804,8 +551,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Booking", b =>
                 {
                     b.Navigation("Payment");
-
-                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("Domain.Entities.Cinema", b =>

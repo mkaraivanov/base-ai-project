@@ -115,7 +115,14 @@ public class BookingServiceTests
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Showtime { Id = showtimeId, StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime, MovieId = Guid.NewGuid(), CinemaHallId = Guid.NewGuid(), BasePrice = 10m, IsActive = true });
+            .ReturnsAsync(new Showtime {
+                Id = showtimeId,
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true
+            });
 
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
@@ -141,7 +148,14 @@ public class BookingServiceTests
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Showtime { Id = showtimeId, StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime, MovieId = Guid.NewGuid(), CinemaHallId = Guid.NewGuid(), BasePrice = 10m, IsActive = true });
+            .ReturnsAsync(new Showtime {
+                Id = showtimeId,
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true
+            });
 
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
@@ -167,7 +181,14 @@ public class BookingServiceTests
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Showtime { Id = showtimeId, StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime, MovieId = Guid.NewGuid(), CinemaHallId = Guid.NewGuid(), BasePrice = 10m, IsActive = true });
+            .ReturnsAsync(new Showtime {
+                Id = showtimeId,
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true
+            });
 
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
@@ -661,8 +682,8 @@ public class BookingServiceTests
             .Setup(x => x.GetByReservationIdAsync(reservationId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Seat>
             {
-                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").WithReservationId(reservationId).Build(),
-                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A2").WithReservationId(reservationId).Build()
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").AsReserved(reservationId, DateTime.UtcNow.AddMinutes(10)).Build(),
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A2").AsReserved(reservationId, DateTime.UtcNow.AddMinutes(10)).Build()
             });
 
         // Act

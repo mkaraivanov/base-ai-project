@@ -34,6 +34,7 @@ builder.Services.AddDbContext<CinemaDbContext>(options =>
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<ICinemaRepository, CinemaRepository>();
 builder.Services.AddScoped<ICinemaHallRepository, CinemaHallRepository>();
 builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
@@ -47,6 +48,7 @@ builder.Services.AddScoped<IBookingTicketRepository, BookingTicketRepository>();
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<ICinemaService, CinemaService>();
 builder.Services.AddScoped<ICinemaHallService, CinemaHallService>();
 builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddScoped<IPaymentService, MockPaymentService>();
@@ -133,6 +135,10 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
 app.MapGroup("/api/auth")
     .MapAuthEndpoints()
     .WithTags("Authentication");
+
+app.MapGroup("/api/cinemas")
+    .MapCinemaEndpoints()
+    .WithTags("Cinemas");
 
 app.MapGroup("/api/movies")
     .MapMovieEndpoints()

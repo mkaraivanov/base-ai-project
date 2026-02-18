@@ -38,10 +38,11 @@ public static class ShowtimeEndpoints
     private static async Task<IResult> GetShowtimesAsync(
         DateTime? fromDate,
         DateTime? toDate,
+        Guid? cinemaId,
         IShowtimeService showtimeService,
         CancellationToken ct)
     {
-        var result = await showtimeService.GetShowtimesAsync(fromDate, toDate, ct);
+        var result = await showtimeService.GetShowtimesAsync(fromDate, toDate, cinemaId, ct);
 
         return result.IsSuccess
             ? Results.Ok(new ApiResponse<List<ShowtimeDto>>(true, result.Value, null))
@@ -62,10 +63,11 @@ public static class ShowtimeEndpoints
 
     private static async Task<IResult> GetShowtimesByMovieAsync(
         Guid movieId,
+        Guid? cinemaId,
         IShowtimeService showtimeService,
         CancellationToken ct)
     {
-        var result = await showtimeService.GetShowtimesByMovieAsync(movieId, ct);
+        var result = await showtimeService.GetShowtimesByMovieAsync(movieId, cinemaId, ct);
 
         return result.IsSuccess
             ? Results.Ok(new ApiResponse<List<ShowtimeDto>>(true, result.Value, null))

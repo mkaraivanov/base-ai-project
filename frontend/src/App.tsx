@@ -6,7 +6,9 @@ import { Navbar } from './components/Layout/Navbar';
 import { Footer } from './components/Layout/Footer';
 
 // Customer pages
-import { HomePage } from './pages/customer/HomePage';
+import { CinemaSelectionPage } from './pages/customer/CinemaSelectionPage';
+import { CinemaMoviesPage } from './pages/customer/CinemaMoviesPage';
+import { CinemaMovieDetailPage } from './pages/customer/CinemaMovieDetailPage';
 import { MoviesPage } from './pages/customer/MoviesPage';
 import { MovieDetailPage } from './pages/customer/MovieDetailPage';
 import { SeatSelectionPage } from './pages/customer/SeatSelectionPage';
@@ -16,6 +18,7 @@ import { MyBookingsPage } from './pages/customer/MyBookingsPage';
 
 // Admin pages
 import { DashboardPage } from './pages/admin/DashboardPage';
+import { CinemasManagementPage } from './pages/admin/CinemasManagementPage';
 import { MoviesManagementPage } from './pages/admin/MoviesManagementPage';
 import { HallsManagementPage } from './pages/admin/HallsManagementPage';
 import { ShowtimesManagementPage } from './pages/admin/ShowtimesManagementPage';
@@ -46,7 +49,9 @@ const AppRoutes: React.FC = () => {
       <main className="main-content">
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<CinemaSelectionPage />} />
+          <Route path="/cinemas/:cinemaId/movies" element={<CinemaMoviesPage />} />
+          <Route path="/cinemas/:cinemaId/movies/:movieId" element={<CinemaMovieDetailPage />} />
           <Route path="/movies" element={<MoviesPage />} />
           <Route path="/movies/:movieId" element={<MovieDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -92,6 +97,14 @@ const AppRoutes: React.FC = () => {
             element={
               <AdminRoute>
                 <DashboardPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/cinemas"
+            element={
+              <AdminRoute>
+                <CinemasManagementPage />
               </AdminRoute>
             }
           />

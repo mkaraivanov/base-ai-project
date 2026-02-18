@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { showtimeApi } from '../../api/showtimeApi';
 import { movieApi } from '../../api/movieApi';
 import { hallApi } from '../../api/hallApi';
-import type { ShowtimeDto, MovieDto, CinemaHallDto, CreateShowtimeDto } from '../../types';
+import { cinemaApi } from '../../api/cinemaApi';
+import type { ShowtimeDto, MovieDto, CinemaHallDto, CinemaDto, CreateShowtimeDto } from '../../types';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 interface ShowtimeFormData {
   movieId: string;
+  formCinemaId: string;
   cinemaHallId: string;
   startTime: string;
   basePrice: string;
@@ -15,6 +17,7 @@ interface ShowtimeFormData {
 
 const EMPTY_FORM: ShowtimeFormData = {
   movieId: '',
+  formCinemaId: '',
   cinemaHallId: '',
   startTime: '',
   basePrice: '',
@@ -24,23 +27,28 @@ export const ShowtimesManagementPage: React.FC = () => {
   const [showtimes, setShowtimes] = useState<readonly ShowtimeDto[]>([]);
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
+  const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
+  const [filterCinemaId, setFilterCinemaId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<ShowtimeFormData>(EMPTY_FORM);
+  const [filteredHalls, setFilteredHalls] = useState<readonly CinemaHallDto[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const loadData = async () => {
+  const loadData = async (cinemaId?: string) => {
     try {
       setLoading(true);
-      const [showtimeData, movieData, hallData] = await Promise.all([
-        showtimeApi.getAll(),
+      const [showtimeData, movieData, hallData, cinemaData] = await Promise.all([
+        showtimeApi.getAll(undefined, undefined, cinemaId || undefined),
         movieApi.getAll(true),
         hallApi.getAll(true),
+        cinemaApi.getAll(true),
       ]);
       setShowtimes(showtimeData);
       setMovies(movieData);
       setHalls(hallData);
+      setCinemas(cinemaData);
     } catch {
       setError('Failed to load data');
     } finally {
@@ -49,14 +57,31 @@ export const ShowtimesManagementPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData(filterCinemaId || undefined);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterCinemaId]);
+
+  // Filter halls for form when cinema selection changes
+  useEffect(() => {
+    if (form.formCinemaId) {
+      setFilteredHalls(halls.filter((h) => h.cinemaId === form.formCinemaId));
+    } else {
+      setFilteredHalls(halls);
+    }
+  }, [form.formCinemaId, halls]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value };
+      // Reset hall selection when cinema changes
+      if (name === 'formCinemaId') {
+        updated.cinemaHallId = '';
+      }
+      return updated;
+    });
   };
 
   const handleCreate = () => {
@@ -69,7 +94,7 @@ export const ShowtimesManagementPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to delete this showtime?')) return;
     try {
       await showtimeApi.delete(id);
-      await loadData();
+      await loadData(filterCinemaId || undefined);
     } catch (err: unknown) {
       const message = extractErrorMessage(err, 'Failed to delete showtime');
       setError(message);
@@ -91,7 +116,7 @@ export const ShowtimesManagementPage: React.FC = () => {
       await showtimeApi.create(createData);
       setShowForm(false);
       setForm(EMPTY_FORM);
-      await loadData();
+      await loadData(filterCinemaId || undefined);
     } catch (err: unknown) {
       const message = extractErrorMessage(err, 'Failed to create showtime');
       setError(message);
@@ -112,6 +137,20 @@ export const ShowtimesManagementPage: React.FC = () => {
           </button>
         </div>
 
+        <div className="filters">
+          <select
+            value={filterCinemaId}
+            onChange={(e) => setFilterCinemaId(e.target.value)}
+            className="input"
+            style={{ maxWidth: 260 }}
+          >
+            <option value="">All Cinemas</option>
+            {cinemas.map((c) => (
+              <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
+            ))}
+          </select>
+        </div>
+
         {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         {showForm && (
@@ -129,13 +168,25 @@ export const ShowtimesManagementPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="form-group">
+                  <label htmlFor="formCinemaId">Cinema</label>
+                  <select id="formCinemaId" name="formCinemaId" value={form.formCinemaId} onChange={handleInputChange} className="input" required>
+                    <option value="">Select a cinema</option>
+                    {cinemas.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
                   <label htmlFor="cinemaHallId">Cinema Hall</label>
-                  <select id="cinemaHallId" name="cinemaHallId" value={form.cinemaHallId} onChange={handleInputChange} className="input" required>
+                  <select id="cinemaHallId" name="cinemaHallId" value={form.cinemaHallId} onChange={handleInputChange} className="input" required disabled={!form.formCinemaId}>
                     <option value="">Select a hall</option>
-                    {halls.map((hall) => (
+                    {filteredHalls.map((hall) => (
                       <option key={hall.id} value={hall.id}>{hall.name} ({hall.totalSeats} seats)</option>
                     ))}
                   </select>
+                  {form.formCinemaId && filteredHalls.length === 0 && (
+                    <p className="form-help" style={{ color: '#e53e3e' }}>No active halls for this cinema.</p>
+                  )}
                 </div>
                 <div className="form-row">
                   <div className="form-group">
@@ -163,6 +214,7 @@ export const ShowtimesManagementPage: React.FC = () => {
             <thead>
               <tr>
                 <th>Movie</th>
+                <th>Cinema</th>
                 <th>Hall</th>
                 <th>Start Time</th>
                 <th>Base Price</th>
@@ -175,6 +227,7 @@ export const ShowtimesManagementPage: React.FC = () => {
               {showtimes.map((showtime) => (
                 <tr key={showtime.id}>
                   <td>{showtime.movieTitle}</td>
+                  <td>{showtime.cinemaName}</td>
                   <td>{showtime.hallName}</td>
                   <td>{formatDateTime(showtime.startTime)}</td>
                   <td>{formatCurrency(showtime.basePrice)}</td>

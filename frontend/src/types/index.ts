@@ -6,6 +6,49 @@ export interface ApiResponse<T> {
   readonly errors?: readonly string[];
 }
 
+// Cinemas
+export interface CinemaDto {
+  readonly id: string;
+  readonly name: string;
+  readonly address: string;
+  readonly city: string;
+  readonly country: string;
+  readonly phoneNumber: string | null;
+  readonly email: string | null;
+  readonly logoUrl: string | null;
+  readonly openTime: string;
+  readonly closeTime: string;
+  readonly isActive: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly hallCount: number;
+}
+
+export interface CreateCinemaDto {
+  readonly name: string;
+  readonly address: string;
+  readonly city: string;
+  readonly country: string;
+  readonly phoneNumber: string | null;
+  readonly email: string | null;
+  readonly logoUrl: string | null;
+  readonly openTime: string;
+  readonly closeTime: string;
+}
+
+export interface UpdateCinemaDto {
+  readonly name: string;
+  readonly address: string;
+  readonly city: string;
+  readonly country: string;
+  readonly phoneNumber: string | null;
+  readonly email: string | null;
+  readonly logoUrl: string | null;
+  readonly openTime: string;
+  readonly closeTime: string;
+  readonly isActive: boolean;
+}
+
 // Auth
 export interface LoginDto {
   readonly email: string;
@@ -91,6 +134,8 @@ export interface SeatLayout {
 
 export interface CinemaHallDto {
   readonly id: string;
+  readonly cinemaId: string;
+  readonly cinemaName: string;
   readonly name: string;
   readonly totalSeats: number;
   readonly seatLayout: SeatLayout;
@@ -99,6 +144,7 @@ export interface CinemaHallDto {
 }
 
 export interface CreateCinemaHallDto {
+  readonly cinemaId: string;
   readonly name: string;
   readonly seatLayout: SeatLayout;
 }
@@ -116,6 +162,8 @@ export interface ShowtimeDto {
   readonly movieTitle: string;
   readonly cinemaHallId: string;
   readonly hallName: string;
+  readonly cinemaId: string;
+  readonly cinemaName: string;
   readonly startTime: string;
   readonly endTime: string;
   readonly basePrice: number;

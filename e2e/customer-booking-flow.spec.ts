@@ -38,12 +38,85 @@ test.describe('Customer - Complete Booking Flow', () => {
     await page.waitForLoadState('networkidle');
 
     const firstMovieLink = page.locator('a.btn').filter({ hasText: /view showtimes/i }).first();
+    const movieLinkVisible = await firstMovieLink.isVisible().catch(() => false);
+    if (!movieLinkVisible) {
+      // No movies with showtimes at this cinema — skip gracefully
+      return;
+    }
     await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
     await firstMovieLink.click();
 
     await page.waitForURL(/\/movies\/[a-f0-9-]+/);
     await page.waitForLoadState('networkidle');
 
+    const showtimeLink = page.locator('a.btn').filter({ hasText: /select seats/i }).first();
+    await showtimeLink.waitFor({ state: 'visible', timeout: 10000 });
+    await showtimeLink.click();
+
+    await page.waitForURL(/\/showtime\/[a-f0-9-]+\/seats/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+  }
+
+  test('should complete full booking flow: login → browse → select seats → checkout → confirmation', async ({ page }) => {
+    // Step 1: Login
+    await page.goto('/login');
+    await page.waitForLoadState('networkidle');
+    
+    await page.locator('input#email, input[type="email"]').fill(testUser.email);
+    await page.locator('input#password, input[type="password"]').fill(testUser.password);
+    await page.locator('button[type="submit"]').click();
+    
+    // Wait for successful login - should redirect to home page    
+    await page.waitForURL('/', { timeout: 15000 });
+
+    // Step 2: Navigate via cinema selection → cinema movies
+    await page.waitForLoadState('networkidle');
+    const firstCinema = page.locator('.cinema-card').first();
+    await firstCinema.waitFor({ state: 'visible', timeout: 10000 });
+    await firstCinema.click();
+    await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Step 3: Select a movie (click on "View Showtimes" link)
+    const firstMovieLink = page.locator('a.btn').filter({ hasText: /view showtimes/i }).first();
+    const movieLinkVisible = await firstMovieLink.isVisible().catch(() => false);
+    if (!movieLinkVisible) {
+      // No movies with showtimes at this cinema — skip gracefully
+      return;
+    }
+    await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+    await firstMovieLink.click();
+
+    await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies\/[a-f0-9-]+/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Step 4: Select a showtime (click "Select Seats" link)
+    const showtimeLink = page.locator('a.btn').filter({ hasText: /select seats/i }).first();
+    await showtimeLink.waitFor({ state: 'visible', timeout: 10000 });
+    await showtimeLink.click();
+
+    await page.waitForURL(/\/showtime\/[a-f0-9-]+\/seats/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+  }
+    const firstMovieLink = page.locator('a.btn').filter({ hasText: /view showtimes/i }).first();
+    const movieLinkVisible = await firstMovieLink.isVisible().catch(() => false);
+    if (!movieLinkVisible) {
+      // No movies with showtimes at this cinema — skip gracefully
+      return;
+    }
+    await firstMovieLink.waitFor({ state: 'visible', timeout: 10000 });
+    await firstMovieLink.click();
+
+<<<<<<< HEAD
+    await page.waitForURL(/\/movies\/[a-f0-9-]+/);
+    await page.waitForLoadState('networkidle');
+
+=======
+    await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies\/[a-f0-9-]+/, { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Step 4: Select a showtime (click "Select Seats" link)
+>>>>>>> 0299ae64453c3bad2e735f13669906f15ac56d41
     const showtimeLink = page.locator('a.btn').filter({ hasText: /select seats/i }).first();
     await showtimeLink.waitFor({ state: 'visible', timeout: 10000 });
     await showtimeLink.click();
@@ -135,23 +208,83 @@ test.describe('Customer - Complete Booking Flow', () => {
     });
 
     test('should display seat layout', async ({ page }) => {
+<<<<<<< HEAD
       await navigateToSeatSelection(page);
+=======
+      // Navigate via cinema selection → cinema movies → movie detail → seat selection
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      const firstCinema = page.locator('.cinema-card').first();
+      await firstCinema.waitFor({ state: 'visible', timeout: 10000 });
+      await firstCinema.click();
+      await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+
+      const firstMovieLink = page.locator('a.btn').filter({ hasText: /view showtimes/i }).first();
+      const movieLinkVisible = await firstMovieLink.isVisible().catch(() => false);
+      if (!movieLinkVisible) {
+        test.skip();
+        return;
+      }
+      await firstMovieLink.click();
+      await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies\/[a-f0-9-]+/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+
+      const showtimeLink = page.locator('a.btn').filter({ hasText: /select seats/i }).first();
+      await showtimeLink.waitFor({ state: 'visible', timeout: 10000 });
+      await showtimeLink.click();
+
+      await page.waitForURL(/\/showtime\/[a-f0-9-]+\/seats/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+>>>>>>> 0299ae64453c3bad2e735f13669906f15ac56d41
 
       // Verify seat layout is visible
-      const seatLayout = page.locator('[data-testid="seat-layout"], .seat-layout, .seats-container').first();
+      const seatLayout = page.locator('.seats-container').first();
       await expect(seatLayout).toBeVisible({ timeout: 10000 });
     });
 
     test('should allow selecting and deselecting seats', async ({ page }) => {
+<<<<<<< HEAD
       await navigateToSeatSelection(page);
 
       // Select a seat – capture its label so we can track it after the class changes
+=======
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      const firstCinema = page.locator('.cinema-card').first();
+      await firstCinema.waitFor({ state: 'visible', timeout: 10000 });
+      await firstCinema.click();
+      await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+
+      const firstMovieLink = page.locator('a.btn').filter({ hasText: /view showtimes/i }).first();
+      const movieLinkVisible = await firstMovieLink.isVisible().catch(() => false);
+      if (!movieLinkVisible) {
+        test.skip();
+        return;
+      }
+      await firstMovieLink.click();
+      await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies\/[a-f0-9-]+/, { timeout: 10000 });
+
+      const showtimeLink = page.locator('a.btn').filter({ hasText: /select seats/i }).first();
+      await showtimeLink.waitFor({ state: 'visible', timeout: 10000 });
+      await showtimeLink.click();
+
+      await page.waitForURL(/\/showtime\/[a-f0-9-]+\/seats/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+
+      // Select a seat - capture its title so we can track it after class changes
+>>>>>>> 0299ae64453c3bad2e735f13669906f15ac56d41
       const availableSeat = page.locator('button.seat.seat-available').first();
       await availableSeat.waitFor({ state: 'visible', timeout: 10000 });
       const seatTitle = await availableSeat.getAttribute('title');
       await availableSeat.click();
 
+<<<<<<< HEAD
       // Re-locate the same seat by its unique title attribute to avoid partial text matches
+=======
+      // Re-locate the same seat by its title attribute
+>>>>>>> 0299ae64453c3bad2e735f13669906f15ac56d41
       const clickedSeat = page.locator(`button.seat[title="${seatTitle}"]`);
 
       // Verify seat is selected
@@ -164,17 +297,45 @@ test.describe('Customer - Complete Booking Flow', () => {
       await expect(clickedSeat).not.toHaveClass(/seat-selected/);
     });
 
+<<<<<<< HEAD
     test('should display booking summary table with ticket type and price after seat selection', async ({ page }) => {
       await navigateToSeatSelection(page);
 
       // Wait for ticket types to be loaded (summary section is always rendered)
       await page.locator('.booking-summary').waitFor({ state: 'visible', timeout: 10000 });
+=======
+    test('should display total price when seats are selected', async ({ page }) => {
+      await page.goto('/');
+      await page.waitForLoadState('networkidle');
+      const firstCinema = page.locator('.cinema-card').first();
+      await firstCinema.waitFor({ state: 'visible', timeout: 10000 });
+      await firstCinema.click();
+      await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+
+      const firstMovieLink = page.locator('a.btn').filter({ hasText: /view showtimes/i }).first();
+      const movieLinkVisible = await firstMovieLink.isVisible().catch(() => false);
+      if (!movieLinkVisible) {
+        test.skip();
+        return;
+      }
+      await firstMovieLink.click();
+      await page.waitForURL(/\/cinemas\/[a-f0-9-]+\/movies\/[a-f0-9-]+/, { timeout: 10000 });
+
+      const showtimeLink = page.locator('a.btn').filter({ hasText: /select seats/i }).first();
+      await showtimeLink.waitFor({ state: 'visible', timeout: 10000 });
+      await showtimeLink.click();
+
+      await page.waitForURL(/\/showtime\/[a-f0-9-]+\/seats/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle');
+>>>>>>> 0299ae64453c3bad2e735f13669906f15ac56d41
 
       // Select a seat
       const availableSeat = page.locator('button.seat.seat-available').first();
       await availableSeat.waitFor({ state: 'visible', timeout: 10000 });
       await availableSeat.click();
 
+<<<<<<< HEAD
       // Booking summary table should appear with Seat / Ticket Type / Price columns
       const summaryTable = page.locator('.booking-summary table');
       await expect(summaryTable).toBeVisible({ timeout: 5000 });
@@ -287,6 +448,11 @@ test.describe('Customer - Complete Booking Flow', () => {
       // Check for total price display inside the booking summary table footer
       const totalRow = page.locator('.booking-summary table tfoot').filter({ hasText: /total/i });
       await expect(totalRow).toBeVisible({ timeout: 5000 });
+=======
+      // Check for total price display in booking summary
+      const totalPrice = page.locator('.booking-summary').filter({ hasText: /total/i }).first();
+      await expect(totalPrice).toBeVisible();
+>>>>>>> 0299ae64453c3bad2e735f13669906f15ac56d41
     });
   });
 

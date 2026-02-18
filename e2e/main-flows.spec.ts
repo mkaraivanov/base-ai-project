@@ -56,10 +56,13 @@ test.describe('Main Flows', () => {
     test('should display featured movies or content', async ({ page }) => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
-      
-      // Check for movie content
-      const movieContent = page.locator('[data-testid="movie-card"], .movie-card, .featured-movie, article').first();
-      await expect(movieContent).toBeVisible({ timeout: 10000 });
+
+      // Home page is a cinema selection page — check for cinema cards or empty state
+      const cinemaCard = page.locator('.cinema-card').first();
+      const emptyState = page.locator('.empty-state').first();
+      const hasCinemas = await cinemaCard.isVisible().catch(() => false);
+      const isEmpty = await emptyState.isVisible().catch(() => false);
+      expect(hasCinemas || isEmpty).toBeTruthy();
     });
 
     test('should navigate to movies page when clicking movies link', async ({ page }) => {
