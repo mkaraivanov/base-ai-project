@@ -22,6 +22,9 @@ public class CinemaDbContext : DbContext
     public DbSet<TicketType> TicketTypes => Set<TicketType>();
     public DbSet<ReservationTicket> ReservationTickets => Set<ReservationTicket>();
     public DbSet<BookingTicket> BookingTickets => Set<BookingTicket>();
+    public DbSet<LoyaltyCard> LoyaltyCards => Set<LoyaltyCard>();
+    public DbSet<LoyaltyVoucher> LoyaltyVouchers => Set<LoyaltyVoucher>();
+    public DbSet<LoyaltySettings> LoyaltySettings => Set<LoyaltySettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -398,6 +401,43 @@ public class CinemaDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.BookingId);
+        });
+
+        // LoyaltyCard configuration
+        modelBuilder.Entity<LoyaltyCard>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.UserId).IsUnique();
+
+            entity.HasMany(e => e.Vouchers)
+                .WithOne(v => v.LoyaltyCard)
+                .HasForeignKey(v => v.LoyaltyCardId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // LoyaltyVoucher configuration
+        modelBuilder.Entity<LoyaltyVoucher>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Code)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.HasIndex(e => new { e.UserId, e.IsUsed });
+        });
+
+        // LoyaltySettings configuration
+        modelBuilder.Entity<LoyaltySettings>(entity =>
+        {
+            entity.HasKey(e => e.Id);
         });
     }
 }

@@ -25,6 +25,7 @@ public class BookingService : IBookingService
     private readonly IReservationTicketRepository _reservationTicketRepository;
     private readonly IBookingTicketRepository _bookingTicketRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILoyaltyService _loyaltyService;
     private readonly ILogger<BookingService> _logger;
     private readonly TimeProvider _timeProvider;
 
@@ -39,6 +40,7 @@ public class BookingService : IBookingService
         IReservationTicketRepository reservationTicketRepository,
         IBookingTicketRepository bookingTicketRepository,
         IUnitOfWork unitOfWork,
+        ILoyaltyService loyaltyService,
         ILogger<BookingService> logger,
         TimeProvider? timeProvider = null)
     {
@@ -52,6 +54,7 @@ public class BookingService : IBookingService
         _reservationTicketRepository = reservationTicketRepository;
         _bookingTicketRepository = bookingTicketRepository;
         _unitOfWork = unitOfWork;
+        _loyaltyService = loyaltyService;
         _logger = logger;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
@@ -458,6 +461,10 @@ public class BookingService : IBookingService
                 "Booking confirmed: {BookingNumber} for user {UserId}",
                 bookingNumber,
                 userId);
+
+            // Award loyalty stamp for successful booking (runs outside transaction so a
+            // loyalty failure never rolls back the booking)
+            await _loyaltyService.AddStampAsync(userId, ct);
 
             var showtime = await _showtimeRepository.GetByIdAsync(booking.ShowtimeId, ct);
 
