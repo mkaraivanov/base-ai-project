@@ -8,6 +8,7 @@ public record BookingDto(
     DateTime ShowtimeStart,
     string HallName,
     List<string> SeatNumbers,
+    IReadOnlyList<TicketLineItemDto> Tickets,
     decimal TotalAmount,
     string Status,
     DateTime BookedAt,

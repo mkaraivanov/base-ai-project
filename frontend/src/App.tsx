@@ -22,6 +22,7 @@ import { CinemasManagementPage } from './pages/admin/CinemasManagementPage';
 import { MoviesManagementPage } from './pages/admin/MoviesManagementPage';
 import { HallsManagementPage } from './pages/admin/HallsManagementPage';
 import { ShowtimesManagementPage } from './pages/admin/ShowtimesManagementPage';
+import { TicketTypesManagementPage } from './pages/admin/TicketTypesManagementPage';
 
 // Auth pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -128,6 +129,14 @@ const AppRoutes: React.FC = () => {
             element={
               <AdminRoute>
                 <ShowtimesManagementPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/ticket-types"
+            element={
+              <AdminRoute>
+                <TicketTypesManagementPage />
               </AdminRoute>
             }
           />

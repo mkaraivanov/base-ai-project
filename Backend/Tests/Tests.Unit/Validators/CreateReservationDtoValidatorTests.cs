@@ -20,7 +20,7 @@ public class CreateReservationDtoValidatorTests
         // Arrange
         var dto = new CreateReservationDto(
             Guid.NewGuid(),
-            new List<string> { "A1", "A2", "B3" }
+            new List<SeatSelectionDto> { new("A1", Guid.NewGuid()), new("A2", Guid.NewGuid()), new("B3", Guid.NewGuid()) }
         );
 
         // Act
@@ -36,7 +36,7 @@ public class CreateReservationDtoValidatorTests
         // Arrange
         var dto = new CreateReservationDto(
             Guid.Empty,
-            new List<string> { "A1" }
+            new List<SeatSelectionDto> { new("A1", Guid.NewGuid()) }
         );
 
         // Act
@@ -53,14 +53,14 @@ public class CreateReservationDtoValidatorTests
         // Arrange
         var dto = new CreateReservationDto(
             Guid.NewGuid(),
-            new List<string>()
+            new List<SeatSelectionDto>()
         );
 
         // Act
         var result = _validator.TestValidate(dto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.SeatNumbers)
+        result.ShouldHaveValidationErrorFor(x => x.Seats)
             .WithErrorMessage("At least one seat must be selected");
     }
 
@@ -68,14 +68,14 @@ public class CreateReservationDtoValidatorTests
     public void Validate_MoreThan10Seats_ShouldHaveValidationError()
     {
         // Arrange
-        var seats = Enumerable.Range(1, 11).Select(i => $"A{i}").ToList();
+        var seats = Enumerable.Range(1, 11).Select(i => new SeatSelectionDto($"A{i}", Guid.NewGuid())).ToList();
         var dto = new CreateReservationDto(Guid.NewGuid(), seats);
 
         // Act
         var result = _validator.TestValidate(dto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.SeatNumbers)
+        result.ShouldHaveValidationErrorFor(x => x.Seats)
             .WithErrorMessage("Cannot reserve more than 10 seats at once");
     }
 
@@ -85,14 +85,14 @@ public class CreateReservationDtoValidatorTests
         // Arrange
         var dto = new CreateReservationDto(
             Guid.NewGuid(),
-            new List<string> { "A1", "A2", "A1" }
+            new List<SeatSelectionDto> { new("A1", Guid.NewGuid()), new("A2", Guid.NewGuid()), new("A1", Guid.NewGuid()) }
         );
 
         // Act
         var result = _validator.TestValidate(dto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.SeatNumbers)
+        result.ShouldHaveValidationErrorFor(x => x.Seats)
             .WithErrorMessage("Duplicate seat numbers are not allowed");
     }
 
@@ -108,14 +108,14 @@ public class CreateReservationDtoValidatorTests
         // Arrange
         var dto = new CreateReservationDto(
             Guid.NewGuid(),
-            new List<string> { invalidSeat }
+            new List<SeatSelectionDto> { new(invalidSeat, Guid.NewGuid()) }
         );
 
         // Act
         var result = _validator.TestValidate(dto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.SeatNumbers);
+        result.ShouldHaveValidationErrorFor("Seats[0].SeatNumber");
     }
 
     [Theory]
@@ -128,7 +128,7 @@ public class CreateReservationDtoValidatorTests
         // Arrange
         var dto = new CreateReservationDto(
             Guid.NewGuid(),
-            new List<string> { validSeat }
+            new List<SeatSelectionDto> { new(validSeat, Guid.NewGuid()) }
         );
 
         // Act

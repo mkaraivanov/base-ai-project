@@ -41,6 +41,9 @@ builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
+builder.Services.AddScoped<IReservationTicketRepository, ReservationTicketRepository>();
+builder.Services.AddScoped<IBookingTicketRepository, BookingTicketRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -50,6 +53,7 @@ builder.Services.AddScoped<ICinemaHallService, CinemaHallService>();
 builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddScoped<IPaymentService, MockPaymentService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Unit of Work
@@ -151,6 +155,10 @@ app.MapGroup("/api/showtimes")
 app.MapGroup("/api/bookings")
     .MapBookingEndpoints()
     .WithTags("Bookings");
+
+app.MapGroup("/api/ticket-types")
+    .MapTicketTypeEndpoints()
+    .WithTags("Ticket Types");
 
 app.Run();
 

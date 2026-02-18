@@ -21,6 +21,9 @@ public class BookingService : IBookingService
     private readonly IPaymentService _paymentService;
     private readonly IPaymentRepository _paymentRepository;
     private readonly IBookingRepository _bookingRepository;
+    private readonly ITicketTypeRepository _ticketTypeRepository;
+    private readonly IReservationTicketRepository _reservationTicketRepository;
+    private readonly IBookingTicketRepository _bookingTicketRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<BookingService> _logger;
     private readonly TimeProvider _timeProvider;
@@ -32,6 +35,9 @@ public class BookingService : IBookingService
         IPaymentService paymentService,
         IPaymentRepository paymentRepository,
         IBookingRepository bookingRepository,
+        ITicketTypeRepository ticketTypeRepository,
+        IReservationTicketRepository reservationTicketRepository,
+        IBookingTicketRepository bookingTicketRepository,
         IUnitOfWork unitOfWork,
         ILogger<BookingService> logger,
         TimeProvider? timeProvider = null)
@@ -42,6 +48,9 @@ public class BookingService : IBookingService
         _paymentService = paymentService;
         _paymentRepository = paymentRepository;
         _bookingRepository = bookingRepository;
+        _ticketTypeRepository = ticketTypeRepository;
+        _reservationTicketRepository = reservationTicketRepository;
+        _bookingTicketRepository = bookingTicketRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -118,8 +127,22 @@ public class BookingService : IBookingService
                 return Result<ReservationDto>.Failure("Cannot book past or ongoing showtimes");
             }
 
-            // Attempt to reserve seats (optimistic concurrency will catch conflicts)
-            var reserveResult = await ReserveSeatsAsync(dto.ShowtimeId, dto.SeatNumbers, ct);
+            // Validate ticket types
+            var ticketTypeIds = dto.Seats.Select(s => s.TicketTypeId).Distinct().ToList();
+            var ticketTypes = await _ticketTypeRepository.GetByIdsAsync(ticketTypeIds, ct);
+            var activeTypeIds = ticketTypes.Where(t => t.IsActive).Select(t => t.Id).ToHashSet();
+            var invalidTypeId = ticketTypeIds.FirstOrDefault(id => !activeTypeIds.Contains(id));
+            if (invalidTypeId != Guid.Empty && !activeTypeIds.Contains(invalidTypeId))
+            {
+                await _unitOfWork.RollbackTransactionAsync(ct);
+                return Result<ReservationDto>.Failure($"Ticket type not found or inactive: {invalidTypeId}");
+            }
+
+            var ticketTypeMap = ticketTypes.ToDictionary(t => t.Id);
+
+            // Extract seat numbers and attempt to reserve seats
+            var seatNumbers = dto.Seats.Select(s => s.SeatNumber).ToList();
+            var reserveResult = await ReserveSeatsAsync(dto.ShowtimeId, seatNumbers, ct);
 
             if (!reserveResult.IsSuccess)
             {
@@ -128,18 +151,39 @@ public class BookingService : IBookingService
             }
 
             var reservedSeats = reserveResult.Value!;
+            var seatMap = reservedSeats.ToDictionary(s => s.SeatNumber);
 
-            // Calculate total amount
-            var totalAmount = reservedSeats.Sum(s => s.Price);
+            // Build per-seat ticket line items
+            var reservationId = Guid.NewGuid();
+            var lineItems = dto.Seats.Select(selection =>
+            {
+                var seat = seatMap[selection.SeatNumber];
+                var ticketType = ticketTypeMap[selection.TicketTypeId];
+                var unitPrice = Math.Round(seat.Price * ticketType.PriceModifier, 2);
+                return new ReservationTicket
+                {
+                    Id = Guid.NewGuid(),
+                    ReservationId = reservationId,
+                    SeatNumber = selection.SeatNumber,
+                    TicketTypeId = selection.TicketTypeId,
+                    SeatPrice = seat.Price,
+                    UnitPrice = unitPrice,
+                    // Do NOT set the TicketType navigation property here – EF Core
+                    // would attempt to re-insert the already-tracked entity and
+                    // fail with a PK_TicketTypes duplicate-key constraint violation.
+                    // The FK (TicketTypeId) is sufficient for persistence.
+                };
+            }).ToList();
+
+            var totalAmount = lineItems.Sum(li => li.UnitPrice);
 
             // Create reservation
-            var reservationId = Guid.NewGuid();
             var reservation = new Reservation
             {
                 Id = reservationId,
                 UserId = userId,
                 ShowtimeId = dto.ShowtimeId,
-                SeatNumbers = dto.SeatNumbers,
+                SeatNumbers = seatNumbers,
                 TotalAmount = totalAmount,
                 ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(5).UtcDateTime,
                 Status = ReservationStatus.Pending,
@@ -151,6 +195,7 @@ public class BookingService : IBookingService
             await _seatRepository.UpdateRangeAsync(updatedSeats, ct);
 
             await _reservationRepository.CreateAsync(reservation, ct);
+            await _reservationTicketRepository.CreateRangeAsync(lineItems, ct);
 
             // Commit transaction
             await _unitOfWork.CommitTransactionAsync(ct);
@@ -159,12 +204,21 @@ public class BookingService : IBookingService
                 "Reservation created: {ReservationId} for user {UserId}, seats: {SeatNumbers}",
                 reservationId,
                 userId,
-                string.Join(", ", dto.SeatNumbers));
+                string.Join(", ", seatNumbers));
+
+            var ticketDtos = lineItems.Select(li => new TicketLineItemDto(
+                li.SeatNumber,
+                seatMap[li.SeatNumber].SeatType,
+                ticketTypeMap[li.TicketTypeId].Name,
+                li.SeatPrice,
+                li.UnitPrice
+            )).ToList();
 
             var resultDto = new ReservationDto(
                 reservation.Id,
                 reservation.ShowtimeId,
                 reservation.SeatNumbers,
+                ticketDtos,
                 reservation.TotalAmount,
                 reservation.ExpiresAt,
                 reservation.Status.ToString(),
@@ -376,6 +430,19 @@ public class BookingService : IBookingService
             await _bookingRepository.CreateAsync(booking, ct);
             await _paymentRepository.CreateAsync(payment, ct);
 
+            // Copy reservation tickets as booking tickets
+            var reservationTickets = await _reservationTicketRepository.GetByReservationIdAsync(dto.ReservationId, ct);
+            var bookingTickets = reservationTickets.Select(rt => new BookingTicket
+            {
+                Id = Guid.NewGuid(),
+                BookingId = bookingId,
+                SeatNumber = rt.SeatNumber,
+                TicketTypeId = rt.TicketTypeId,
+                SeatPrice = rt.SeatPrice,
+                UnitPrice = rt.UnitPrice
+            }).ToList();
+            await _bookingTicketRepository.CreateRangeAsync(bookingTickets, ct);
+
             // Update seat status to Booked
             var seats = await _seatRepository.GetByReservationIdAsync(dto.ReservationId, ct);
             var bookedSeats = seats.Select(s => s with
@@ -399,6 +466,21 @@ public class BookingService : IBookingService
                 userId);
 
             var showtime = await _showtimeRepository.GetByIdAsync(booking.ShowtimeId, ct);
+
+            // Load ticket types for response
+            var ticketTypeIds = reservationTickets.Select(rt => rt.TicketTypeId).Distinct().ToList();
+            var ticketTypes = await _ticketTypeRepository.GetByIdsAsync(ticketTypeIds, ct);
+            var ticketTypeNameMap = ticketTypes.ToDictionary(t => t.Id, t => t.Name);
+            var seatTypeMap = bookedSeats.ToDictionary(s => s.SeatNumber, s => s.SeatType);
+
+            var ticketLineDtos = reservationTickets.Select(rt => new TicketLineItemDto(
+                rt.SeatNumber,
+                seatTypeMap.GetValueOrDefault(rt.SeatNumber, string.Empty),
+                ticketTypeNameMap.GetValueOrDefault(rt.TicketTypeId, string.Empty),
+                rt.SeatPrice,
+                rt.UnitPrice
+            )).ToList();
+
             var resultDto = new BookingDto(
                 booking.Id,
                 booking.BookingNumber,
@@ -407,6 +489,7 @@ public class BookingService : IBookingService
                 showtime.StartTime,
                 showtime.CinemaHall!.Name,
                 booking.SeatNumbers,
+                ticketLineDtos,
                 booking.TotalAmount,
                 booking.Status.ToString(),
                 booking.BookedAt,
@@ -513,6 +596,7 @@ public class BookingService : IBookingService
                 showtime.StartTime,
                 showtime.CinemaHall!.Name,
                 cancelledBooking.SeatNumbers,
+                await LoadTicketLineDtosAsync(cancelledBooking.Id, ct),
                 cancelledBooking.TotalAmount,
                 cancelledBooking.Status.ToString(),
                 cancelledBooking.BookedAt,
@@ -534,20 +618,47 @@ public class BookingService : IBookingService
         try
         {
             var bookings = await _bookingRepository.GetByUserIdAsync(userId, ct);
+            var bookingIds = bookings.Select(b => b.Id).ToList();
+            var ticketsByBooking = await _bookingTicketRepository.GetByBookingIdsAsync(bookingIds, ct);
 
-            var bookingDtos = bookings.Select(b => new BookingDto(
-                b.Id,
-                b.BookingNumber,
-                b.ShowtimeId,
-                b.Showtime!.Movie!.Title,
-                b.Showtime.StartTime,
-                b.Showtime.CinemaHall!.Name,
-                b.SeatNumbers,
-                b.TotalAmount,
-                b.Status.ToString(),
-                b.BookedAt,
-                b.CarLicensePlate
-            )).ToList();
+            var bookingDtos = bookings.Select(b =>
+            {
+                ticketsByBooking.TryGetValue(b.Id, out var tickets);
+                var ticketLineDtos = MapTicketsToDto(tickets ?? []);
+                return new BookingDto(
+                    b.Id,
+                    b.BookingNumber,
+                    b.ShowtimeId,
+                    b.Showtime!.Movie!.Title,
+                    b.Showtime.StartTime,
+                    b.Showtime.CinemaHall!.Name,
+                    b.SeatNumbers,
+                    ticketLineDtos,
+                    b.TotalAmount,
+                    b.Status.ToString(),
+                    b.BookedAt,
+                    b.CarLicensePlate
+                );
+            }).ToList();
+            var bookingDtos = bookings.Select(b =>
+            {
+                ticketsByBooking.TryGetValue(b.Id, out var tickets);
+                var ticketLineDtos = MapTicketsToDto(tickets ?? []);
+                return new BookingDto(
+                    b.Id,
+                    b.BookingNumber,
+                    b.ShowtimeId,
+                    b.Showtime!.Movie!.Title,
+                    b.Showtime.StartTime,
+                    b.Showtime.CinemaHall!.Name,
+                    b.SeatNumbers,
+                    ticketLineDtos,
+                    b.TotalAmount,
+                    b.Status.ToString(),
+                    b.BookedAt
+                );
+            }).ToList();
+>>>>>>> main
 
             return Result<List<BookingDto>>.Success(bookingDtos);
         }
@@ -586,6 +697,7 @@ public class BookingService : IBookingService
                 booking.Showtime.StartTime,
                 booking.Showtime.CinemaHall!.Name,
                 booking.SeatNumbers,
+                await LoadTicketLineDtosAsync(booking.Id, ct),
                 booking.TotalAmount,
                 booking.Status.ToString(),
                 booking.BookedAt,
@@ -600,4 +712,19 @@ public class BookingService : IBookingService
             return Result<BookingDto>.Failure("Failed to retrieve booking");
         }
     }
+
+    private async Task<IReadOnlyList<TicketLineItemDto>> LoadTicketLineDtosAsync(Guid bookingId, CancellationToken ct)
+    {
+        var tickets = await _bookingTicketRepository.GetByBookingIdAsync(bookingId, ct);
+        return MapTicketsToDto(tickets);
+    }
+
+    private static IReadOnlyList<TicketLineItemDto> MapTicketsToDto(List<BookingTicket> tickets)
+        => tickets.Select(bt => new TicketLineItemDto(
+            bt.SeatNumber,
+            string.Empty, // SeatType not stored on BookingTicket; UI can read from availability
+            bt.TicketType?.Name ?? string.Empty,
+            bt.SeatPrice,
+            bt.UnitPrice
+        )).ToList();
 }

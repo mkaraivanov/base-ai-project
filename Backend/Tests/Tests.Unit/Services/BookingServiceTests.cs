@@ -17,16 +17,32 @@ namespace Tests.Unit.Services;
 
 public class BookingServiceTests
 {
+    private static readonly Guid AdultTicketTypeId = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+    private static readonly TicketType AdultTicketType = new TicketType
+    {
+        Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+        Name = "Adult",
+        Description = "Standard adult ticket",
+        PriceModifier = 1.0m,
+        IsActive = true,
+        SortOrder = 1
+    };
+
     private readonly Mock<ISeatRepository> _seatRepositoryMock;
     private readonly Mock<IReservationRepository> _reservationRepositoryMock;
     private readonly Mock<IShowtimeRepository> _showtimeRepositoryMock;
     private readonly Mock<IPaymentService> _paymentServiceMock;
     private readonly Mock<IPaymentRepository> _paymentRepositoryMock;
     private readonly Mock<IBookingRepository> _bookingRepositoryMock;
+    private readonly Mock<ITicketTypeRepository> _ticketTypeRepositoryMock;
+    private readonly Mock<IReservationTicketRepository> _reservationTicketRepositoryMock;
+    private readonly Mock<IBookingTicketRepository> _bookingTicketRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<ILogger<BookingService>> _loggerMock;
     private readonly FakeTimeProvider _timeProvider;
     private readonly IBookingService _bookingService;
+
+    private static SeatSelectionDto SeatDto(string seatNumber) => new(seatNumber, new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"));
 
     public BookingServiceTests()
     {
@@ -36,9 +52,36 @@ public class BookingServiceTests
         _paymentServiceMock = new Mock<IPaymentService>();
         _paymentRepositoryMock = new Mock<IPaymentRepository>();
         _bookingRepositoryMock = new Mock<IBookingRepository>();
+        _ticketTypeRepositoryMock = new Mock<ITicketTypeRepository>();
+        _reservationTicketRepositoryMock = new Mock<IReservationTicketRepository>();
+        _bookingTicketRepositoryMock = new Mock<IBookingTicketRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _loggerMock = new Mock<ILogger<BookingService>>();
         _timeProvider = new FakeTimeProvider(new DateTime(2024, 1, 15, 10, 0, 0, DateTimeKind.Utc));
+
+        _ticketTypeRepositoryMock
+            .Setup(x => x.GetByIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TicketType> { AdultTicketType });
+
+        _reservationTicketRepositoryMock
+            .Setup(x => x.CreateRangeAsync(It.IsAny<IEnumerable<ReservationTicket>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        _reservationTicketRepositoryMock
+            .Setup(x => x.GetByReservationIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ReservationTicket>());
+
+        _bookingTicketRepositoryMock
+            .Setup(x => x.CreateRangeAsync(It.IsAny<IEnumerable<BookingTicket>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        _bookingTicketRepositoryMock
+            .Setup(x => x.GetByBookingIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<BookingTicket>());
+
+        _bookingTicketRepositoryMock
+            .Setup(x => x.GetByBookingIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, List<BookingTicket>>());
 
         _bookingService = new BookingService(
             _seatRepositoryMock.Object,
@@ -47,6 +90,9 @@ public class BookingServiceTests
             _paymentServiceMock.Object,
             _paymentRepositoryMock.Object,
             _bookingRepositoryMock.Object,
+            _ticketTypeRepositoryMock.Object,
+            _reservationTicketRepositoryMock.Object,
+            _bookingTicketRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _loggerMock.Object,
             _timeProvider
@@ -69,7 +115,14 @@ public class BookingServiceTests
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Showtime { Id = showtimeId, IsActive = true });
+            .ReturnsAsync(new Showtime {
+                Id = showtimeId,
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true
+            });
 
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
@@ -95,7 +148,14 @@ public class BookingServiceTests
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Showtime { Id = showtimeId, IsActive = true });
+            .ReturnsAsync(new Showtime {
+                Id = showtimeId,
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true
+            });
 
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
@@ -121,7 +181,14 @@ public class BookingServiceTests
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Showtime { Id = showtimeId, IsActive = true });
+            .ReturnsAsync(new Showtime {
+                Id = showtimeId,
+                StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+                MovieId = Guid.NewGuid(),
+                CinemaHallId = Guid.NewGuid(),
+                BasePrice = 10m,
+                IsActive = true
+            });
 
         _seatRepositoryMock
             .Setup(x => x.GetByShowtimeIdAsync(showtimeId, It.IsAny<CancellationToken>()))
@@ -145,7 +212,7 @@ public class BookingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1", "A2" });
+        var dto = new CreateReservationDto(showtimeId, new List<SeatSelectionDto> { SeatDto("A1"), SeatDto("A2") });
 
         var showtime = new Showtime
         {
@@ -168,7 +235,7 @@ public class BookingServiceTests
             .ReturnsAsync(showtime);
 
         _seatRepositoryMock
-            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, dto.SeatNumbers, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, It.IsAny<IReadOnlyList<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(seats);
 
         // Act
@@ -194,7 +261,7 @@ public class BookingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1" });
+        var dto = new CreateReservationDto(showtimeId, new List<SeatSelectionDto> { SeatDto("A1") });
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
@@ -215,7 +282,7 @@ public class BookingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1" });
+        var dto = new CreateReservationDto(showtimeId, new List<SeatSelectionDto> { SeatDto("A1") });
 
         var showtime = new Showtime
         {
@@ -246,7 +313,7 @@ public class BookingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1", "A2", "A3" });
+        var dto = new CreateReservationDto(showtimeId, new List<SeatSelectionDto> { SeatDto("A1"), SeatDto("A2"), SeatDto("A3") });
 
         var showtime = new Showtime
         {
@@ -269,7 +336,7 @@ public class BookingServiceTests
             .ReturnsAsync(showtime);
 
         _seatRepositoryMock
-            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, dto.SeatNumbers, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, It.IsAny<IReadOnlyList<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(seats);
 
         // Act
@@ -287,7 +354,7 @@ public class BookingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1", "A2" });
+        var dto = new CreateReservationDto(showtimeId, new List<SeatSelectionDto> { SeatDto("A1"), SeatDto("A2") });
 
         var showtime = new Showtime
         {
@@ -310,7 +377,7 @@ public class BookingServiceTests
             .ReturnsAsync(showtime);
 
         _seatRepositoryMock
-            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, dto.SeatNumbers, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, It.IsAny<IReadOnlyList<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(seats);
 
         // Act
@@ -328,7 +395,7 @@ public class BookingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1" });
+        var dto = new CreateReservationDto(showtimeId, new List<SeatSelectionDto> { SeatDto("A1") });
 
         var showtime = new Showtime
         {
@@ -350,7 +417,7 @@ public class BookingServiceTests
             .ReturnsAsync(showtime);
 
         _seatRepositoryMock
-            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, dto.SeatNumbers, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByShowtimeAndNumbersAsync(showtimeId, It.IsAny<IReadOnlyList<string>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(seats);
 
         _unitOfWorkMock
@@ -372,7 +439,7 @@ public class BookingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1" });
+        var dto = new CreateReservationDto(showtimeId, new List<SeatSelectionDto> { SeatDto("A1") });
 
         _showtimeRepositoryMock
             .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))

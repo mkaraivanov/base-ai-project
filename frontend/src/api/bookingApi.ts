@@ -17,11 +17,11 @@ export const bookingApi = {
 
   createReservation: async (
     showtimeId: string,
-    seatNumbers: readonly string[],
+    seats: ReadonlyArray<{ seatNumber: string; ticketTypeId: string }>,
   ): Promise<ReservationDto> => {
     const response = await apiClient.post<ApiResponse<ReservationDto>>('/bookings/reserve', {
       showtimeId,
-      seatNumbers,
+      seats,
     });
     return response.data.data!;
   },
