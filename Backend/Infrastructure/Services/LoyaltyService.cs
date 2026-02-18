@@ -186,6 +186,6 @@ public class LoyaltyService : ILoyaltyService
 
     private static string GenerateVoucherCode()
     {
-        return $"FREE-{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}";
+        return $"FREE-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
     }
 }

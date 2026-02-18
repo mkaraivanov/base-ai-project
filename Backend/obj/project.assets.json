@@ -5297,7 +5297,7 @@
     ]
   },
   "packageFolders": {
-    "/home/runner/.nuget/packages/": {}
+    "/home/runner/work/base-ai-project/.codeql-scratch/dbs/csharp/working/packages": {}
   },
   "project": {
     "version": "1.0.0",
@@ -5305,7 +5305,7 @@
       "projectUniqueName": "/home/runner/work/base-ai-project/base-ai-project/Backend/Backend.csproj",
       "projectName": "Backend",
       "projectPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/Backend.csproj",
-      "packagesPath": "/home/runner/.nuget/packages/",
+      "packagesPath": "/home/runner/work/base-ai-project/.codeql-scratch/dbs/csharp/working/packages",
       "outputPath": "/home/runner/work/base-ai-project/base-ai-project/Backend/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
@@ -5405,6 +5405,20 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.linux-x64",
+            "version": "[9.0.12, 9.0.12]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[9.0.12, 9.0.12]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
