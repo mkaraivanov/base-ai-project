@@ -37,6 +37,12 @@ export const DashboardPage: React.FC = () => {
             <h3>Ticket Types</h3>
             <p>Manage ticket types and price modifiers (Adult, Children, Senior, etc.)</p>
           </Link>
+
+          <Link to="/admin/loyalty" className="admin-card">
+            <div className="admin-card-icon">🎁</div>
+            <h3>Loyalty Program</h3>
+            <p>Configure required visits for a free ticket reward</p>
+          </Link>
         </div>
       </div>
     </div>

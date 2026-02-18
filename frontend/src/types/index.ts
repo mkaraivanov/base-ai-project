@@ -241,6 +241,31 @@ export interface BookingDto {
   readonly bookedAt: string;
 }
 
+// Loyalty Program
+export interface LoyaltyVoucherDto {
+  readonly id: string;
+  readonly code: string;
+  readonly isUsed: boolean;
+  readonly issuedAt: string;
+  readonly usedAt: string | null;
+}
+
+export interface LoyaltyCardDto {
+  readonly id: string;
+  readonly stamps: number;
+  readonly stampsRequired: number;
+  readonly stampsRemaining: number;
+  readonly activeVouchers: readonly LoyaltyVoucherDto[];
+}
+
+export interface LoyaltySettingsDto {
+  readonly stampsRequired: number;
+}
+
+export interface UpdateLoyaltySettingsDto {
+  readonly stampsRequired: number;
+}
+
 // Ticket Types
 export interface TicketTypeDto {
   readonly id: string;
