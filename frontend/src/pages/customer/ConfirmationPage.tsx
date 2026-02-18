@@ -66,6 +66,12 @@ export const ConfirmationPage: React.FC = () => {
               <span className="detail-label">Total Paid</span>
               <span className="detail-value">{formatCurrency(booking.totalAmount)}</span>
             </div>
+            {booking.carLicensePlate && (
+              <div className="detail-row">
+                <span className="detail-label">Parking</span>
+                <span className="detail-value">🅿️ {booking.carLicensePlate}</span>
+              </div>
+            )}
           </div>
 
           <div className="confirmation-actions">

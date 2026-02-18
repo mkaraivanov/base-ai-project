@@ -11,5 +11,6 @@ public record BookingDto(
     IReadOnlyList<TicketLineItemDto> Tickets,
     decimal TotalAmount,
     string Status,
-    DateTime BookedAt
+    DateTime BookedAt,
+    string? CarLicensePlate = null
 );

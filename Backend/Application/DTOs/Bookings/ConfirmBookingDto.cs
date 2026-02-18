@@ -6,5 +6,6 @@ public record ConfirmBookingDto(
     string CardNumber,
     string CardHolderName,
     string ExpiryDate,
-    string CVV
+    string CVV,
+    string? CarLicensePlate = null
 );

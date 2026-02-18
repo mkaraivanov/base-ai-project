@@ -407,6 +407,11 @@ public class BookingService : IBookingService
                 ProcessedAt = paymentResult.Value.ProcessedAt
             };
 
+            // Normalize license plate: uppercase and trimmed
+            var normalizedPlate = string.IsNullOrWhiteSpace(dto.CarLicensePlate)
+                ? null
+                : dto.CarLicensePlate.Trim().ToUpperInvariant();
+
             var booking = new Booking
             {
                 Id = bookingId,
@@ -418,7 +423,8 @@ public class BookingService : IBookingService
                 Status = BookingStatus.Confirmed,
                 PaymentId = paymentId,
                 BookedAt = _timeProvider.GetUtcNow().UtcDateTime,
-                CancelledAt = null
+                CancelledAt = null,
+                CarLicensePlate = normalizedPlate
             };
 
             await _bookingRepository.CreateAsync(booking, ct);
@@ -486,7 +492,8 @@ public class BookingService : IBookingService
                 ticketLineDtos,
                 booking.TotalAmount,
                 booking.Status.ToString(),
-                booking.BookedAt
+                booking.BookedAt,
+                booking.CarLicensePlate
             );
 
             return Result<BookingDto>.Success(resultDto);
@@ -571,7 +578,8 @@ public class BookingService : IBookingService
                 Status = BookingStatus.Cancelled,
                 PaymentId = booking.PaymentId,
                 BookedAt = booking.BookedAt,
-                CancelledAt = _timeProvider.GetUtcNow().UtcDateTime
+                CancelledAt = _timeProvider.GetUtcNow().UtcDateTime,
+                CarLicensePlate = booking.CarLicensePlate
             };
 
             await _bookingRepository.UpdateAsync(cancelledBooking, ct);
@@ -591,7 +599,8 @@ public class BookingService : IBookingService
                 await LoadTicketLineDtosAsync(cancelledBooking.Id, ct),
                 cancelledBooking.TotalAmount,
                 cancelledBooking.Status.ToString(),
-                cancelledBooking.BookedAt
+                cancelledBooking.BookedAt,
+                cancelledBooking.CarLicensePlate
             );
 
             return Result<BookingDto>.Success(resultDto);
@@ -627,7 +636,8 @@ public class BookingService : IBookingService
                     ticketLineDtos,
                     b.TotalAmount,
                     b.Status.ToString(),
-                    b.BookedAt
+                    b.BookedAt,
+                    b.CarLicensePlate
                 );
             }).ToList();
 
@@ -671,7 +681,8 @@ public class BookingService : IBookingService
                 await LoadTicketLineDtosAsync(booking.Id, ct),
                 booking.TotalAmount,
                 booking.Status.ToString(),
-                booking.BookedAt
+                booking.BookedAt,
+                booking.CarLicensePlate
             );
 
             return Result<BookingDto>.Success(resultDto);
