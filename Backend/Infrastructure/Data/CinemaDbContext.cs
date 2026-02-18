@@ -25,12 +25,8 @@ public class CinemaDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-                    entity.Property(e => e.CarLicensePlate)
-                        .HasMaxLength(10);
-                    entity.HasMany(e => e.Tickets)
-                        .WithOne()
-                        .HasForeignKey(bt => bt.BookingId)
-                        .OnDelete(DeleteBehavior.Cascade);
+        // User configuration
+        modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id);
 
@@ -297,10 +293,9 @@ public class CinemaDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.Status });
             entity.HasIndex(e => e.ShowtimeId);
 
-<<<<<<< HEAD
             entity.Property(e => e.CarLicensePlate)
                 .HasMaxLength(10);
-=======
+
             entity.HasMany(e => e.Tickets)
                 .WithOne()
                 .HasForeignKey(bt => bt.BookingId)
@@ -404,7 +399,6 @@ public class CinemaDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.BookingId);
->>>>>>> main
         });
     }
 }

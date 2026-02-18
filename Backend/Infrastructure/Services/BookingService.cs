@@ -640,25 +640,6 @@ public class BookingService : IBookingService
                     b.CarLicensePlate
                 );
             }).ToList();
-            var bookingDtos = bookings.Select(b =>
-            {
-                ticketsByBooking.TryGetValue(b.Id, out var tickets);
-                var ticketLineDtos = MapTicketsToDto(tickets ?? []);
-                return new BookingDto(
-                    b.Id,
-                    b.BookingNumber,
-                    b.ShowtimeId,
-                    b.Showtime!.Movie!.Title,
-                    b.Showtime.StartTime,
-                    b.Showtime.CinemaHall!.Name,
-                    b.SeatNumbers,
-                    ticketLineDtos,
-                    b.TotalAmount,
-                    b.Status.ToString(),
-                    b.BookedAt
-                );
-            }).ToList();
->>>>>>> main
 
             return Result<List<BookingDto>>.Success(bookingDtos);
         }
