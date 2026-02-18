@@ -17,6 +17,9 @@ public class Booking
     public User? User { get; init; }
     public Showtime? Showtime { get; init; }
     public Payment? Payment { get; init; }
+    // Must use List<T> (not array / Array.Empty) so EF Core navigation fixup can
+    // call Add() when inserting related BookingTicket entities in the same context.
+    public IReadOnlyList<BookingTicket> Tickets { get; init; } = new List<BookingTicket>();
 }
 
 public enum BookingStatus

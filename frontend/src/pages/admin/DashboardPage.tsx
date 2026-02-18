@@ -25,6 +25,12 @@ export const DashboardPage: React.FC = () => {
             <h3>Showtimes</h3>
             <p>Schedule and manage movie showtimes</p>
           </Link>
+
+          <Link to="/admin/ticket-types" className="admin-card">
+            <div className="admin-card-icon">🎟️</div>
+            <h3>Ticket Types</h3>
+            <p>Manage ticket types and price modifiers (Adult, Children, Senior, etc.)</p>
+          </Link>
         </div>
       </div>
     </div>

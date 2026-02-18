@@ -18,6 +18,9 @@ public class CinemaDbContext : DbContext
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<TicketType> TicketTypes => Set<TicketType>();
+    public DbSet<ReservationTicket> ReservationTickets => Set<ReservationTicket>();
+    public DbSet<BookingTicket> BookingTickets => Set<BookingTicket>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -250,6 +253,110 @@ public class CinemaDbContext : DbContext
             entity.HasIndex(e => e.BookingNumber).IsUnique();
             entity.HasIndex(e => new { e.UserId, e.Status });
             entity.HasIndex(e => e.ShowtimeId);
+
+            entity.HasMany(e => e.Tickets)
+                .WithOne()
+                .HasForeignKey(bt => bt.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // TicketType configuration
+        modelBuilder.Entity<TicketType>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.PriceModifier)
+                .HasPrecision(5, 4);
+
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.SortOrder);
+
+            // Seed default ticket types
+            entity.HasData(
+                new TicketType
+                {
+                    Id = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+                    Name = "Adult",
+                    Description = "Standard adult ticket",
+                    PriceModifier = 1.0m,
+                    IsActive = true,
+                    SortOrder = 1,
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new TicketType
+                {
+                    Id = new Guid("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
+                    Name = "Children",
+                    Description = "Children ticket (up to 12 years) — 50% discount",
+                    PriceModifier = 0.5m,
+                    IsActive = true,
+                    SortOrder = 2,
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new TicketType
+                {
+                    Id = new Guid("c3d4e5f6-a7b8-9012-cdef-123456789012"),
+                    Name = "Senior",
+                    Description = "Senior ticket (65+) — 25% discount",
+                    PriceModifier = 0.75m,
+                    IsActive = true,
+                    SortOrder = 3,
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }
+            );
+        });
+
+        // ReservationTicket configuration
+        modelBuilder.Entity<ReservationTicket>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.SeatNumber)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.Property(e => e.SeatPrice)
+                .HasPrecision(10, 2);
+
+            entity.Property(e => e.UnitPrice)
+                .HasPrecision(10, 2);
+
+            entity.HasOne(e => e.TicketType)
+                .WithMany()
+                .HasForeignKey(e => e.TicketTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.ReservationId);
+        });
+
+        // BookingTicket configuration
+        modelBuilder.Entity<BookingTicket>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.SeatNumber)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            entity.Property(e => e.SeatPrice)
+                .HasPrecision(10, 2);
+
+            entity.Property(e => e.UnitPrice)
+                .HasPrecision(10, 2);
+
+            entity.HasOne(e => e.TicketType)
+                .WithMany()
+                .HasForeignKey(e => e.TicketTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.BookingId);
         });
     }
 }

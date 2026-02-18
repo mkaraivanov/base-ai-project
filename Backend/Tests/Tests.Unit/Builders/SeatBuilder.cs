@@ -50,6 +50,12 @@ public class SeatBuilder
         return this;
     }
 
+    public SeatBuilder WithReservationId(Guid reservationId)
+    {
+        _reservationId = reservationId;
+        return this;
+    }
+
     public SeatBuilder AsReserved(Guid reservationId, DateTime until)
     {
         _status = SeatStatus.Reserved;

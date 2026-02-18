@@ -148,13 +148,22 @@ export interface SeatAvailabilityDto {
 
 export interface CreateReservationDto {
   readonly showtimeId: string;
-  readonly seatNumbers: readonly string[];
+  readonly seats: ReadonlyArray<{ seatNumber: string; ticketTypeId: string }>;
+}
+
+export interface TicketLineItemDto {
+  readonly seatNumber: string;
+  readonly seatType: string;
+  readonly ticketTypeName: string;
+  readonly seatPrice: number;
+  readonly unitPrice: number;
 }
 
 export interface ReservationDto {
   readonly id: string;
   readonly showtimeId: string;
   readonly seatNumbers: readonly string[];
+  readonly tickets: readonly TicketLineItemDto[];
   readonly totalAmount: number;
   readonly expiresAt: string;
   readonly status: string;
@@ -178,7 +187,33 @@ export interface BookingDto {
   readonly showtimeStart: string;
   readonly hallName: string;
   readonly seatNumbers: readonly string[];
+  readonly tickets: readonly TicketLineItemDto[];
   readonly totalAmount: number;
   readonly status: string;
   readonly bookedAt: string;
+}
+
+// Ticket Types
+export interface TicketTypeDto {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly priceModifier: number;
+  readonly isActive: boolean;
+  readonly sortOrder: number;
+}
+
+export interface CreateTicketTypeDto {
+  readonly name: string;
+  readonly description: string;
+  readonly priceModifier: number;
+  readonly sortOrder: number;
+}
+
+export interface UpdateTicketTypeDto {
+  readonly name: string;
+  readonly description: string;
+  readonly priceModifier: number;
+  readonly isActive: boolean;
+  readonly sortOrder: number;
 }
