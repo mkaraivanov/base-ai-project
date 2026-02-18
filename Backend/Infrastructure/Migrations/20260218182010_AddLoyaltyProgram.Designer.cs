@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CinemaDbContext))]
-    partial class CinemaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260218182010_AddLoyaltyProgram")]
+    partial class AddLoyaltyProgram
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,10 +41,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("CarLicensePlate")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
 
                     b.Property<Guid?>("PaymentId")
                         .HasColumnType("uniqueidentifier");
@@ -724,27 +723,28 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Cinema");
                 });
-                modelBuilder.Entity("Domain.Entities.LoyaltyCard", b =>
-                    {
-                        b.HasOne("Domain.Entities.User", "User")
-                            .WithMany()
-                            .HasForeignKey("UserId")
-                            .OnDelete(DeleteBehavior.Restrict)
-                            .IsRequired();
 
-                        b.Navigation("User");
-                    });
+            modelBuilder.Entity("Domain.Entities.LoyaltyCard", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                modelBuilder.Entity("Domain.Entities.LoyaltyVoucher", b =>
-                    {
-                        b.HasOne("Domain.Entities.LoyaltyCard", "LoyaltyCard")
-                            .WithMany("Vouchers")
-                            .HasForeignKey("LoyaltyCardId")
-                            .OnDelete(DeleteBehavior.Cascade)
-                            .IsRequired();
+                    b.Navigation("User");
+                });
 
-                        b.Navigation("LoyaltyCard");
-                    });
+            modelBuilder.Entity("Domain.Entities.LoyaltyVoucher", b =>
+                {
+                    b.HasOne("Domain.Entities.LoyaltyCard", "LoyaltyCard")
+                        .WithMany("Vouchers")
+                        .HasForeignKey("LoyaltyCardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LoyaltyCard");
+                });
 
             modelBuilder.Entity("Domain.Entities.Payment", b =>
                 {

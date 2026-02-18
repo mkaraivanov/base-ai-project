@@ -23,6 +23,7 @@ import { MoviesManagementPage } from './pages/admin/MoviesManagementPage';
 import { HallsManagementPage } from './pages/admin/HallsManagementPage';
 import { ShowtimesManagementPage } from './pages/admin/ShowtimesManagementPage';
 import { TicketTypesManagementPage } from './pages/admin/TicketTypesManagementPage';
+import { LoyaltyManagementPage } from './pages/admin/LoyaltyManagementPage';
 
 // Auth pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -137,6 +138,14 @@ const AppRoutes: React.FC = () => {
             element={
               <AdminRoute>
                 <TicketTypesManagementPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/loyalty"
+            element={
+              <AdminRoute>
+                <LoyaltyManagementPage />
               </AdminRoute>
             }
           />

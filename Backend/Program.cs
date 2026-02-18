@@ -44,6 +44,7 @@ builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 builder.Services.AddScoped<IReservationTicketRepository, ReservationTicketRepository>();
 builder.Services.AddScoped<IBookingTicketRepository, BookingTicketRepository>();
+builder.Services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
 builder.Services.AddScoped<IPaymentService, MockPaymentService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Unit of Work

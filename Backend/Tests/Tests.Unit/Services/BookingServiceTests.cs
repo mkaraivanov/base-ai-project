@@ -38,6 +38,7 @@ public class BookingServiceTests
     private readonly Mock<IReservationTicketRepository> _reservationTicketRepositoryMock;
     private readonly Mock<IBookingTicketRepository> _bookingTicketRepositoryMock;
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ILoyaltyService> _loyaltyServiceMock;
     private readonly Mock<ILogger<BookingService>> _loggerMock;
     private readonly FakeTimeProvider _timeProvider;
     private readonly IBookingService _bookingService;
@@ -56,6 +57,7 @@ public class BookingServiceTests
         _reservationTicketRepositoryMock = new Mock<IReservationTicketRepository>();
         _bookingTicketRepositoryMock = new Mock<IBookingTicketRepository>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _loyaltyServiceMock = new Mock<ILoyaltyService>();
         _loggerMock = new Mock<ILogger<BookingService>>();
         _timeProvider = new FakeTimeProvider(new DateTime(2024, 1, 15, 10, 0, 0, DateTimeKind.Utc));
 
@@ -83,6 +85,10 @@ public class BookingServiceTests
             .Setup(x => x.GetByBookingIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Dictionary<Guid, List<BookingTicket>>());
 
+        _loyaltyServiceMock
+            .Setup(x => x.AddStampAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         _bookingService = new BookingService(
             _seatRepositoryMock.Object,
             _reservationRepositoryMock.Object,
@@ -94,6 +100,7 @@ public class BookingServiceTests
             _reservationTicketRepositoryMock.Object,
             _bookingTicketRepositoryMock.Object,
             _unitOfWorkMock.Object,
+            _loyaltyServiceMock.Object,
             _loggerMock.Object,
             _timeProvider
         );
