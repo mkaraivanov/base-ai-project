@@ -25,7 +25,7 @@ public class ConcurrentBookingTests : IClassFixture<CustomWebApplicationFactory>
         var client = _factory.CreateClient();
         var (showtimeId, token1, token2) = await TestDataHelper.SetupConcurrentBookingScenarioAsync(client, _factory.Services);
 
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1", "A2" });
+        var dto = new CreateReservationDto(showtimeId, TestDataHelper.ToSeatSelections("A1", "A2"));
 
         // Create two separate clients for concurrent requests
         var client1 = _factory.CreateClient();
@@ -72,8 +72,8 @@ public class ConcurrentBookingTests : IClassFixture<CustomWebApplicationFactory>
         var client = _factory.CreateClient();
         var (showtimeId, token1, token2) = await TestDataHelper.SetupConcurrentBookingScenarioAsync(client, _factory.Services);
 
-        var dto1 = new CreateReservationDto(showtimeId, new List<string> { "A1", "A2" });
-        var dto2 = new CreateReservationDto(showtimeId, new List<string> { "B1", "B2" });
+        var dto1 = new CreateReservationDto(showtimeId, TestDataHelper.ToSeatSelections("A1", "A2"));
+        var dto2 = new CreateReservationDto(showtimeId, TestDataHelper.ToSeatSelections("B1", "B2"));
 
         var client1 = _factory.CreateClient();
         client1.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token1);
@@ -115,8 +115,8 @@ public class ConcurrentBookingTests : IClassFixture<CustomWebApplicationFactory>
         var (showtimeId, token1, token2) = await TestDataHelper.SetupConcurrentBookingScenarioAsync(client, _factory.Services);
 
         // Both users want A2, but different additional seats
-        var dto1 = new CreateReservationDto(showtimeId, new List<string> { "A1", "A2" });
-        var dto2 = new CreateReservationDto(showtimeId, new List<string> { "A2", "A3" });
+        var dto1 = new CreateReservationDto(showtimeId, TestDataHelper.ToSeatSelections("A1", "A2"));
+        var dto2 = new CreateReservationDto(showtimeId, TestDataHelper.ToSeatSelections("A2", "A3"));
 
         var client1 = _factory.CreateClient();
         client1.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token1);
@@ -145,7 +145,7 @@ public class ConcurrentBookingTests : IClassFixture<CustomWebApplicationFactory>
         var client = _factory.CreateClient();
         var (showtimeId, token1, token2) = await TestDataHelper.SetupConcurrentBookingScenarioAsync(client, _factory.Services);
 
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "A1", "A2" });
+        var dto = new CreateReservationDto(showtimeId, TestDataHelper.ToSeatSelections("A1", "A2"));
 
         var client1 = _factory.CreateClient();
         client1.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token1);
@@ -195,7 +195,7 @@ public class ConcurrentBookingTests : IClassFixture<CustomWebApplicationFactory>
 
         var userTokens = await Task.WhenAll(userTasks);
 
-        var dto = new CreateReservationDto(showtimeId, new List<string> { "C3", "C4" });
+        var dto = new CreateReservationDto(showtimeId, TestDataHelper.ToSeatSelections("C3", "C4"));
 
         // Act - 10 concurrent booking attempts for the same seats
         var bookingTasks = userTokens.Select(async token =>

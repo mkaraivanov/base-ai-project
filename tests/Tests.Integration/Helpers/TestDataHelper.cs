@@ -3,8 +3,10 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using Application.DTOs.Auth;
+using Application.DTOs.Cinemas;
 using Application.DTOs.CinemaHalls;
 using Application.DTOs.Movies;
+using Application.DTOs.Reservations;
 using Application.DTOs.Showtimes;
 using Backend.Models;
 using Domain.Entities;
@@ -18,6 +20,12 @@ namespace Tests.Integration.Helpers;
 
 public static class TestDataHelper
 {
+    // Seeded adult ticket type ID from CinemaDbContext seed data
+    public static readonly Guid AdultTicketTypeId = new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890");
+
+    public static List<SeatSelectionDto> ToSeatSelections(params string[] seatNumbers)
+        => seatNumbers.Select(s => new SeatSelectionDto(s, AdultTicketTypeId)).ToList();
+
     public static async Task<string> RegisterAndLoginAsync(HttpClient client, string email, string password = "Test123!")
     {
         // Register
@@ -117,6 +125,29 @@ public static class TestDataHelper
         return result?.Data?.Id ?? throw new InvalidOperationException("Failed to create movie");
     }
 
+    public static async Task<Guid> CreateCinemaAsync(HttpClient client, string token, string name = "Test Cinema")
+    {
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var cinemaDto = new CreateCinemaDto(
+            name,
+            "123 Test Street",
+            "Test City",
+            "Test Country",
+            null,
+            null,
+            null,
+            new TimeOnly(9, 0),
+            new TimeOnly(23, 0)
+        );
+
+        var response = await client.PostAsJsonAsync("/api/cinemas", cinemaDto);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CinemaDto>>();
+        return result?.Data?.Id ?? throw new InvalidOperationException("Failed to create cinema");
+    }
+
     public static async Task<Guid> CreateHallAsync(HttpClient client, string token, string name = "Test Hall")
     {
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
@@ -147,7 +178,8 @@ public static class TestDataHelper
             Seats = seats
         };
 
-        var hallDto = new CreateCinemaHallDto(name, seatLayout);
+        var cinemaId = await CreateCinemaAsync(client, token);
+        var hallDto = new CreateCinemaHallDto(cinemaId, name, seatLayout);
 
         var response = await client.PostAsJsonAsync("/api/halls", hallDto);
         response.EnsureSuccessStatusCode();

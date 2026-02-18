@@ -66,7 +66,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         var reservationDto = new CreateReservationDto(
             showtimeId,
-            new List<string> { "A1", "A2", "A3" }
+            TestDataHelper.ToSeatSelections("A1", "A2", "A3")
         );
 
         // Act
@@ -96,7 +96,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         var reservationDto = new CreateReservationDto(
             showtimeId,
-            new List<string> { "Z99" } // Invalid seat
+            TestDataHelper.ToSeatSelections("Z99") // Invalid seat
         );
 
         // Act
@@ -120,7 +120,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-        var tooManySeats = Enumerable.Range(1, 11).Select(i => $"A{i}").ToList();
+        var tooManySeats = Enumerable.Range(1, 11).Select(i => new SeatSelectionDto($"A{i}", TestDataHelper.AdultTicketTypeId)).ToList();
         var reservationDto = new CreateReservationDto(showtimeId, tooManySeats);
 
         // Act
@@ -146,7 +146,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         var reservationDto = new CreateReservationDto(
             showtimeId,
-            new List<string> { "A1", "A2", "A1" } // Duplicate A1
+            TestDataHelper.ToSeatSelections("A1", "A2", "A1") // Duplicate A1
         );
 
         // Act
@@ -172,7 +172,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
         var unauthenticatedClient = _factory.CreateClient();
         var reservationDto = new CreateReservationDto(
             showtimeId,
-            new List<string> { "A1" }
+            TestDataHelper.ToSeatSelections("A1")
         );
 
         // Act - No authorization header
@@ -193,7 +193,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         var reservationDto = new CreateReservationDto(
             showtimeId,
-            new List<string> { "A1", "A2" }
+            TestDataHelper.ToSeatSelections("A1", "A2")
         );
 
         // First reservation
@@ -222,7 +222,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         var reservationDto = new CreateReservationDto(
             showtimeId,
-            new List<string> { "A1", "A2" }
+            TestDataHelper.ToSeatSelections("A1", "A2")
         );
 
         var createResponse = await client.PostAsJsonAsync("/api/bookings/reserve", reservationDto);
@@ -272,7 +272,7 @@ public class BookingEndpointsTests : IClassFixture<CustomWebApplicationFactory>
 
         var reservationDto = new CreateReservationDto(
             showtimeId,
-            new List<string> { "A1", "A2" }
+            TestDataHelper.ToSeatSelections("A1", "A2")
         );
 
         var createResponse = await client.PostAsJsonAsync("/api/bookings/reserve", reservationDto);
