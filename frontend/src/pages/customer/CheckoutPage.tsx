@@ -12,6 +12,7 @@ interface PaymentForm {
   cardHolderName: string;
   expiryDate: string;
   cvv: string;
+  carLicensePlate: string;
 }
 
 const INITIAL_FORM: PaymentForm = {
@@ -20,6 +21,7 @@ const INITIAL_FORM: PaymentForm = {
   cardHolderName: '',
   expiryDate: '',
   cvv: '',
+  carLicensePlate: '',
 };
 
 export const CheckoutPage: React.FC = () => {
@@ -62,6 +64,12 @@ export const CheckoutPage: React.FC = () => {
       return;
     }
 
+    const normalizedPlate = form.carLicensePlate.trim().toUpperCase() || undefined;
+    if (normalizedPlate && !/^[A-Z]{1,2}\d{4}[A-Z]{2}$/.test(normalizedPlate)) {
+      setError('Car license plate must be a valid Bulgarian format (e.g. CB1234AB).');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -76,6 +84,7 @@ export const CheckoutPage: React.FC = () => {
         cardHolderName: form.cardHolderName,
         expiryDate: form.expiryDate,
         cvv: form.cvv,
+        carLicensePlate: normalizedPlate,
       };
 
       const booking = await bookingApi.confirmBooking(confirmData);
@@ -188,6 +197,20 @@ export const CheckoutPage: React.FC = () => {
                 required
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="carLicensePlate">Car License Plate <span className="optional-label">(optional – for parking)</span></label>
+            <input
+              type="text"
+              id="carLicensePlate"
+              name="carLicensePlate"
+              value={form.carLicensePlate}
+              onChange={handleInputChange}
+              placeholder="CB1234AB"
+              className="input"
+              maxLength={10}
+            />
           </div>
 
           <button

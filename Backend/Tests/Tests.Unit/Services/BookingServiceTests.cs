@@ -1139,4 +1139,168 @@ public class BookingServiceTests
     }
 
     #endregion
+
+    #region CarLicensePlate Tests
+
+    [Fact]
+    public async Task ConfirmBookingAsync_WithCarLicensePlate_NormalizesAndStoresPlate()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var reservationId = Guid.NewGuid();
+        var showtimeId = Guid.NewGuid();
+        var dto = new ConfirmBookingDto(
+            reservationId,
+            "CreditCard",
+            "4111111111111111",
+            "John Doe",
+            "12/25",
+            "123",
+            " cb1234ab " // Should be normalized to "CB1234AB"
+        );
+
+        var reservation = new Reservation
+        {
+            Id = reservationId,
+            UserId = userId,
+            ShowtimeId = showtimeId,
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(3).DateTime,
+            Status = ReservationStatus.Pending,
+            CreatedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        var showtime = new Showtime
+        {
+            Id = showtimeId,
+            StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+            MovieId = Guid.NewGuid(),
+            CinemaHallId = Guid.NewGuid(),
+            BasePrice = 10m,
+            IsActive = true,
+            Movie = new Movie { Id = Guid.NewGuid(), Title = "Test Movie", Genre = "Action", Rating = "PG-13", DurationMinutes = 120, IsActive = true },
+            CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+        };
+
+        var paymentResult = new PaymentResultDto(
+            Guid.NewGuid(),
+            "TXN-12345678",
+            "Completed",
+            10m,
+            _timeProvider.GetUtcNow().DateTime
+        );
+
+        _reservationRepositoryMock
+            .Setup(x => x.GetByIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reservation);
+
+        _paymentServiceMock
+            .Setup(x => x.ProcessPaymentAsync(It.IsAny<ProcessPaymentDto>(), 10m, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Domain.Common.Result<PaymentResultDto>.Success(paymentResult));
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(showtime);
+
+        _seatRepositoryMock
+            .Setup(x => x.GetByReservationIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Seat>
+            {
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").AsReserved(reservationId, DateTime.UtcNow.AddMinutes(10)).Build()
+            });
+
+        Booking? capturedBooking = null;
+        _bookingRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()))
+            .Callback<Booking, CancellationToken>((b, _) => capturedBooking = b);
+
+        // Act
+        var result = await _bookingService.ConfirmBookingAsync(userId, dto);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Equal("CB1234AB", result.Value.CarLicensePlate);
+        Assert.NotNull(capturedBooking);
+        Assert.Equal("CB1234AB", capturedBooking!.CarLicensePlate);
+    }
+
+    [Fact]
+    public async Task ConfirmBookingAsync_WithoutCarLicensePlate_StoresNullPlate()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var reservationId = Guid.NewGuid();
+        var showtimeId = Guid.NewGuid();
+        var dto = new ConfirmBookingDto(
+            reservationId,
+            "CreditCard",
+            "4111111111111111",
+            "John Doe",
+            "12/25",
+            "123"
+        );
+
+        var reservation = new Reservation
+        {
+            Id = reservationId,
+            UserId = userId,
+            ShowtimeId = showtimeId,
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            ExpiresAt = _timeProvider.GetUtcNow().AddMinutes(3).DateTime,
+            Status = ReservationStatus.Pending,
+            CreatedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        var showtime = new Showtime
+        {
+            Id = showtimeId,
+            StartTime = _timeProvider.GetUtcNow().AddHours(2).DateTime,
+            MovieId = Guid.NewGuid(),
+            CinemaHallId = Guid.NewGuid(),
+            BasePrice = 10m,
+            IsActive = true,
+            Movie = new Movie { Id = Guid.NewGuid(), Title = "Test Movie", Genre = "Action", Rating = "PG-13", DurationMinutes = 120, IsActive = true },
+            CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+        };
+
+        var paymentResult = new PaymentResultDto(
+            Guid.NewGuid(),
+            "TXN-12345679",
+            "Completed",
+            10m,
+            _timeProvider.GetUtcNow().DateTime
+        );
+
+        _reservationRepositoryMock
+            .Setup(x => x.GetByIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(reservation);
+
+        _paymentServiceMock
+            .Setup(x => x.ProcessPaymentAsync(It.IsAny<ProcessPaymentDto>(), 10m, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Domain.Common.Result<PaymentResultDto>.Success(paymentResult));
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(showtime);
+
+        _seatRepositoryMock
+            .Setup(x => x.GetByReservationIdAsync(reservationId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Seat>
+            {
+                new SeatBuilder().WithShowtimeId(showtimeId).WithSeatNumber("A1").AsReserved(reservationId, DateTime.UtcNow.AddMinutes(10)).Build()
+            });
+
+        // Act
+        var result = await _bookingService.ConfirmBookingAsync(userId, dto);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Value);
+        Assert.Null(result.Value.CarLicensePlate);
+    }
+
+    #endregion
 }

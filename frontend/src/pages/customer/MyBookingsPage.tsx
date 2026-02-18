@@ -173,6 +173,12 @@ export const MyBookingsPage: React.FC = () => {
                     <span>Total</span>
                     <strong>{formatCurrency(booking.totalAmount)}</strong>
                   </div>
+                  {booking.carLicensePlate && (
+                    <div className="booking-detail">
+                      <span>Parking</span>
+                      <strong>🅿️ {booking.carLicensePlate}</strong>
+                    </div>
+                  )}
                 </div>
                 {booking.status === 'Confirmed' && (
                   <div className="booking-card-actions">
