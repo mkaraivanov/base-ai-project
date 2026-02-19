@@ -1,8 +1,21 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+const adminUser = {
+  email: 'admin@cinebook.local',
+  password: 'Admin123!',
+};
+
+async function loginAsAdmin(page: Page) {
+  await page.goto('/login');
+  await page.fill('input[type="email"]', adminUser.email);
+  await page.fill('input[type="password"]', adminUser.password);
+  await page.click('button[type="submit"]');
+  await page.waitForURL('/', { timeout: 10000 });
+}
 
 test.describe('Customer - Movies Pages', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await loginAsAdmin(page);
   });
 
   test.describe('Movies List Page', () => {
@@ -111,8 +124,8 @@ test.describe('Customer - Movies Pages', () => {
       if (showtimeExists) {
         await showtimeLink.click();
         
-        // Should either navigate to login (if not authenticated) or seat selection
-        await page.waitForURL(/\/(login|showtime\/[a-f0-9-]+\/seats)/, { timeout: 10000 });
+        // Should navigate to seat selection (user is authenticated)
+        await page.waitForURL(/\/showtime\/[a-f0-9-]+\/seats/, { timeout: 10000 });
       }
     });
 

@@ -136,6 +136,16 @@ test.describe('Authentication Flow', () => {
   });
 
   test.describe('Protected Routes', () => {
+    test('should redirect to login when accessing homepage without authentication', async ({ page }) => {
+      await page.goto('/');
+      await expect(page).toHaveURL(/\/login/);
+    });
+
+    test('should redirect to login when accessing movies without authentication', async ({ page }) => {
+      await page.goto('/movies');
+      await expect(page).toHaveURL(/\/login/);
+    });
+
     test('should redirect to login when accessing protected customer routes', async ({ page }) => {
       await page.goto('/my-bookings');
       await expect(page).toHaveURL(/\/login/);
