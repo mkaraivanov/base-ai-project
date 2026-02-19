@@ -1,4 +1,21 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+// ──────────────────────────────────────────────────────
+// Shared auth helper
+// ──────────────────────────────────────────────────────
+
+const adminUser = {
+  email: 'admin@cinebook.local',
+  password: 'Admin123!',
+};
+
+async function loginAsAdmin(page: Page) {
+  await page.goto('/login');
+  await page.fill('input[type="email"]', adminUser.email);
+  await page.fill('input[type="password"]', adminUser.password);
+  await page.click('button[type="submit"]');
+  await page.waitForURL('/', { timeout: 10000 });
+}
 
 // ──────────────────────────────────────────────────────
 // Cinema Selection Page (Home)
@@ -6,7 +23,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Cinema Selection Page', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await loginAsAdmin(page);
     await page.waitForLoadState('networkidle');
   });
 
@@ -63,7 +80,7 @@ test.describe('Cinema Movies Page', () => {
 
   test.beforeEach(async ({ page }) => {
     // Navigate via cinema selection to get a real cinema URL
-    await page.goto('/');
+    await loginAsAdmin(page);
     await page.waitForLoadState('networkidle');
 
     const firstCard = page.locator('.cinema-card').first();
@@ -135,7 +152,7 @@ test.describe('Cinema Movies Page', () => {
 test.describe('Cinema Movie Detail Page', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate cinema → movies → first movie detail
-    await page.goto('/');
+    await loginAsAdmin(page);
     await page.waitForLoadState('networkidle');
 
     const firstCard = page.locator('.cinema-card').first();

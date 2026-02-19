@@ -6,7 +6,13 @@ This is an example project-level CLAUDE.md file. Place this in your project root
 
 [Brief description of your project - what it does, tech stack]
 
+
 ## Critical Rules
+
+### CORS Configuration
+
+**After every backend rebuild, ensure CORS is correctly configured.**
+See [examples/CORS-INSTRUCTIONS.md](examples/CORS-INSTRUCTIONS.md) for details and code samples.
 
 ### 1. Code Organization
 
@@ -30,6 +36,7 @@ This is an example project-level CLAUDE.md file. Place this in your project root
 - Unit tests for utilities
 - Integration tests for APIs
 - E2E tests for critical flows
+
 
 ### 4. Security
 
