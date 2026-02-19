@@ -25,7 +25,7 @@ export const Navbar: React.FC = () => {
 
           {isAuthenticated && (
             <Link to="/my-bookings" className="nav-link">
-              My Bookings
+              My Tickets
             </Link>
           )}
 

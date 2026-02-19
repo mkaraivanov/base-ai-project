@@ -49,14 +49,16 @@ const AppRoutes: React.FC = () => {
       <Navbar />
       <main className="main-content">
         <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<CinemaSelectionPage />} />
-          <Route path="/cinemas/:cinemaId/movies" element={<CinemaMoviesPage />} />
-          <Route path="/cinemas/:cinemaId/movies/:movieId" element={<CinemaMovieDetailPage />} />
-          <Route path="/movies" element={<MoviesPage />} />
-          <Route path="/movies/:movieId" element={<MovieDetailPage />} />
+          {/* Public routes - only authentication pages */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* Protected browsing routes */}
+          <Route path="/" element={<ProtectedRoute><CinemaSelectionPage /></ProtectedRoute>} />
+          <Route path="/cinemas/:cinemaId/movies" element={<ProtectedRoute><CinemaMoviesPage /></ProtectedRoute>} />
+          <Route path="/cinemas/:cinemaId/movies/:movieId" element={<ProtectedRoute><CinemaMovieDetailPage /></ProtectedRoute>} />
+          <Route path="/movies" element={<ProtectedRoute><MoviesPage /></ProtectedRoute>} />
+          <Route path="/movies/:movieId" element={<ProtectedRoute><MovieDetailPage /></ProtectedRoute>} />
 
           {/* Protected customer routes */}
           <Route

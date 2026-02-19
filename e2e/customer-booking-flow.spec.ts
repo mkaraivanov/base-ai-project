@@ -157,13 +157,10 @@ test.describe('Customer - Complete Booking Flow', () => {
 
     test('should display seat layout', async ({ page }) => {
       await navigateToSeatSelection(page);
-<<<<<<< HEAD
-=======
       if (!page.url().includes('/seats')) {
         test.skip(true, 'No active showtime with available seats found in the environment');
         return;
       }
->>>>>>> origin/main
 
       // Verify seat layout is visible
       const seatLayout = page.locator('.seats-container').first();
@@ -172,17 +169,12 @@ test.describe('Customer - Complete Booking Flow', () => {
 
     test('should allow selecting and deselecting seats', async ({ page }) => {
       await navigateToSeatSelection(page);
-<<<<<<< HEAD
-
-      // Select a seat – capture its label so we can track it after the class changes 0299ae64453c3bad2e735f13669906f15ac56d41
-=======
       if (!page.url().includes('/seats')) {
         test.skip(true, 'No active showtime with available seats found in the environment');
         return;
       }
 
       // Select a seat – capture its label so we can track it after the class changes
->>>>>>> origin/main
       const availableSeat = page.locator('button.seat.seat-available').first();
       await availableSeat.waitFor({ state: 'visible', timeout: 10000 });
       const seatTitle = await availableSeat.getAttribute('title');
@@ -203,11 +195,6 @@ test.describe('Customer - Complete Booking Flow', () => {
 
     test('should display booking summary table with ticket type and price after seat selection', async ({ page }) => {
       await navigateToSeatSelection(page);
-<<<<<<< HEAD
-
-      // Wait for ticket types to be loaded (summary section is always rendered)
-      await page.locator('.booking-summary').waitFor({ state: 'visible', timeout: 10000 });
-=======
       if (!page.url().includes('/seats')) {
         test.skip(true, 'No active showtime with available seats found in the environment');
         return;
@@ -215,14 +202,12 @@ test.describe('Customer - Complete Booking Flow', () => {
 
       // Wait for ticket types to be loaded (summary section is always rendered)
       await page.locator('.booking-summary').waitFor({ state: 'visible', timeout: 15000 });
->>>>>>> origin/main
 
       // Select a seat
       const availableSeat = page.locator('button.seat.seat-available').first();
       await availableSeat.waitFor({ state: 'visible', timeout: 10000 });
       await availableSeat.click();
 
-<<<<<<< HEAD
       // Booking summary table should appear with Seat / Ticket Type / Price columns
       const summaryTable = page.locator('.booking-summary table');
       await expect(summaryTable).toBeVisible({ timeout: 5000 });
@@ -233,11 +218,6 @@ test.describe('Customer - Complete Booking Flow', () => {
 
       // The total row should be visible in the table footer
       await expect(summaryTable.locator('tfoot').filter({ hasText: /total/i })).toBeVisible();
-=======
-      // Check for total price display inside the booking summary table footer
-      const totalRow = page.locator('.booking-summary table tfoot').filter({ hasText: /total/i });
-      await expect(totalRow).toBeVisible({ timeout: 5000 });
->>>>>>> origin/main
     });
   });
 
