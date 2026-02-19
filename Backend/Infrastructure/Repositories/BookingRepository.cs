@@ -48,6 +48,15 @@ public class BookingRepository : IBookingRepository
             .ToListAsync(ct);
     }
 
+    public async Task<int> GetConfirmedCountByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        // Count all non-cancelled confirmed bookings for this user.
+        // This is used by the loyalty service to detect and correct missing stamps.
+        return await _context.Bookings
+            .AsNoTracking()
+            .CountAsync(b => b.UserId == userId && b.Status == BookingStatus.Confirmed, ct);
+    }
+
     public async Task<Booking> CreateAsync(Booking booking, CancellationToken ct = default)
     {
         _context.Bookings.Add(booking);

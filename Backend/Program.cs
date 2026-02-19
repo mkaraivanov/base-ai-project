@@ -158,6 +158,10 @@ app.MapGroup("/api/bookings")
     .MapBookingEndpoints()
     .WithTags("Bookings");
 
+app.MapGroup("/api/loyalty")
+    .MapLoyaltyEndpoints()
+    .WithTags("Loyalty");
+
 app.MapGroup("/api/ticket-types")
     .MapTicketTypeEndpoints()
     .WithTags("Ticket Types");

@@ -180,7 +180,7 @@ export const MyBookingsPage: React.FC = () => {
                     </div>
                   )}
                 </div>
-                {booking.status === 'Confirmed' && (
+                {booking.status === 'Confirmed' && new Date(booking.showtimeStart) > new Date() && (
                   <div className="booking-card-actions">
                     <button
                       onClick={() => handleCancel(booking.id)}
