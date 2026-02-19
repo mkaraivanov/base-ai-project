@@ -59,3 +59,8 @@ examples/sessions/*.tmp
 
 # Local drafts
 marketing/
+
+# Playwright test artifacts
+test-results/
+frontend/test-results/
+playwright-report/
