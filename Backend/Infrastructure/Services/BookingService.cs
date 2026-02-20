@@ -3,12 +3,14 @@ using Application.DTOs.Payments;
 using Application.DTOs.Reservations;
 using Application.DTOs.Seats;
 using Application.Helpers;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
 using Domain.Entities;
 using Infrastructure.Repositories;
 using Infrastructure.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -27,6 +29,7 @@ public class BookingService : IBookingService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILoyaltyService _loyaltyService;
     private readonly ILogger<BookingService> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly TimeProvider _timeProvider;
 
     public BookingService(
@@ -42,6 +45,7 @@ public class BookingService : IBookingService
         IUnitOfWork unitOfWork,
         ILoyaltyService loyaltyService,
         ILogger<BookingService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null)
     {
         _seatRepository = seatRepository;
@@ -56,6 +60,7 @@ public class BookingService : IBookingService
         _unitOfWork = unitOfWork;
         _loyaltyService = loyaltyService;
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -69,7 +74,7 @@ public class BookingService : IBookingService
             var showtime = await _showtimeRepository.GetByIdAsync(showtimeId, ct);
             if (showtime is null)
             {
-                return Result<SeatAvailabilityDto>.Failure("Showtime not found");
+                return Result<SeatAvailabilityDto>.Failure(_localizer["Showtime not found"]);
             }
 
             var seats = await _seatRepository.GetByShowtimeIdAsync(showtimeId, ct);
@@ -102,7 +107,7 @@ public class BookingService : IBookingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting seat availability for showtime {ShowtimeId}", showtimeId);
-            return Result<SeatAvailabilityDto>.Failure("Failed to retrieve seat availability");
+            return Result<SeatAvailabilityDto>.Failure(_localizer["Failed to retrieve seat availability"]);
         }
     }
 
@@ -121,13 +126,13 @@ public class BookingService : IBookingService
             if (showtime is null)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<ReservationDto>.Failure("Showtime not found");
+                return Result<ReservationDto>.Failure(_localizer["Showtime not found"]);
             }
 
             if (showtime.StartTime <= _timeProvider.GetUtcNow().UtcDateTime)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<ReservationDto>.Failure("Cannot book past or ongoing showtimes");
+                return Result<ReservationDto>.Failure(_localizer["Cannot book past or ongoing showtimes"]);
             }
 
             // Validate ticket types
@@ -234,13 +239,13 @@ public class BookingService : IBookingService
         {
             await _unitOfWork.RollbackTransactionAsync(ct);
             _logger.LogWarning(ex, "Concurrency conflict during reservation for user {UserId}", userId);
-            return Result<ReservationDto>.Failure("Selected seats are no longer available. Please try again.");
+            return Result<ReservationDto>.Failure(_localizer["Selected seats are no longer available. Please try again."]);
         }
         catch (Exception ex)
         {
             await _unitOfWork.RollbackTransactionAsync(ct);
             _logger.LogError(ex, "Error creating reservation for user {UserId}", userId);
-            return Result<ReservationDto>.Failure("Failed to create reservation");
+            return Result<ReservationDto>.Failure(_localizer["Failed to create reservation"]);
         }
     }
 
@@ -292,21 +297,21 @@ public class BookingService : IBookingService
             if (reservation is null)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result.Failure("Reservation not found");
+                return Result.Failure(_localizer["Reservation not found"]);
             }
 
             // Verify ownership
             if (reservation.UserId != userId)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result.Failure("Unauthorized");
+                return Result.Failure(_localizer["Unauthorized"]);
             }
 
             // Check if already cancelled or expired
             if (reservation.Status != ReservationStatus.Pending)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result.Failure("Reservation cannot be cancelled");
+                return Result.Failure(_localizer["Reservation cannot be cancelled"]);
             }
 
             // Release seats
@@ -334,7 +339,7 @@ public class BookingService : IBookingService
         {
             await _unitOfWork.RollbackTransactionAsync(ct);
             _logger.LogError(ex, "Error cancelling reservation {ReservationId}", reservationId);
-            return Result.Failure("Failed to cancel reservation");
+            return Result.Failure(_localizer["Failed to cancel reservation"]);
         }
     }
 
@@ -352,27 +357,27 @@ public class BookingService : IBookingService
             if (reservation is null)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Reservation not found");
+                return Result<BookingDto>.Failure(_localizer["Reservation not found"]);
             }
 
             // Verify ownership
             if (reservation.UserId != userId)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Unauthorized");
+                return Result<BookingDto>.Failure(_localizer["Unauthorized"]);
             }
 
             // Check if reservation is still valid
             if (reservation.Status != ReservationStatus.Pending)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Reservation is no longer valid");
+                return Result<BookingDto>.Failure(_localizer["Reservation is no longer valid"]);
             }
 
             if (reservation.ExpiresAt < _timeProvider.GetUtcNow().UtcDateTime)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Reservation has expired");
+                return Result<BookingDto>.Failure(_localizer["Reservation has expired"]);
             }
 
             // Process payment
@@ -509,7 +514,7 @@ public class BookingService : IBookingService
         {
             await _unitOfWork.RollbackTransactionAsync(ct);
             _logger.LogError(ex, "Error confirming booking for reservation {ReservationId}", dto.ReservationId);
-            return Result<BookingDto>.Failure("Failed to confirm booking");
+            return Result<BookingDto>.Failure(_localizer["Failed to confirm booking"]);
         }
     }
 
@@ -527,21 +532,21 @@ public class BookingService : IBookingService
             if (booking is null)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Booking not found");
+                return Result<BookingDto>.Failure(_localizer["Booking not found"]);
             }
 
             // Verify ownership
             if (booking.UserId != userId)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Unauthorized");
+                return Result<BookingDto>.Failure(_localizer["Unauthorized"]);
             }
 
             // Check if already cancelled
             if (booking.Status != BookingStatus.Confirmed)
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Booking cannot be cancelled");
+                return Result<BookingDto>.Failure(_localizer["Booking cannot be cancelled"]);
             }
 
             // Check if showtime is more than 1 hour away
@@ -549,7 +554,7 @@ public class BookingService : IBookingService
             if (showtime is null || showtime.StartTime <= _timeProvider.GetUtcNow().UtcDateTime.AddHours(1))
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Cannot cancel a booking within 1 hour of the showtime");
+                return Result<BookingDto>.Failure(_localizer["Cannot cancel a booking within 1 hour of the showtime"]);
             }
 
             // Process refund
@@ -619,7 +624,7 @@ public class BookingService : IBookingService
         {
             await _unitOfWork.RollbackTransactionAsync(ct);
             _logger.LogError(ex, "Error cancelling booking {BookingId}", bookingId);
-            return Result<BookingDto>.Failure("Failed to cancel booking");
+            return Result<BookingDto>.Failure(_localizer["Failed to cancel booking"]);
         }
     }
 
@@ -665,7 +670,7 @@ public class BookingService : IBookingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting bookings for user {UserId}", userId);
-            return Result<List<BookingDto>>.Failure("Failed to retrieve bookings");
+            return Result<List<BookingDto>>.Failure(_localizer["Failed to retrieve bookings"]);
         }
     }
 
@@ -680,13 +685,13 @@ public class BookingService : IBookingService
 
             if (booking is null)
             {
-                return Result<BookingDto>.Failure("Booking not found");
+                return Result<BookingDto>.Failure(_localizer["Booking not found"]);
             }
 
             // Verify ownership
             if (booking.UserId != userId)
             {
-                return Result<BookingDto>.Failure("Unauthorized");
+                return Result<BookingDto>.Failure(_localizer["Unauthorized"]);
             }
 
             var resultDto = new BookingDto(
@@ -709,7 +714,7 @@ public class BookingService : IBookingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting booking by number {BookingNumber}", bookingNumber);
-            return Result<BookingDto>.Failure("Failed to retrieve booking");
+            return Result<BookingDto>.Failure(_localizer["Failed to retrieve booking"]);
         }
     }
 

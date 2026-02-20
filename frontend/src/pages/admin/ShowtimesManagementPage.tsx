@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { showtimeApi } from '../../api/showtimeApi';
 import { movieApi } from '../../api/movieApi';
 import { hallApi } from '../../api/hallApi';
@@ -26,6 +27,7 @@ const EMPTY_FORM: ShowtimeFormData = {
 };
 
 export const ShowtimesManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [showtimes, setShowtimes] = useState<readonly ShowtimeDto[]>([]);
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
@@ -114,7 +116,7 @@ export const ShowtimesManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this showtime?')) return;
+    if (!window.confirm(t('showtimes.confirmDelete'))) return;
     try {
       await showtimeApi.delete(id);
       await loadData(filterCinemaId || undefined);
@@ -158,15 +160,15 @@ export const ShowtimesManagementPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
 
   return (
     <div className="page">
       <div className="container">
         <div className="page-header">
-          <h1>Showtimes Management</h1>
+          <h1>{t('showtimes.title')}</h1>
           <button onClick={handleCreate} className="btn btn-primary">
-            + Add Showtime
+            + {t('showtimes.addShowtime')}
           </button>
         </div>
 
@@ -177,7 +179,7 @@ export const ShowtimesManagementPage: React.FC = () => {
             className="input"
             style={{ maxWidth: 260 }}
           >
-            <option value="">All Cinemas</option>
+            <option value="">{t('common.allCinemas')}</option>
             {cinemas.map((c) => (
               <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
             ))}
@@ -189,45 +191,45 @@ export const ShowtimesManagementPage: React.FC = () => {
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingId ? 'Edit Showtime' : 'Schedule Showtime'}</h2>
+              <h2>{editingId ? t('showtimes.editShowtime') : t('showtimes.scheduleShowtime')}</h2>
               <form onSubmit={handleSubmit} className="form">
                 <div className="form-group">
-                  <label htmlFor="movieId">Movie</label>
+                  <label htmlFor="movieId">{t('showtimes.form.movie')}</label>
                   <select id="movieId" name="movieId" value={form.movieId} onChange={handleInputChange} className="input" required disabled={!!editingId}>
-                    <option value="">Select a movie</option>
+                    <option value="">{t('showtimes.form.selectMovie')}</option>
                     {movies.map((movie) => (
                       <option key={movie.id} value={movie.id}>{movie.title}</option>
                     ))}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="formCinemaId">Cinema</label>
+                  <label htmlFor="formCinemaId">{t('showtimes.form.cinema')}</label>
                   <select id="formCinemaId" name="formCinemaId" value={form.formCinemaId} onChange={handleInputChange} className="input" required disabled={!!editingId}>
-                    <option value="">Select a cinema</option>
+                    <option value="">{t('showtimes.form.selectCinema')}</option>
                     {cinemas.map((c) => (
                       <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
                     ))}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="cinemaHallId">Cinema Hall</label>
+                  <label htmlFor="cinemaHallId">{t('showtimes.form.hall')}</label>
                   <select id="cinemaHallId" name="cinemaHallId" value={form.cinemaHallId} onChange={handleInputChange} className="input" required disabled={!form.formCinemaId || !!editingId}>
-                    <option value="">Select a hall</option>
+                    <option value="">{t('showtimes.form.selectHall')}</option>
                     {filteredHalls.map((hall) => (
                       <option key={hall.id} value={hall.id}>{hall.name} ({hall.totalSeats} seats)</option>
                     ))}
                   </select>
                   {form.formCinemaId && filteredHalls.length === 0 && (
-                    <p className="form-help" style={{ color: '#e53e3e' }}>No active halls for this cinema.</p>
+                    <p className="form-help" style={{ color: '#e53e3e' }}>{t('halls.form.noActiveHalls')}</p>
                   )}
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="startTime">Start Time</label>
+                    <label htmlFor="startTime">{t('showtimes.form.startTime')}</label>
                     <input id="startTime" name="startTime" type="datetime-local" value={form.startTime} onChange={handleInputChange} className="input" required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="basePrice">Base Price ($)</label>
+                    <label htmlFor="basePrice">{t('showtimes.form.basePrice')}</label>
                     <input id="basePrice" name="basePrice" type="number" step="0.01" min="0" value={form.basePrice} onChange={handleInputChange} className="input" required />
                   </div>
                 </div>
@@ -240,14 +242,14 @@ export const ShowtimesManagementPage: React.FC = () => {
                         checked={form.isActive}
                         onChange={handleInputChange}
                       />
-                      Active
+                      {t('showtimes.form.activeLabel')}
                     </label>
                   </div>
                 )}
                 <div className="form-actions">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">Cancel</button>
+                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">{t('common.cancel')}</button>
                   <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
                   </button>
                 </div>
               </form>
@@ -259,14 +261,14 @@ export const ShowtimesManagementPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Movie</th>
-                <th>Cinema</th>
-                <th>Hall</th>
-                <th>Start Time</th>
-                <th>Base Price</th>
-                <th>Available Seats</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{t('showtimes.columns.movie')}</th>
+                <th>{t('showtimes.columns.cinema')}</th>
+                <th>{t('showtimes.columns.hall')}</th>
+                <th>{t('showtimes.columns.startTime')}</th>
+                <th>{t('showtimes.columns.basePrice')}</th>
+                <th>{t('showtimes.columns.availableSeats')}</th>
+                <th>{t('showtimes.columns.status')}</th>
+                <th>{t('showtimes.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -280,13 +282,13 @@ export const ShowtimesManagementPage: React.FC = () => {
                   <td>{showtime.availableSeats}</td>
                   <td>
                     <span className={`status-badge status-${showtime.isActive ? 'confirmed' : 'cancelled'}`}>
-                      {showtime.isActive ? 'Active' : 'Inactive'}
+                      {showtime.isActive ? t('common.active') : t('common.inactive')}
                     </span>
                   </td>
                   <td>
                     <div className="table-actions">
-                      <button onClick={() => handleEdit(showtime)} className="btn btn-sm btn-outline">Edit</button>
-                      <button onClick={() => handleDelete(showtime.id)} className="btn btn-sm btn-danger">Delete</button>
+                      <button onClick={() => handleEdit(showtime)} className="btn btn-sm btn-outline">{t('common.edit')}</button>
+                      <button onClick={() => handleDelete(showtime.id)} className="btn btn-sm btn-danger">{t('common.delete')}</button>
                     </div>
                   </td>
                 </tr>

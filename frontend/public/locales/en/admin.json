@@ -1,0 +1,211 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "update": "Update",
+    "create": "Create",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "allCinemas": "All Cinemas"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalRevenue": "Total Revenue",
+    "totalBookings": "Total Bookings",
+    "activeMovies": "Active Movies",
+    "activeCinemas": "Active Cinemas",
+    "heading": "Admin Dashboard",
+    "cinemas": "Cinemas",
+    "cinemasDesc": "Manage cinemas, locations and opening hours",
+    "halls": "Cinema Halls",
+    "hallsDesc": "Manage halls, configure seat layouts",
+    "movies": "Movies",
+    "moviesDesc": "Manage movies, add new titles, update details",
+    "showtimes": "Showtimes",
+    "showtimesDesc": "Schedule and manage movie showtimes",
+    "ticketTypes": "Ticket Types",
+    "ticketTypesDesc": "Manage ticket types and price modifiers (Adult, Children, Senior, etc.)",
+    "loyalty": "Loyalty Program",
+    "loyaltyDesc": "Configure required visits for a free ticket reward",
+    "reports": "Reports",
+    "reportsDesc": "Ticket sales reports by date, movie, showtime, and location"
+  },
+  "movies": {
+    "title": "Movies Management",
+    "addMovie": "Add Movie",
+    "editMovie": "Edit Movie",
+    "deleteMovie": "Delete Movie",
+    "confirmDelete": "Are you sure you want to delete this movie?",
+    "columns": {
+      "title": "Title",
+      "genre": "Genre",
+      "duration": "Duration (min)",
+      "rating": "Rating",
+      "releaseDate": "Release Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "title": "Title",
+      "description": "Description",
+      "genre": "Genre",
+      "rating": "Rating",
+      "ratingPlaceholder": "PG-13",
+      "duration": "Duration (min)",
+      "releaseDate": "Release Date",
+      "posterUrl": "Poster URL",
+      "activeLabel": "Active"
+    }
+  },
+  "cinemas": {
+    "title": "Cinemas Management",
+    "addCinema": "Add Cinema",
+    "editCinema": "Edit Cinema",
+    "confirmDelete": "Are you sure you want to delete this cinema? All associated halls must be inactive first.",
+    "columns": {
+      "name": "Name",
+      "city": "City",
+      "address": "Address",
+      "location": "Location",
+      "contact": "Contact",
+      "hours": "Hours",
+      "halls": "Halls",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Cinema Name *",
+      "address": "Address *",
+      "city": "City *",
+      "country": "Country *",
+      "phone": "Phone Number",
+      "email": "Email",
+      "logoUrl": "Logo URL",
+      "logoUrlPlaceholder": "https://...",
+      "openTime": "Opening Time *",
+      "closeTime": "Closing Time *",
+      "activeLabel": "Active"
+    }
+  },
+  "halls": {
+    "title": "Cinema Halls Management",
+    "addHall": "Add Hall",
+    "editHall": "Edit Hall",
+    "confirmDelete": "Are you sure you want to delete this hall?",
+    "columns": {
+      "name": "Name",
+      "cinema": "Cinema",
+      "totalSeats": "Total Seats",
+      "layout": "Layout",
+      "capacity": "Capacity",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "cinema": "Cinema *",
+      "name": "Hall Name *",
+      "rows": "Rows",
+      "seatsPerRow": "Seats per Row",
+      "totalSeats": "Total seats: {{count}}",
+      "activeLabel": "Active",
+      "selectCinema": "Select Cinema",
+      "noActiveHalls": "No active halls for this cinema."
+    }
+  },
+  "showtimes": {
+    "title": "Showtimes Management",
+    "addShowtime": "Add Showtime",
+    "editShowtime": "Edit Showtime",
+    "scheduleShowtime": "Schedule Showtime",
+    "confirmDelete": "Are you sure you want to delete this showtime?",
+    "columns": {
+      "movie": "Movie",
+      "cinema": "Cinema",
+      "hall": "Hall",
+      "startTime": "Start Time",
+      "price": "Price",
+      "basePrice": "Base Price",
+      "availableSeats": "Available Seats",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "movie": "Movie",
+      "cinema": "Cinema",
+      "hall": "Cinema Hall",
+      "startTime": "Start Time",
+      "basePrice": "Base Price ($)",
+      "activeLabel": "Active",
+      "selectMovie": "Select a movie",
+      "selectCinema": "Select a cinema",
+      "selectHall": "Select a hall"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "pageTitle": "Ticket Sales Reports",
+    "revenue": "Revenue Report",
+    "bookings": "Bookings Report",
+    "dateRange": "Date Range",
+    "tabs": {
+      "date": "Sales by Date",
+      "movie": "Sales by Movie",
+      "showtime": "Sales by Showtime",
+      "location": "Sales by Location"
+    }
+  },
+  "loyalty": {
+    "title": "Loyalty Management",
+    "pageTitle": "\ud83c\udf81 Loyalty Program Settings",
+    "pageSubtitle": "Configure how many paid movie visits a customer needs to earn a free ticket. Multiple tickets in one transaction count as a single visit.",
+    "tiers": "Tiers",
+    "points": "Points",
+    "visitsRequired": "Visits required for a free ticket",
+    "currentlySet": "Currently set to <strong>{{count}}</strong> visits.",
+    "saveSettings": "Save Settings",
+    "saving": "Saving...",
+    "savedSuccess": "Loyalty settings saved successfully.",
+    "invalidVisits": "Number of visits must be at least 1",
+    "failedToLoad": "Failed to load loyalty settings",
+    "failedToSave": "Failed to save loyalty settings",
+    "howItWorks": "How it works",
+    "bullet1": "Each qualifying booking awards the customer 1 stamp.",
+    "bullet2": "A booking qualifies if payment is successful and the reservation is not cancelled or refunded.",
+    "bullet3": "Multiple tickets in one transaction count as one visit.",
+    "bullet4": "When a customer reaches the required number of stamps, they automatically receive a free ticket voucher.",
+    "bullet5": "The stamp counter resets after each reward is issued."
+  },
+  "ticketTypes": {
+    "title": "Ticket Types",
+    "addType": "Add Ticket Type",
+    "editType": "Edit Ticket Type",
+    "confirmDeactivate": "Are you sure you want to deactivate this ticket type?",
+    "invalidModifier": "Price modifier must be a positive number",
+    "failedToLoad": "Failed to load ticket types",
+    "failedToSave": "Failed to save ticket type",
+    "columns": {
+      "name": "Name",
+      "discount": "Discount (%)",
+      "description": "Description",
+      "modifier": "Price Modifier",
+      "sortOrder": "Sort Order",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Name *",
+      "namePlaceholder": "e.g. Adult, Children, Senior",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g. Children aged 12 and under \u2014 50% discount",
+      "priceModifier": "Price Modifier *",
+      "priceModifierHint": "(1.0 = full price, 0.5 = 50% off, 1.2 = 20% surcharge)",
+      "sortOrder": "Sort Order",
+      "activeLabel": "Active"
+    }
+  }
+}

@@ -1,6 +1,8 @@
 using Application.DTOs.Payments;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -9,12 +11,15 @@ public class MockPaymentService : IPaymentService
 {
     private readonly ILogger<MockPaymentService> _logger;
     private readonly TimeProvider _timeProvider;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public MockPaymentService(
         ILogger<MockPaymentService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null)
     {
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -32,7 +37,7 @@ public class MockPaymentService : IPaymentService
             if (dto.CardNumber.StartsWith("0000"))
             {
                 _logger.LogWarning("Mock payment failed for reservation {ReservationId}", dto.ReservationId);
-                return Result<PaymentResultDto>.Failure("Payment declined by bank");
+                return Result<PaymentResultDto>.Failure(_localizer["Payment declined by bank"]);
             }
 
             var transactionId = $"TXN-{Guid.NewGuid().ToString()[..8].ToUpper()}";
@@ -58,7 +63,7 @@ public class MockPaymentService : IPaymentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing mock payment");
-            return Result<PaymentResultDto>.Failure("Payment processing failed");
+            return Result<PaymentResultDto>.Failure(_localizer["Payment processing failed"]);
         }
     }
 
@@ -89,7 +94,7 @@ public class MockPaymentService : IPaymentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing refund for payment {PaymentId}", paymentId);
-            return Result<PaymentResultDto>.Failure("Refund processing failed");
+            return Result<PaymentResultDto>.Failure(_localizer["Refund processing failed"]);
         }
     }
 }

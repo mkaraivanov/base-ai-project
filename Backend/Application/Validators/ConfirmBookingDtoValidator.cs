@@ -1,49 +1,55 @@
 using Application.DTOs.Bookings;
+using Application.Resources;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Validators;
 
 public class ConfirmBookingDtoValidator : AbstractValidator<ConfirmBookingDto>
 {
-    public ConfirmBookingDtoValidator()
+    private readonly IStringLocalizer<SharedResource> _localizer;
+
+    public ConfirmBookingDtoValidator(IStringLocalizer<SharedResource> localizer)
     {
+        _localizer = localizer;
+
         RuleFor(x => x.ReservationId)
             .NotEmpty()
-            .WithMessage("Reservation ID is required");
+            .WithMessage(_ => _localizer["Reservation ID is required"]);
 
         RuleFor(x => x.PaymentMethod)
             .NotEmpty()
-            .WithMessage("Payment method is required")
+            .WithMessage(_ => _localizer["Payment method is required"])
             .MaximumLength(50)
-            .WithMessage("Payment method must not exceed 50 characters");
+            .WithMessage(_ => _localizer["Payment method must not exceed 50 characters"]);
 
         RuleFor(x => x.CardNumber)
             .NotEmpty()
-            .WithMessage("Card number is required")
+            .WithMessage(_ => _localizer["Card number is required"])
             .Matches(@"^\d{13,19}$")
-            .WithMessage("Card number must be between 13 and 19 digits");
+            .WithMessage(_ => _localizer["Card number must be between 13 and 19 digits"]);
 
         RuleFor(x => x.CardHolderName)
             .NotEmpty()
-            .WithMessage("Card holder name is required")
+            .WithMessage(_ => _localizer["Card holder name is required"])
             .MaximumLength(100)
-            .WithMessage("Card holder name must not exceed 100 characters");
+            .WithMessage(_ => _localizer["Card holder name must not exceed 100 characters"]);
 
         RuleFor(x => x.ExpiryDate)
             .NotEmpty()
-            .WithMessage("Expiry date is required")
+            .WithMessage(_ => _localizer["Expiry date is required"])
             .Matches(@"^(0[1-9]|1[0-2])\/\d{2}$")
-            .WithMessage("Expiry date must be in MM/YY format");
+            .WithMessage(_ => _localizer["Expiry date must be in MM/YY format"]);
 
         RuleFor(x => x.CVV)
             .NotEmpty()
-            .WithMessage("CVV is required")
+            .WithMessage(_ => _localizer["CVV is required"])
             .Matches(@"^\d{3,4}$")
-            .WithMessage("CVV must be 3 or 4 digits");
+            .WithMessage(_ => _localizer["CVV must be 3 or 4 digits"]);
 
         RuleFor(x => x.CarLicensePlate)
             .Matches(@"^[A-Z]{1,2}\d{4}[A-Z]{2}$")
-            .WithMessage("Car license plate must be a valid Bulgarian format (e.g. CB1234AB)")
+            .WithMessage(_ => _localizer["Car license plate must be a valid Bulgarian format (e.g. CB1234AB)"])
             .When(x => !string.IsNullOrWhiteSpace(x.CarLicensePlate));
     }
 }

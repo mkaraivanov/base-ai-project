@@ -42,6 +42,9 @@ builder.Host.UseSerilog();
 // Add services to the container.
 builder.Services.AddOpenApi();
 
+// Localization
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+
 // Memory Cache
 builder.Services.AddMemoryCache();
 
@@ -194,6 +197,18 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<InputSanitizationMiddleware>();
 app.UseIpRateLimiting();
 app.UseResponseCompression();
+
+// Request Localization
+var supportedCultures = new[] { "en", "bg" };
+app.UseRequestLocalization(options =>
+{
+    options.SetDefaultCulture("en")
+           .AddSupportedCultures(supportedCultures)
+           .AddSupportedUICultures(supportedCultures);
+    options.FallBackToParentCultures = true;
+    options.FallBackToParentUICultures = true;
+});
+
 app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { bookingApi } from '../../api/bookingApi';
 import { BookingTimer } from '../../components/BookingTimer/BookingTimer';
 import type { ReservationDto, ConfirmBookingDto } from '../../types';
@@ -25,6 +26,7 @@ const INITIAL_FORM: PaymentForm = {
 };
 
 export const CheckoutPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { reservationId } = useParams<{ reservationId: string }>();
   const navigate = useNavigate();
 
@@ -60,13 +62,13 @@ export const CheckoutPage: React.FC = () => {
     if (!reservationId) return;
 
     if (!form.cardNumber || !form.cardHolderName || !form.expiryDate || !form.cvv) {
-      setError('Please fill in all payment fields.');
+      setError(t('checkout.fillPaymentFields'));
       return;
     }
 
     const normalizedPlate = form.carLicensePlate.trim().toUpperCase() || undefined;
     if (normalizedPlate && !/^[A-Z]{1,2}\d{4}[A-Z]{2}$/.test(normalizedPlate)) {
-      setError('Car license plate must be a valid Bulgarian format (e.g. CB1234AB).');
+      setError(t('checkout.invalidPlate'));
       return;
     }
 
@@ -90,7 +92,7 @@ export const CheckoutPage: React.FC = () => {
       const booking = await bookingApi.confirmBooking(confirmData);
       navigate(`/confirmation/${booking.bookingNumber}`);
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Payment failed. Please try again.');
+      const message = extractErrorMessage(err, t('checkout.paymentFailed'));
       setError(message);
     } finally {
       setLoading(false);
@@ -104,7 +106,7 @@ export const CheckoutPage: React.FC = () => {
   return (
     <div className="page">
       <div className="container container-sm">
-        <h1>Checkout</h1>
+        <h1>{t('checkout.title')}</h1>
 
         {reservation && (
           <BookingTimer
@@ -115,9 +117,9 @@ export const CheckoutPage: React.FC = () => {
 
         {reservation && reservation.totalAmount > 0 && (
           <div className="order-summary">
-            <h3>Order Summary</h3>
-            <p>Seats: {reservation.seatNumbers.join(', ')}</p>
-            <p className="total">Total: {formatCurrency(reservation.totalAmount)}</p>
+            <h3>{t('checkout.orderSummary')}</h3>
+            <p>{t('checkout.orderSeats', { seats: reservation.seatNumbers.join(', ') })}</p>
+            <p className="total">{t('checkout.orderTotal', { amount: formatCurrency(reservation.totalAmount) })}</p>
           </div>
         )}
 
@@ -125,7 +127,7 @@ export const CheckoutPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">
-            <label htmlFor="paymentMethod">Payment Method</label>
+            <label htmlFor="paymentMethod">{t('checkout.paymentMethod')}</label>
             <select
               id="paymentMethod"
               name="paymentMethod"
@@ -133,13 +135,13 @@ export const CheckoutPage: React.FC = () => {
               onChange={handleInputChange}
               className="input"
             >
-              <option value="CreditCard">Credit Card</option>
-              <option value="DebitCard">Debit Card</option>
+              <option value="CreditCard">{t('checkout.creditCard')}</option>
+              <option value="DebitCard">{t('checkout.debitCard')}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="cardHolderName">Card Holder Name</label>
+            <label htmlFor="cardHolderName">{t('checkout.cardHolderName')}</label>
             <input
               type="text"
               id="cardHolderName"
@@ -153,7 +155,7 @@ export const CheckoutPage: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="cardNumber">Card Number</label>
+            <label htmlFor="cardNumber">{t('checkout.cardNumber')}</label>
             <input
               type="text"
               id="cardNumber"
@@ -169,7 +171,7 @@ export const CheckoutPage: React.FC = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="expiryDate">Expiry Date</label>
+              <label htmlFor="expiryDate">{t('checkout.expiryDate')}</label>
               <input
                 type="text"
                 id="expiryDate"
@@ -184,7 +186,7 @@ export const CheckoutPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="cvv">CVV</label>
+              <label htmlFor="cvv">{t('checkout.cvv')}</label>
               <input
                 type="text"
                 id="cvv"
@@ -200,7 +202,7 @@ export const CheckoutPage: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="carLicensePlate">Car License Plate <span className="optional-label">(optional – for parking)</span></label>
+            <label htmlFor="carLicensePlate">{t('checkout.carLicensePlate')} <span className="optional-label">{t('checkout.carLicensePlateOptional')}</span></label>
             <input
               type="text"
               id="carLicensePlate"
@@ -218,7 +220,7 @@ export const CheckoutPage: React.FC = () => {
             className="btn btn-primary btn-lg btn-full"
             disabled={loading}
           >
-            {loading ? 'Processing...' : 'Confirm & Pay'}
+              {loading ? t('checkout.processing') : t('checkout.confirmAndPay')}
           </button>
         </form>
       </div>

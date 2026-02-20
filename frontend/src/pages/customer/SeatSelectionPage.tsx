@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SeatMap } from '../../components/SeatMap/SeatMap';
 import { BookingTimer } from '../../components/BookingTimer/BookingTimer';
 import { bookingApi } from '../../api/bookingApi';
@@ -18,6 +19,7 @@ interface SeatTicketSelection {
 }
 
 export const SeatSelectionPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { showtimeId } = useParams<{ showtimeId: string }>();
   const navigate = useNavigate();
 
@@ -152,7 +154,7 @@ export const SeatSelectionPage: React.FC = () => {
     clearSelection();
     setSeatTickets(new Map());
     await reloadAvailability();
-    setError('Your reservation has expired. Please select seats again.');
+      setError(t('seatSelection.reservationExpired'));
   };
 
   const handleProceedToCheckout = () => {
@@ -161,9 +163,9 @@ export const SeatSelectionPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading seats...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('seatSelection.loading')}</div></div>;
   if (error && !availability) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
-  if (!availability) return <div className="page"><div className="error-message">No data available</div></div>;
+  if (!availability) return <div className="page"><div className="error-message">{t('seatSelection.noDataAvailable')}</div></div>;
 
   return (
     <div className="page">
@@ -186,7 +188,7 @@ export const SeatSelectionPage: React.FC = () => {
               onExpire={handleReservationExpire}
             />
             <button onClick={handleProceedToCheckout} className="btn btn-primary">
-              Proceed to Checkout
+              {t('seatSelection.proceedToCheckout')}
             </button>
           </div>
         )}
@@ -198,18 +200,18 @@ export const SeatSelectionPage: React.FC = () => {
         />
 
         <div className="booking-summary">
-          <h3>Booking Summary</h3>
+          <h3>{t('seatSelection.bookingSummary')}</h3>
 
           {selectedSeats.length === 0 ? (
-            <p>No seats selected. Click a seat on the map to begin.</p>
+            <p>{t('seatSelection.noSeatsSelected')}</p>
           ) : (
             <>
               <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>Seat</th>
-                    <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>Ticket Type</th>
-                    <th style={{ textAlign: 'right', paddingBottom: '0.5rem' }}>Price</th>
+                    <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatSelection.seat')}</th>
+                    <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatSelection.ticketType')}</th>
+                    <th style={{ textAlign: 'right', paddingBottom: '0.5rem' }}>{t('seatSelection.price')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -257,7 +259,7 @@ export const SeatSelectionPage: React.FC = () => {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={2} style={{ paddingTop: '0.75rem', fontWeight: 'bold' }}>Total</td>
+                    <td colSpan={2} style={{ paddingTop: '0.75rem', fontWeight: 'bold' }}>{t('seatSelection.totalLabel')}</td>
                     <td style={{ textAlign: 'right', paddingTop: '0.75rem', fontWeight: 'bold' }}>
                       {formatCurrency(totalPrice)}
                     </td>
@@ -271,7 +273,7 @@ export const SeatSelectionPage: React.FC = () => {
                   disabled={selectedSeats.length === 0}
                   className="btn btn-primary"
                 >
-                  Reserve Seats ({selectedSeats.length})
+                  {t('seatSelection.reserveSeats', { count: selectedSeats.length })}
                 </button>
               )}
             </>

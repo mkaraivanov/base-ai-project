@@ -1,8 +1,10 @@
 using Application.DTOs.Loyalty;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
 using Domain.Entities;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -15,16 +17,19 @@ public class LoyaltyService : ILoyaltyService
     private readonly IBookingRepository _bookingRepository;
     private readonly ILogger<LoyaltyService> _logger;
     private readonly TimeProvider _timeProvider;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public LoyaltyService(
         ILoyaltyRepository loyaltyRepository,
         IBookingRepository bookingRepository,
         ILogger<LoyaltyService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null)
     {
         _loyaltyRepository = loyaltyRepository;
         _bookingRepository = bookingRepository;
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -127,7 +132,7 @@ public class LoyaltyService : ILoyaltyService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting loyalty card for user {UserId}", userId);
-            return Result<LoyaltyCardDto>.Failure("Failed to retrieve loyalty card");
+            return Result<LoyaltyCardDto>.Failure(_localizer["Failed to retrieve loyalty card"]);
         }
     }
 
@@ -277,7 +282,7 @@ public class LoyaltyService : ILoyaltyService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting loyalty settings");
-            return Result<LoyaltySettingsDto>.Failure("Failed to retrieve loyalty settings");
+            return Result<LoyaltySettingsDto>.Failure(_localizer["Failed to retrieve loyalty settings"]);
         }
     }
 
@@ -287,7 +292,7 @@ public class LoyaltyService : ILoyaltyService
         {
             if (dto.StampsRequired < 1)
             {
-                return Result<LoyaltySettingsDto>.Failure("Stamps required must be at least 1");
+                return Result<LoyaltySettingsDto>.Failure(_localizer["Stamps required must be at least 1"]);
             }
 
             var existing = await _loyaltyRepository.GetSettingsAsync(ct);
@@ -307,7 +312,7 @@ public class LoyaltyService : ILoyaltyService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating loyalty settings");
-            return Result<LoyaltySettingsDto>.Failure("Failed to update loyalty settings");
+            return Result<LoyaltySettingsDto>.Failure(_localizer["Failed to update loyalty settings"]);
         }
     }
 

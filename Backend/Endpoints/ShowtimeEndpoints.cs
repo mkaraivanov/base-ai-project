@@ -1,8 +1,10 @@
 using Application.DTOs.Showtimes;
+using Application.Resources;
 using Application.Services;
 using Application.Validators;
 using Backend.Models;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Backend.Endpoints;
 
@@ -82,13 +84,14 @@ public static class ShowtimeEndpoints
         CreateShowtimeDto dto,
         IShowtimeService showtimeService,
         IValidator<CreateShowtimeDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<ShowtimeDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<ShowtimeDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await showtimeService.CreateShowtimeAsync(dto, ct);
@@ -103,13 +106,14 @@ public static class ShowtimeEndpoints
         UpdateShowtimeDto dto,
         IShowtimeService showtimeService,
         IValidator<UpdateShowtimeDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<ShowtimeDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<ShowtimeDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await showtimeService.UpdateShowtimeAsync(id, dto, ct);

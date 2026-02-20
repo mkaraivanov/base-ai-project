@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
 import { Navbar } from './components/Layout/Navbar';
@@ -31,14 +32,16 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">{t('actions.loading')}</div>;
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { t } = useTranslation();
   const { isAuthenticated, isAdmin, loading } = useAuth();
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">{t('actions.loading')}</div>;
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (!isAdmin) return <Navigate to="/" />;
   return <>{children}</>;

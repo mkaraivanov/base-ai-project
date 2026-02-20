@@ -106,6 +106,7 @@ public class BookingServiceTests
             _unitOfWorkMock.Object,
             _loyaltyServiceMock.Object,
             _loggerMock.Object,
+            Helpers.LocalizerHelper.CreateDefault(),
             _timeProvider
         );
     }

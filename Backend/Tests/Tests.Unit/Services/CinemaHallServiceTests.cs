@@ -26,6 +26,7 @@ public class CinemaHallServiceTests
         _hallService = new CinemaHallService(
             _hallRepositoryMock.Object,
             _loggerMock.Object,
+            Helpers.LocalizerHelper.CreateDefault(),
             _timeProvider);
     }
 

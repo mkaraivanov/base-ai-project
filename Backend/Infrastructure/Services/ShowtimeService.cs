@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Application.DTOs.Showtimes;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
 using Domain.Entities;
@@ -7,6 +8,7 @@ using Domain.ValueObjects;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -18,6 +20,7 @@ public class ShowtimeService : IShowtimeService
     private readonly ICinemaHallRepository _hallRepository;
     private readonly CinemaDbContext _context;
     private readonly ILogger<ShowtimeService> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private readonly TimeProvider _timeProvider;
 
     public ShowtimeService(
@@ -26,6 +29,7 @@ public class ShowtimeService : IShowtimeService
         ICinemaHallRepository hallRepository,
         CinemaDbContext context,
         ILogger<ShowtimeService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null)
     {
         _showtimeRepository = showtimeRepository;
@@ -33,6 +37,7 @@ public class ShowtimeService : IShowtimeService
         _hallRepository = hallRepository;
         _context = context;
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -51,7 +56,7 @@ public class ShowtimeService : IShowtimeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving showtimes");
-            return Result<List<ShowtimeDto>>.Failure("Failed to retrieve showtimes");
+            return Result<List<ShowtimeDto>>.Failure(_localizer["Failed to retrieve showtimes"]);
         }
     }
 
@@ -66,7 +71,7 @@ public class ShowtimeService : IShowtimeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving showtimes for movie {MovieId}", movieId);
-            return Result<List<ShowtimeDto>>.Failure("Failed to retrieve showtimes");
+            return Result<List<ShowtimeDto>>.Failure(_localizer["Failed to retrieve showtimes"]);
         }
     }
 
@@ -77,7 +82,7 @@ public class ShowtimeService : IShowtimeService
             var showtime = await _showtimeRepository.GetByIdAsync(id, ct);
             if (showtime is null)
             {
-                return Result<ShowtimeDto>.Failure("Showtime not found");
+                return Result<ShowtimeDto>.Failure(_localizer["Showtime not found"]);
             }
 
             var availableSeats = await GetAvailableSeatCountAsync(id, ct);
@@ -87,7 +92,7 @@ public class ShowtimeService : IShowtimeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving showtime {ShowtimeId}", id);
-            return Result<ShowtimeDto>.Failure("Failed to retrieve showtime");
+            return Result<ShowtimeDto>.Failure(_localizer["Failed to retrieve showtime"]);
         }
     }
 
@@ -99,14 +104,14 @@ public class ShowtimeService : IShowtimeService
             var movie = await _movieRepository.GetByIdAsync(dto.MovieId, ct);
             if (movie is null)
             {
-                return Result<ShowtimeDto>.Failure("Movie not found");
+                return Result<ShowtimeDto>.Failure(_localizer["Movie not found"]);
             }
 
             // Validate cinema hall exists
             var hall = await _hallRepository.GetByIdAsync(dto.CinemaHallId, ct);
             if (hall is null)
             {
-                return Result<ShowtimeDto>.Failure("Cinema hall not found");
+                return Result<ShowtimeDto>.Failure(_localizer["Cinema hall not found"]);
             }
 
             // Calculate end time (movie duration + 30 min buffer for cleaning)
@@ -122,7 +127,7 @@ public class ShowtimeService : IShowtimeService
 
             if (hasOverlap)
             {
-                return Result<ShowtimeDto>.Failure("Showtime overlaps with existing showtime in this hall");
+                return Result<ShowtimeDto>.Failure(_localizer["Showtime overlaps with existing showtime in this hall"]);
             }
 
             // Create showtime
@@ -182,7 +187,7 @@ public class ShowtimeService : IShowtimeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating showtime");
-            return Result<ShowtimeDto>.Failure("Failed to create showtime");
+            return Result<ShowtimeDto>.Failure(_localizer["Failed to create showtime"]);
         }
     }
 
@@ -192,11 +197,11 @@ public class ShowtimeService : IShowtimeService
         {
             var existing = await _showtimeRepository.GetByIdAsync(id, ct);
             if (existing is null)
-                return Result<ShowtimeDto>.Failure("Showtime not found");
+                return Result<ShowtimeDto>.Failure(_localizer["Showtime not found"]);
 
             var movie = await _movieRepository.GetByIdAsync(existing.MovieId, ct);
             if (movie is null)
-                return Result<ShowtimeDto>.Failure("Associated movie not found");
+                return Result<ShowtimeDto>.Failure(_localizer["Associated movie not found"]);
 
             var newEndTime = dto.StartTime.AddMinutes(movie.DurationMinutes + 30);
 
@@ -208,7 +213,7 @@ public class ShowtimeService : IShowtimeService
                 ct);
 
             if (hasOverlap)
-                return Result<ShowtimeDto>.Failure("Showtime overlaps with existing showtime in this hall");
+                return Result<ShowtimeDto>.Failure(_localizer["Showtime overlaps with existing showtime in this hall"]);
 
             var updated = existing with
             {
@@ -227,7 +232,7 @@ public class ShowtimeService : IShowtimeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating showtime {ShowtimeId}", id);
-            return Result<ShowtimeDto>.Failure("Failed to update showtime");
+            return Result<ShowtimeDto>.Failure(_localizer["Failed to update showtime"]);
         }
     }
 
@@ -238,7 +243,7 @@ public class ShowtimeService : IShowtimeService
             var existing = await _showtimeRepository.GetByIdAsync(id, ct);
             if (existing is null)
             {
-                return Result.Failure("Showtime not found");
+                return Result.Failure(_localizer["Showtime not found"]);
             }
 
             await _showtimeRepository.DeleteAsync(id, ct);
@@ -249,7 +254,7 @@ public class ShowtimeService : IShowtimeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting showtime {ShowtimeId}", id);
-            return Result.Failure("Failed to delete showtime");
+            return Result.Failure(_localizer["Failed to delete showtime"]);
         }
     }
 

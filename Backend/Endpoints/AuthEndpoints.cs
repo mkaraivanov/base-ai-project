@@ -1,8 +1,10 @@
 using Application.DTOs.Auth;
+using Application.Resources;
 using Application.Services;
 using Application.Validators;
 using Backend.Models;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Backend.Endpoints;
 
@@ -27,6 +29,7 @@ public static class AuthEndpoints
         RegisterDto dto,
         IAuthService authService,
         IValidator<RegisterDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         // Validate input
@@ -34,7 +37,7 @@ public static class AuthEndpoints
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<AuthResponseDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<AuthResponseDto>(false, null, localizer["Validation failed"], errors));
         }
 
         // Register user
@@ -49,6 +52,7 @@ public static class AuthEndpoints
         LoginDto dto,
         IAuthService authService,
         IValidator<LoginDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         // Validate input
@@ -56,7 +60,7 @@ public static class AuthEndpoints
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<AuthResponseDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<AuthResponseDto>(false, null, localizer["Validation failed"], errors));
         }
 
         // Login user

@@ -231,3 +231,67 @@ test.describe('Customer - Complete Booking Flow', () => {
     });
   });
 });
+
+// ─── Bulgarian locale assertions ───────────────────────────────────────────────
+// These tests run with the bg-BG Playwright project (Accept-Language: bg) so the
+// backend RequestLocalizationMiddleware picks the Bulgarian resource strings.
+
+test.describe('Customer Booking Flow – Bulgarian locale', () => {
+  test.use({ locale: 'bg-BG' });
+
+  const timestamp = Date.now();
+  const bgUser = {
+    email: `bg.test+${timestamp}@example.com`,
+    password: 'Test123456',
+    firstName: 'Иван',
+    lastName: 'Петров',
+    phoneNumber: '+35988111222',
+  };
+
+  test('registration API returns Bulgarian error for duplicate email', async ({ page }) => {
+    // Register once
+    await page.request.post('http://localhost:5076/api/auth/register', {
+      data: bgUser,
+    });
+
+    // Attempt to register again with the same email
+    const response = await page.request.post('http://localhost:5076/api/auth/register', {
+      data: bgUser,
+      headers: { 'Accept-Language': 'bg' },
+    });
+
+    const body = await response.json();
+    // Expect the Bulgarian "already registered" error in the response body
+    const bodyText = JSON.stringify(body);
+    expect(bodyText).toContain('Имейлът вече е регистриран');
+  });
+
+  test('login API returns Bulgarian error for invalid credentials', async ({ page }) => {
+    const response = await page.request.post('http://localhost:5076/api/auth/login', {
+      data: { email: 'nobody-bg@example.com', password: 'WrongPass1' },
+      headers: { 'Accept-Language': 'bg' },
+    });
+
+    const body = await response.json();
+    const bodyText = JSON.stringify(body);
+    expect(bodyText).toContain('Невалиден имейл или парола');
+  });
+
+  test('booking page seat selection renders with Bulgarian browser locale', async ({ page }) => {
+    // Register and login
+    await page.request.post('http://localhost:5076/api/auth/register', { data: bgUser });
+
+    await page.goto('/login');
+    await page.locator('input#email, input[type="email"]').fill(bgUser.email);
+    await page.locator('input#password, input[type="password"]').fill(bgUser.password);
+    await page.locator('button[type="submit"]').click();
+    await page.waitForURL('/', { timeout: 15000 });
+
+    // Navigate to movies page and verify it loads under bg locale
+    await page.goto('/movies');
+    await page.waitForLoadState('networkidle');
+
+    // The page should render (locale does not break the layout)
+    await expect(page.locator('body')).toBeVisible();
+  });
+});

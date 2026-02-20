@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { bookingApi } from '../../api/bookingApi';
 import { loyaltyApi } from '../../api/loyaltyApi';
 import type { BookingDto, LoyaltyCardDto } from '../../types';
@@ -6,6 +7,7 @@ import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const MyBookingsPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const [bookings, setBookings] = useState<readonly BookingDto[]>([]);
   const [loyaltyCard, setLoyaltyCard] = useState<LoyaltyCardDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,17 +23,17 @@ export const MyBookingsPage: React.FC = () => {
         setBookings(bookingsData);
         setLoyaltyCard(loyaltyData);
       } catch (err: unknown) {
-        const message = extractErrorMessage(err, 'Failed to load bookings');
+        const message = extractErrorMessage(err, t('myBookings.failedToLoad'));
         setError(message);
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, []);
+  }, [t]);
 
   const handleCancel = async (bookingId: string) => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    if (!window.confirm(t('myBookings.cancelConfirm'))) return;
 
     try {
       const updated = await bookingApi.cancelBooking(bookingId);
@@ -39,12 +41,12 @@ export const MyBookingsPage: React.FC = () => {
         prev.map((b) => (b.id === bookingId ? updated : b)),
       );
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Failed to cancel booking');
+      const message = extractErrorMessage(err, t('myBookings.failedToCancel'));
       setError(message);
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading bookings...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('myBookings.loading')}</div></div>;
   if (error) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
 
   const stampsRequired = loyaltyCard?.stampsRequired ?? 5;
@@ -54,7 +56,7 @@ export const MyBookingsPage: React.FC = () => {
   return (
     <div className="page">
       <div className="container">
-        <h1>My Bookings</h1>
+        <h1>{t('myBookings.title')}</h1>
 
         {/* Loyalty Progress Card */}
         <div className="loyalty-card" style={{
@@ -67,16 +69,16 @@ export const MyBookingsPage: React.FC = () => {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>🎬 Movie Loyalty Program</h2>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>{t('myBookings.loyaltyProgram')}</h2>
               <p style={{ margin: '4px 0 0', opacity: 0.85, fontSize: '0.9rem' }}>
-                {stamps} / {stampsRequired} movies watched
+                {t('myBookings.moviesWatched', { stamps, total: stampsRequired })}
               </p>
             </div>
             <div style={{ textAlign: 'right', fontSize: '0.85rem', opacity: 0.85 }}>
               {loyaltyCard && loyaltyCard.stampsRemaining > 0
-                ? <span>{loyaltyCard.stampsRemaining} more to free ticket</span>
+                ? <span>{t('myBookings.moreToFreeTicket', { count: loyaltyCard.stampsRemaining })}</span>
                 : stamps === 0 && stampsRequired > 0
-                ? <span>{stampsRequired} movies for a free ticket</span>
+                ? <span>{t('myBookings.moviesForFreeTicket', { count: stampsRequired })}</span>
                 : null}
             </div>
           </div>
@@ -118,7 +120,7 @@ export const MyBookingsPage: React.FC = () => {
           {/* Active Vouchers */}
           {loyaltyCard && loyaltyCard.activeVouchers.length > 0 && (
             <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '16px' }}>
-              <h3 style={{ margin: '0 0 10px', fontSize: '1rem', fontWeight: 600 }}>🎁 Your Free Ticket Vouchers</h3>
+              <h3 style={{ margin: '0 0 10px', fontSize: '1rem', fontWeight: 600 }}>{t('myBookings.freeTicketVouchers')}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {loyaltyCard.activeVouchers.map((voucher) => (
                   <div key={voucher.id} style={{
@@ -132,7 +134,7 @@ export const MyBookingsPage: React.FC = () => {
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '1rem', letterSpacing: '0.05em' }}>
                       {voucher.code}
                     </span>
-                    <span style={{ fontSize: '0.8rem', opacity: 0.85 }}>Free Ticket</span>
+                    <span style={{ fontSize: '0.8rem', opacity: 0.85 }}>{t('myBookings.freeTicket')}</span>
                   </div>
                 ))}
               </div>
@@ -141,7 +143,7 @@ export const MyBookingsPage: React.FC = () => {
         </div>
 
         {bookings.length === 0 ? (
-          <p className="empty-state">You haven&apos;t made any bookings yet.</p>
+          <p className="empty-state">{t('myBookings.noBookingsYet')}</p>
         ) : (
           <div className="bookings-list">
             {bookings.map((booking) => (
@@ -154,28 +156,28 @@ export const MyBookingsPage: React.FC = () => {
                 </div>
                 <div className="booking-card-body">
                   <div className="booking-detail">
-                    <span>Booking #</span>
+                    <span>{t('myBookings.bookingNumber')}</span>
                     <strong>{booking.bookingNumber}</strong>
                   </div>
                   <div className="booking-detail">
-                    <span>Showtime</span>
+                    <span>{t('myBookings.showtime')}</span>
                     <strong>{formatDateTime(booking.showtimeStart)}</strong>
                   </div>
                   <div className="booking-detail">
-                    <span>Hall</span>
+                    <span>{t('myBookings.hall')}</span>
                     <strong>{booking.hallName}</strong>
                   </div>
                   <div className="booking-detail">
-                    <span>Seats</span>
+                    <span>{t('myBookings.seats')}</span>
                     <strong>{booking.seatNumbers.join(', ')}</strong>
                   </div>
                   <div className="booking-detail">
-                    <span>Total</span>
+                    <span>{t('myBookings.totalAmount')}</span>
                     <strong>{formatCurrency(booking.totalAmount)}</strong>
                   </div>
                   {booking.carLicensePlate && (
                     <div className="booking-detail">
-                      <span>Parking</span>
+                      <span>{t('myBookings.parking')}</span>
                       <strong>🅿️ {booking.carLicensePlate}</strong>
                     </div>
                   )}
@@ -187,7 +189,7 @@ export const MyBookingsPage: React.FC = () => {
                       onClick={() => handleCancel(booking.id)}
                       className="btn btn-danger"
                     >
-                      Cancel Booking
+                      {t('myBookings.cancelBooking')}
                     </button>
                   </div>
                 )}

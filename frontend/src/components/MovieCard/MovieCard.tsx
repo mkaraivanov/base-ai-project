@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { MovieDto } from '../../types';
 import { formatDuration } from '../../utils/formatters';
 
@@ -9,6 +10,7 @@ interface MovieCardProps {
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, detailPath }) => {
+  const { t } = useTranslation('customer');
   const linkPath = detailPath ?? `/movies/${movie.id}`;
   return (
     <div className="movie-card">
@@ -34,7 +36,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, detailPath }) => {
             : movie.description}
         </p>
         <Link to={linkPath} className="btn btn-primary">
-          View Showtimes
+          {t('movies.viewShowtimes')}
         </Link>
       </div>
     </div>

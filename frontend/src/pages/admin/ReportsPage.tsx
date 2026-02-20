@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SalesByDateTab } from './reports/SalesByDateTab';
 import { SalesByMovieTab } from './reports/SalesByMovieTab';
 import { SalesByShowtimeTab } from './reports/SalesByShowtimeTab';
@@ -11,27 +12,28 @@ interface TabConfig {
   readonly label: string;
 }
 
-const TABS: readonly TabConfig[] = [
-  { id: 'date', label: 'Sales by Date' },
-  { id: 'movie', label: 'Sales by Movie' },
-  { id: 'showtime', label: 'Sales by Showtime' },
-  { id: 'location', label: 'Sales by Location' },
-];
-
-const defaultTo = new Date().toISOString().slice(0, 10);
-const defaultFrom = (() => {
-  const d = new Date();
-  d.setDate(d.getDate() - 30);
-  return d.toISOString().slice(0, 10);
-})();
-
 export const ReportsPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [activeTab, setActiveTab] = useState<Tab>('date');
+
+  const TABS: readonly TabConfig[] = [
+    { id: 'date', label: t('reports.tabs.date') },
+    { id: 'movie', label: t('reports.tabs.movie') },
+    { id: 'showtime', label: t('reports.tabs.showtime') },
+    { id: 'location', label: t('reports.tabs.location') },
+  ];
+
+  const defaultTo = new Date().toISOString().slice(0, 10);
+  const defaultFrom = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().slice(0, 10);
+  })();
 
   return (
     <div className="page">
       <div className="container">
-        <h1>Ticket Sales Reports</h1>
+        <h1>{t('reports.pageTitle')}</h1>
 
         <div className="report-tabs">
           {TABS.map((tab) => (

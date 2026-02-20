@@ -1,10 +1,12 @@
 using System.Text.Json;
 using Application.DTOs.CinemaHalls;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
 using Domain.Entities;
 using Domain.ValueObjects;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -14,14 +16,17 @@ public class CinemaHallService : ICinemaHallService
     private readonly ICinemaHallRepository _hallRepository;
     private readonly ILogger<CinemaHallService> _logger;
     private readonly TimeProvider _timeProvider;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public CinemaHallService(
         ICinemaHallRepository hallRepository,
         ILogger<CinemaHallService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null)
     {
         _hallRepository = hallRepository;
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -36,7 +41,7 @@ public class CinemaHallService : ICinemaHallService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving cinema halls");
-            return Result<List<CinemaHallDto>>.Failure("Failed to retrieve cinema halls");
+            return Result<List<CinemaHallDto>>.Failure(_localizer["Failed to retrieve cinema halls"]);
         }
     }
 
@@ -47,7 +52,7 @@ public class CinemaHallService : ICinemaHallService
             var hall = await _hallRepository.GetByIdAsync(id, ct);
             if (hall is null)
             {
-                return Result<CinemaHallDto>.Failure("Cinema hall not found");
+                return Result<CinemaHallDto>.Failure(_localizer["Cinema hall not found"]);
             }
 
             return Result<CinemaHallDto>.Success(MapToDto(hall));
@@ -55,7 +60,7 @@ public class CinemaHallService : ICinemaHallService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving cinema hall {HallId}", id);
-            return Result<CinemaHallDto>.Failure("Failed to retrieve cinema hall");
+            return Result<CinemaHallDto>.Failure(_localizer["Failed to retrieve cinema hall"]);
         }
     }
 
@@ -85,7 +90,7 @@ public class CinemaHallService : ICinemaHallService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating cinema hall: {Name}", dto.Name);
-            return Result<CinemaHallDto>.Failure("Failed to create cinema hall");
+            return Result<CinemaHallDto>.Failure(_localizer["Failed to create cinema hall"]);
         }
     }
 
@@ -96,7 +101,7 @@ public class CinemaHallService : ICinemaHallService
             var existing = await _hallRepository.GetByIdAsync(id, ct);
             if (existing is null)
             {
-                return Result<CinemaHallDto>.Failure("Cinema hall not found");
+                return Result<CinemaHallDto>.Failure(_localizer["Cinema hall not found"]);
             }
 
             var seatLayoutJson = JsonSerializer.Serialize(dto.SeatLayout);
@@ -118,7 +123,7 @@ public class CinemaHallService : ICinemaHallService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating cinema hall {HallId}", id);
-            return Result<CinemaHallDto>.Failure("Failed to update cinema hall");
+            return Result<CinemaHallDto>.Failure(_localizer["Failed to update cinema hall"]);
         }
     }
 
@@ -129,7 +134,7 @@ public class CinemaHallService : ICinemaHallService
             var existing = await _hallRepository.GetByIdAsync(id, ct);
             if (existing is null)
             {
-                return Result.Failure("Cinema hall not found");
+                return Result.Failure(_localizer["Cinema hall not found"]);
             }
 
             await _hallRepository.DeleteAsync(id, ct);
@@ -140,7 +145,7 @@ public class CinemaHallService : ICinemaHallService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting cinema hall {HallId}", id);
-            return Result.Failure("Failed to delete cinema hall");
+            return Result.Failure(_localizer["Failed to delete cinema hall"]);
         }
     }
 

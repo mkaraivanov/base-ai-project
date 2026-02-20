@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { movieApi } from '../../api/movieApi';
 import type { MovieDto, CreateMovieDto, UpdateMovieDto } from '../../types';
 import { formatDate, formatDuration } from '../../utils/formatters';
@@ -27,6 +28,7 @@ const EMPTY_FORM: MovieFormData = {
 };
 
 export const MoviesManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -87,7 +89,7 @@ export const MoviesManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this movie?')) return;
+    if (!window.confirm(t('movies.confirmDelete'))) return;
     try {
       await movieApi.delete(id);
       await loadMovies();
@@ -142,15 +144,15 @@ export const MoviesManagementPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
 
   return (
     <div className="page">
       <div className="container">
         <div className="page-header">
-          <h1>Movies Management</h1>
+          <h1>{t('movies.title')}</h1>
           <button onClick={handleCreate} className="btn btn-primary">
-            + Add Movie
+            + {t('movies.addMovie')}
           </button>
         </div>
 
@@ -159,52 +161,52 @@ export const MoviesManagementPage: React.FC = () => {
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingId ? 'Edit Movie' : 'Add Movie'}</h2>
+              <h2>{editingId ? t('movies.editMovie') : t('movies.addMovie')}</h2>
               <form onSubmit={handleSubmit} className="form">
                 <div className="form-group">
-                  <label htmlFor="title">Title</label>
+                  <label htmlFor="title">{t('movies.form.title')}</label>
                   <input id="title" name="title" value={form.title} onChange={handleInputChange} className="input" required />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="description">Description</label>
+                  <label htmlFor="description">{t('movies.form.description')}</label>
                   <textarea id="description" name="description" value={form.description} onChange={handleInputChange} className="input" rows={3} required />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="genre">Genre</label>
+                    <label htmlFor="genre">{t('movies.form.genre')}</label>
                     <input id="genre" name="genre" value={form.genre} onChange={handleInputChange} className="input" required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="rating">Rating</label>
-                    <input id="rating" name="rating" value={form.rating} onChange={handleInputChange} className="input" placeholder="PG-13" required />
+                    <label htmlFor="rating">{t('movies.form.rating')}</label>
+                    <input id="rating" name="rating" value={form.rating} onChange={handleInputChange} className="input" placeholder={t('movies.form.ratingPlaceholder')} required />
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="durationMinutes">Duration (min)</label>
+                    <label htmlFor="durationMinutes">{t('movies.form.duration')}</label>
                     <input id="durationMinutes" name="durationMinutes" type="number" value={form.durationMinutes} onChange={handleInputChange} className="input" required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="releaseDate">Release Date</label>
+                    <label htmlFor="releaseDate">{t('movies.form.releaseDate')}</label>
                     <input id="releaseDate" name="releaseDate" type="date" value={form.releaseDate} onChange={handleInputChange} className="input" required />
                   </div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="posterUrl">Poster URL</label>
+                  <label htmlFor="posterUrl">{t('movies.form.posterUrl')}</label>
                   <input id="posterUrl" name="posterUrl" value={form.posterUrl} onChange={handleInputChange} className="input" />
                 </div>
                 {editingId && (
                   <div className="form-group form-check">
                     <label>
                       <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleInputChange} />
-                      Active
+                      {t('movies.form.activeLabel')}
                     </label>
                   </div>
                 )}
                 <div className="form-actions">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">Cancel</button>
+                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">{t('common.cancel')}</button>
                   <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
                   </button>
                 </div>
               </form>
@@ -216,13 +218,13 @@ export const MoviesManagementPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Genre</th>
-                <th>Duration</th>
-                <th>Rating</th>
-                <th>Release Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{t('movies.columns.title')}</th>
+                <th>{t('movies.columns.genre')}</th>
+                <th>{t('movies.columns.duration')}</th>
+                <th>{t('movies.columns.rating')}</th>
+                <th>{t('movies.columns.releaseDate')}</th>
+                <th>{t('movies.columns.status')}</th>
+                <th>{t('movies.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -235,13 +237,13 @@ export const MoviesManagementPage: React.FC = () => {
                   <td>{formatDate(movie.releaseDate)}</td>
                   <td>
                     <span className={`status-badge status-${movie.isActive ? 'confirmed' : 'cancelled'}`}>
-                      {movie.isActive ? 'Active' : 'Inactive'}
+                      {movie.isActive ? t('common.active') : t('common.inactive')}
                     </span>
                   </td>
                   <td>
                     <div className="table-actions">
-                      <button onClick={() => handleEdit(movie)} className="btn btn-sm btn-outline">Edit</button>
-                      <button onClick={() => handleDelete(movie.id)} className="btn btn-sm btn-danger">Delete</button>
+                      <button onClick={() => handleEdit(movie)} className="btn btn-sm btn-outline">{t('common.edit')}</button>
+                      <button onClick={() => handleDelete(movie.id)} className="btn btn-sm btn-danger">{t('common.delete')}</button>
                     </div>
                   </td>
                 </tr>

@@ -57,7 +57,8 @@ public class ShowtimeServiceTests : IDisposable
             _movieRepository,
             _hallRepository,
             _context,
-            _loggerMock.Object);
+            _loggerMock.Object,
+            Helpers.LocalizerHelper.CreateDefault());
     }
 
     [Fact(Skip = "InMemory database doesn't support transactions - move to integration tests")]

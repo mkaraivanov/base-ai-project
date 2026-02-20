@@ -1,6 +1,7 @@
 using Application.DTOs.Reservations;
 using Application.Validators;
 using FluentValidation.TestHelper;
+using Tests.Unit.Helpers;
 using Xunit;
 
 namespace Tests.Unit.Validators;
@@ -11,7 +12,7 @@ public class CreateReservationDtoValidatorTests
 
     public CreateReservationDtoValidatorTests()
     {
-        _validator = new CreateReservationDtoValidator();
+        _validator = new CreateReservationDtoValidator(LocalizerHelper.CreateDefault());
     }
 
     [Fact]

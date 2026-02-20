@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import type { RegisterDto } from '../../types';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const RegisterPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -29,12 +31,12 @@ export const RegisterPage: React.FC = () => {
     setError(null);
 
     if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('register.passwordMismatch'));
       return;
     }
 
     if (form.password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t('register.passwordTooShort'));
       return;
     }
 
@@ -50,7 +52,7 @@ export const RegisterPage: React.FC = () => {
       await register(registerData);
       navigate('/');
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Registration failed. Please try again.');
+      const message = extractErrorMessage(err, t('register.failed'));
       setError(message);
     } finally {
       setLoading(false);
@@ -61,8 +63,8 @@ export const RegisterPage: React.FC = () => {
     <div className="page auth-page">
       <div className="container container-xs">
         <div className="auth-card">
-          <h1>Create Account</h1>
-          <p className="auth-subtitle">Join CineBook to start booking tickets.</p>
+          <h1>{t('register.title')}</h1>
+          <p className="auth-subtitle">{t('register.subtitle')}</p>
 
           {error && (
             <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>
@@ -71,7 +73,7 @@ export const RegisterPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="form">
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="firstName">First Name</label>
+                <label htmlFor="firstName">{t('register.firstName')}</label>
                 <input
                   type="text"
                   id="firstName"
@@ -83,7 +85,7 @@ export const RegisterPage: React.FC = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="lastName">Last Name</label>
+                <label htmlFor="lastName">{t('register.lastName')}</label>
                 <input
                   type="text"
                   id="lastName"
@@ -97,49 +99,49 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">{t('register.email')}</label>
               <input
                 type="email"
                 id="email"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder={t('register.emailPlaceholder')}
                 className="input"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="phoneNumber">Phone Number</label>
+              <label htmlFor="phoneNumber">{t('register.phone')}</label>
               <input
                 type="tel"
                 id="phoneNumber"
                 name="phoneNumber"
                 value={form.phoneNumber}
                 onChange={handleChange}
-                placeholder="+1 (555) 000-0000"
+                placeholder={t('register.phonePlaceholder')}
                 className="input"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('register.password')}</label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t('register.passwordPlaceholder')}
                 className="input"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">{t('register.confirmPassword')}</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -157,13 +159,13 @@ export const RegisterPage: React.FC = () => {
               className="btn btn-primary btn-full"
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? t('register.creatingAccount') : t('register.submit')}
             </button>
           </form>
 
           <p className="auth-footer">
-            Already have an account?{' '}
-            <Link to="/login">Sign in</Link>
+            {t('register.hasAccount')}{' '}
+            <Link to="/login">{t('register.loginLink')}</Link>
           </p>
         </div>
       </div>

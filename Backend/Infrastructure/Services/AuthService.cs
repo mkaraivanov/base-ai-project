@@ -2,11 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Application.DTOs.Auth;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
 using Domain.Entities;
 using Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,16 +20,19 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
     private readonly TimeProvider _timeProvider;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public AuthService(
         IUserRepository userRepository,
         IConfiguration configuration,
         ILogger<AuthService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null)
     {
         _userRepository = userRepository;
         _configuration = configuration;
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -38,7 +43,7 @@ public class AuthService : IAuthService
             // Check if email already exists
             if (await _userRepository.EmailExistsAsync(dto.Email, ct))
             {
-                return Result<AuthResponseDto>.Failure("Email already registered");
+                return Result<AuthResponseDto>.Failure(_localizer["Email already registered"]);
             }
 
             // Hash password
@@ -82,7 +87,7 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during user registration for email: {Email}", dto.Email);
-            return Result<AuthResponseDto>.Failure("Registration failed. Please try again.");
+            return Result<AuthResponseDto>.Failure(_localizer["Registration failed. Please try again."]);
         }
     }
 
@@ -94,19 +99,19 @@ public class AuthService : IAuthService
             var user = await _userRepository.GetByEmailAsync(dto.Email, ct);
             if (user is null)
             {
-                return Result<AuthResponseDto>.Failure("Invalid email or password");
+                return Result<AuthResponseDto>.Failure(_localizer["Invalid email or password"]);
             }
 
             // Verify password
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
-                return Result<AuthResponseDto>.Failure("Invalid email or password");
+                return Result<AuthResponseDto>.Failure(_localizer["Invalid email or password"]);
             }
 
             // Check if user is active
             if (!user.IsActive)
             {
-                return Result<AuthResponseDto>.Failure("Account is inactive");
+                return Result<AuthResponseDto>.Failure(_localizer["Account is inactive"]);
             }
 
             // Generate JWT token
@@ -130,7 +135,7 @@ public class AuthService : IAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login for email: {Email}", dto.Email);
-            return Result<AuthResponseDto>.Failure("Login failed. Please try again.");
+            return Result<AuthResponseDto>.Failure(_localizer["Login failed. Please try again."]);
         }
     }
 

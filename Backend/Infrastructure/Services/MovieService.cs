@@ -1,9 +1,11 @@
 using Application.DTOs.Movies;
+using Application.Resources;
 using Application.Services;
 using Backend.Infrastructure.Caching;
 using Domain.Common;
 using Domain.Entities;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -14,17 +16,20 @@ public class MovieService : IMovieService
     private readonly ILogger<MovieService> _logger;
     private readonly TimeProvider _timeProvider;
     private readonly ICacheService? _cacheService;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private const string MoviesCacheKey = "movies:all";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
     public MovieService(
         IMovieRepository movieRepository,
         ILogger<MovieService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null,
         ICacheService? cacheService = null)
     {
         _movieRepository = movieRepository;
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
         _cacheService = cacheService;
     }
@@ -58,7 +63,7 @@ public class MovieService : IMovieService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving movies");
-            return Result<List<MovieDto>>.Failure("Failed to retrieve movies");
+            return Result<List<MovieDto>>.Failure(_localizer["Failed to retrieve movies"]);
         }
     }
 
@@ -69,7 +74,7 @@ public class MovieService : IMovieService
             var movie = await _movieRepository.GetByIdAsync(id, ct);
             if (movie is null)
             {
-                return Result<MovieDto>.Failure("Movie not found");
+                return Result<MovieDto>.Failure(_localizer["Movie not found"]);
             }
 
             return Result<MovieDto>.Success(MapToDto(movie));
@@ -77,7 +82,7 @@ public class MovieService : IMovieService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving movie {MovieId}", id);
-            return Result<MovieDto>.Failure("Failed to retrieve movie");
+            return Result<MovieDto>.Failure(_localizer["Failed to retrieve movie"]);
         }
     }
 
@@ -109,7 +114,7 @@ public class MovieService : IMovieService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating movie: {Title}", dto.Title);
-            return Result<MovieDto>.Failure("Failed to create movie");
+            return Result<MovieDto>.Failure(_localizer["Failed to create movie"]);
         }
     }
 
@@ -120,7 +125,7 @@ public class MovieService : IMovieService
             var existing = await _movieRepository.GetByIdAsync(id, ct);
             if (existing is null)
             {
-                return Result<MovieDto>.Failure("Movie not found");
+                return Result<MovieDto>.Failure(_localizer["Movie not found"]);
             }
 
             var updated = existing with
@@ -145,7 +150,7 @@ public class MovieService : IMovieService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating movie {MovieId}", id);
-            return Result<MovieDto>.Failure("Failed to update movie");
+            return Result<MovieDto>.Failure(_localizer["Failed to update movie"]);
         }
     }
 
@@ -156,7 +161,7 @@ public class MovieService : IMovieService
             var existing = await _movieRepository.GetByIdAsync(id, ct);
             if (existing is null)
             {
-                return Result.Failure("Movie not found");
+                return Result.Failure(_localizer["Movie not found"]);
             }
 
             await _movieRepository.DeleteAsync(id, ct);
@@ -168,7 +173,7 @@ public class MovieService : IMovieService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting movie {MovieId}", id);
-            return Result.Failure("Failed to delete movie");
+            return Result.Failure(_localizer["Failed to delete movie"]);
         }
     }
 

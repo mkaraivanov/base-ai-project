@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "home": "Home",
+    "movies": "Movies",
+    "myTickets": "My Tickets",
+    "bookings": "My Bookings",
+    "admin": "Admin",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "signUp": "Sign Up",
+    "greeting": "Hi, {{name}}"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "confirm": "Confirm",
+    "back": "Back",
+    "submit": "Submit",
+    "search": "Search",
+    "close": "Close",
+    "loading": "Loading..."
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Not found.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "required": "This field is required."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{current}} of {{total}}"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  }
+}

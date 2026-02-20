@@ -2,9 +2,11 @@ using System.Security.Claims;
 using Application.DTOs.Bookings;
 using Application.DTOs.Reservations;
 using Application.DTOs.Seats;
+using Application.Resources;
 using Application.Services;
 using Backend.Models;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Backend.Endpoints;
 
@@ -62,6 +64,7 @@ public static class BookingEndpoints
         IBookingService bookingService,
         IValidator<CreateReservationDto> validator,
         HttpContext context,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         // Verify user is authenticated - check both Identity and Authorization header
@@ -78,7 +81,7 @@ public static class BookingEndpoints
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<ReservationDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<ReservationDto>(false, null, localizer["Validation failed"], errors));
         }
 
         // Get user ID from claims
@@ -121,6 +124,7 @@ public static class BookingEndpoints
         IBookingService bookingService,
         IValidator<ConfirmBookingDto> validator,
         HttpContext context,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         // Validate input
@@ -128,7 +132,7 @@ public static class BookingEndpoints
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<BookingDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<BookingDto>(false, null, localizer["Validation failed"], errors));
         }
 
         // Get user ID from claims

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ticketTypeApi } from '../../api/ticketTypeApi';
 import type { TicketTypeDto, CreateTicketTypeDto, UpdateTicketTypeDto } from '../../types';
 import { extractErrorMessage } from '../../utils/errorHandler';
@@ -20,6 +21,7 @@ const EMPTY_FORM: TicketTypeFormData = {
 };
 
 export const TicketTypesManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [ticketTypes, setTicketTypes] = useState<readonly TicketTypeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -34,7 +36,7 @@ export const TicketTypesManagementPage: React.FC = () => {
       const data = await ticketTypeApi.getAll();
       setTicketTypes(data);
     } catch {
-      setError('Failed to load ticket types');
+      setError(t('ticketTypes.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ export const TicketTypesManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to deactivate this ticket type?')) return;
+    if (!window.confirm(t('ticketTypes.confirmDeactivate'))) return;
     try {
       await ticketTypeApi.delete(id);
       await loadTicketTypes();
@@ -99,7 +101,7 @@ export const TicketTypesManagementPage: React.FC = () => {
 
     const modifier = parseFloat(form.priceModifier);
     if (isNaN(modifier) || modifier <= 0) {
-      setError('Price modifier must be a positive number');
+      setError(t('ticketTypes.invalidModifier'));
       setSaving(false);
       return;
     }
@@ -129,7 +131,7 @@ export const TicketTypesManagementPage: React.FC = () => {
       setEditingId(null);
       await loadTicketTypes();
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, 'Failed to save ticket type'));
+      setError(extractErrorMessage(err, t('ticketTypes.failedToSave')));
     } finally {
       setSaving(false);
     }
@@ -141,15 +143,15 @@ export const TicketTypesManagementPage: React.FC = () => {
     return `×${modifier.toFixed(2)} (${pct}% of seat price)`;
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading ticket types...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
 
   return (
     <div className="page">
       <div className="container">
         <div className="page-header">
-          <h1>Ticket Types</h1>
+          <h1>{t('ticketTypes.title')}</h1>
           <button onClick={handleCreate} className="btn btn-primary">
-            + Add Ticket Type
+            + {t('ticketTypes.addType')}
           </button>
         </div>
 
@@ -158,10 +160,10 @@ export const TicketTypesManagementPage: React.FC = () => {
         {showForm && (
           <div className="modal-overlay" onClick={handleCancel}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingId ? 'Edit Ticket Type' : 'Add Ticket Type'}</h2>
+              <h2>{editingId ? t('ticketTypes.editType') : t('ticketTypes.addType')}</h2>
               <form onSubmit={handleSubmit} className="form">
                 <div className="form-group">
-                  <label htmlFor="name">Name *</label>
+                  <label htmlFor="name">{t('ticketTypes.form.name')}</label>
                   <input
                     id="name"
                     name="name"
@@ -169,25 +171,25 @@ export const TicketTypesManagementPage: React.FC = () => {
                     value={form.name}
                     onChange={handleInputChange}
                     required
-                    placeholder="e.g. Adult, Children, Senior"
+                    placeholder={t('ticketTypes.form.namePlaceholder')}
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="description">Description</label>
+                  <label htmlFor="description">{t('ticketTypes.form.description')}</label>
                   <input
                     id="description"
                     name="description"
                     className="input"
                     value={form.description}
                     onChange={handleInputChange}
-                    placeholder="e.g. Children aged 12 and under — 50% discount"
+                    placeholder={t('ticketTypes.form.descriptionPlaceholder')}
                   />
                 </div>
                 <div className="form-group">
                   <label htmlFor="priceModifier">
-                    Price Modifier *{' '}
+                    {t('ticketTypes.form.priceModifier')}{' '}
                     <small style={{ fontWeight: 'normal', color: '#666' }}>
-                      (1.0 = full price, 0.5 = 50% off, 1.2 = 20% surcharge)
+                      {t('ticketTypes.form.priceModifierHint')}
                     </small>
                   </label>
                   <input
@@ -210,7 +212,7 @@ export const TicketTypesManagementPage: React.FC = () => {
                   )}
                 </div>
                 <div className="form-group">
-                  <label htmlFor="sortOrder">Sort Order</label>
+                  <label htmlFor="sortOrder">{t('ticketTypes.form.sortOrder')}</label>
                   <input
                     id="sortOrder"
                     name="sortOrder"
@@ -230,14 +232,14 @@ export const TicketTypesManagementPage: React.FC = () => {
                         checked={form.isActive}
                         onChange={handleInputChange}
                       />
-                      Active
+                      {t('common.active')}
                     </label>
                   </div>
                 )}
                 <div className="form-actions">
-                  <button type="button" className="btn btn-outline" onClick={handleCancel}>Cancel</button>
+                  <button type="button" className="btn btn-outline" onClick={handleCancel}>{t('common.cancel')}</button>
                   <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
                   </button>
                 </div>
               </form>
@@ -249,12 +251,12 @@ export const TicketTypesManagementPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price Modifier</th>
-                <th>Sort Order</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{t('ticketTypes.columns.name')}</th>
+                <th>{t('ticketTypes.columns.description')}</th>
+                <th>{t('ticketTypes.columns.modifier')}</th>
+                <th>{t('ticketTypes.columns.sortOrder')}</th>
+                <th>{t('ticketTypes.columns.status')}</th>
+                <th>{t('ticketTypes.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -269,13 +271,13 @@ export const TicketTypesManagementPage: React.FC = () => {
                     <td>{tt.sortOrder}</td>
                     <td>
                       <span className={`status-badge status-${tt.isActive ? 'confirmed' : 'cancelled'}`}>
-                        {tt.isActive ? 'Active' : 'Inactive'}
+                        {tt.isActive ? t('common.active') : t('common.inactive')}
                       </span>
                     </td>
                     <td>
                       <div className="table-actions">
-                        <button className="btn btn-sm btn-outline" onClick={() => handleEdit(tt)}>Edit</button>
-                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(tt.id)}>Delete</button>
+                        <button className="btn btn-sm btn-outline" onClick={() => handleEdit(tt)}>{t('common.edit')}</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(tt.id)}>{t('common.delete')}</button>
                       </div>
                     </td>
                   </tr>

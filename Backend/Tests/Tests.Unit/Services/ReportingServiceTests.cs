@@ -30,7 +30,7 @@ public class ReportingServiceTests
         _cacheMock = new Mock<ICacheService>();
         _loggerMock = new Mock<ILogger<ReportingService>>();
 
-        _service = new ReportingService(_repoMock.Object, _cacheMock.Object, _loggerMock.Object);
+        _service = new ReportingService(_repoMock.Object, _cacheMock.Object, _loggerMock.Object, Helpers.LocalizerHelper.CreateDefault());
     }
 
     // ── GetSalesByDateAsync ────────────────────────────────────────────────────

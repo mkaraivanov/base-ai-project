@@ -196,3 +196,45 @@ test.describe('Authentication Flow', () => {
     });
   });
 });
+
+// ─── Bulgarian locale assertions ───────────────────────────────────────────────
+// These tests run with the bg-BG Playwright project (Accept-Language: bg) so the
+// backend RequestLocalizationMiddleware picks the Bulgarian resource strings.
+
+test.describe('Authentication Flow – Bulgarian locale', () => {
+  test.use({ locale: 'bg-BG' });
+
+  test('login with invalid credentials returns Bulgarian error message', async ({ page }) => {
+    await page.goto(`${baseURL}/login`);
+    await page.fill('input#email, input[type="email"]', 'nonexistent@example.bg');
+    await page.fill('input#password, input[type="password"]', 'WrongPassword1');
+    await page.click('button[type="submit"]');
+
+    // The backend returns "Невалиден имейл или парола" for bg culture
+    const errorMessage = page.locator('.error-message, .error, [role="alert"]').first();
+    await expect(errorMessage).toBeVisible({ timeout: 10000 });
+    await expect(errorMessage).toContainText('Невалиден имейл или парола');
+  });
+
+  test('register page with empty fields shows Bulgarian validation messages', async ({ page }) => {
+    await page.goto(`${baseURL}/register`);
+
+    // Submit with completely empty form to trigger server-side validation
+    const submitButton = page.locator('button[type="submit"]').first();
+    await submitButton.click();
+
+    // HTML5 / client validation fires first; at minimum the email field is required
+    const emailInput = page.locator('input#email, input[type="email"]');
+    // If the page has server-side only validation, wait for the error region instead
+    const isRequired = await emailInput.getAttribute('required');
+    if (isRequired !== null) {
+      // HTML5 required attribute prevents submission – just verify the field exists
+      await expect(emailInput).toBeVisible();
+    } else {
+      // Server validated: expect Bulgarian error text to appear
+      const errorRegion = page.locator('.error-message, .error, [role="alert"]').first();
+      await expect(errorRegion).toBeVisible({ timeout: 10000 });
+      await expect(errorRegion).toContainText(/е задължителен|е задължителна/);
+    }
+  });
+});

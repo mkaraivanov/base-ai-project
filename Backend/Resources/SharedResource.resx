@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- ── Validator messages ── -->
+  <data name="Address is required" xml:space="preserve">
+    <value>Address is required</value>
+  </data>
+  <data name="Address must not exceed 200 characters" xml:space="preserve">
+    <value>Address must not exceed 200 characters</value>
+  </data>
+  <data name="At least one seat must be defined" xml:space="preserve">
+    <value>At least one seat must be defined</value>
+  </data>
+  <data name="At least one seat must be selected" xml:space="preserve">
+    <value>At least one seat must be selected</value>
+  </data>
+  <data name="Base price must be greater than 0" xml:space="preserve">
+    <value>Base price must be greater than 0</value>
+  </data>
+  <data name="Base price must not exceed 1000" xml:space="preserve">
+    <value>Base price must not exceed 1000</value>
+  </data>
+  <data name="CVV is required" xml:space="preserve">
+    <value>CVV is required</value>
+  </data>
+  <data name="CVV must be 3 or 4 digits" xml:space="preserve">
+    <value>CVV must be 3 or 4 digits</value>
+  </data>
+  <data name="Cannot reserve more than 10 seats at once" xml:space="preserve">
+    <value>Cannot reserve more than 10 seats at once</value>
+  </data>
+  <data name="Card holder name is required" xml:space="preserve">
+    <value>Card holder name is required</value>
+  </data>
+  <data name="Card holder name must not exceed 100 characters" xml:space="preserve">
+    <value>Card holder name must not exceed 100 characters</value>
+  </data>
+  <data name="Card number is required" xml:space="preserve">
+    <value>Card number is required</value>
+  </data>
+  <data name="Card number must be between 13 and 19 digits" xml:space="preserve">
+    <value>Card number must be between 13 and 19 digits</value>
+  </data>
+  <data name="Cinema Hall ID is required" xml:space="preserve">
+    <value>Cinema Hall ID is required</value>
+  </data>
+  <data name="Cinema is required" xml:space="preserve">
+    <value>Cinema is required</value>
+  </data>
+  <data name="Cinema name is required" xml:space="preserve">
+    <value>Cinema name is required</value>
+  </data>
+  <data name="Cinema name must not exceed 100 characters" xml:space="preserve">
+    <value>Cinema name must not exceed 100 characters</value>
+  </data>
+  <data name="City is required" xml:space="preserve">
+    <value>City is required</value>
+  </data>
+  <data name="City must not exceed 100 characters" xml:space="preserve">
+    <value>City must not exceed 100 characters</value>
+  </data>
+  <data name="Country is required" xml:space="preserve">
+    <value>Country is required</value>
+  </data>
+  <data name="Country must not exceed 100 characters" xml:space="preserve">
+    <value>Country must not exceed 100 characters</value>
+  </data>
+  <data name="Description is required" xml:space="preserve">
+    <value>Description is required</value>
+  </data>
+  <data name="Description must not exceed 2000 characters" xml:space="preserve">
+    <value>Description must not exceed 2000 characters</value>
+  </data>
+  <data name="Duplicate seat numbers are not allowed" xml:space="preserve">
+    <value>Duplicate seat numbers are not allowed</value>
+  </data>
+  <data name="Duration must be greater than 0" xml:space="preserve">
+    <value>Duration must be greater than 0</value>
+  </data>
+  <data name="Duration must not exceed 500 minutes" xml:space="preserve">
+    <value>Duration must not exceed 500 minutes</value>
+  </data>
+  <data name="Email is required" xml:space="preserve">
+    <value>Email is required</value>
+  </data>
+  <data name="Email must not exceed 200 characters" xml:space="preserve">
+    <value>Email must not exceed 200 characters</value>
+  </data>
+  <data name="Expiry date is required" xml:space="preserve">
+    <value>Expiry date is required</value>
+  </data>
+  <data name="Expiry date must be in MM/YY format" xml:space="preserve">
+    <value>Expiry date must be in MM/YY format</value>
+  </data>
+  <data name="First name is required" xml:space="preserve">
+    <value>First name is required</value>
+  </data>
+  <data name="First name must not exceed 100 characters" xml:space="preserve">
+    <value>First name must not exceed 100 characters</value>
+  </data>
+  <data name="Genre is required" xml:space="preserve">
+    <value>Genre is required</value>
+  </data>
+  <data name="Genre must not exceed 50 characters" xml:space="preserve">
+    <value>Genre must not exceed 50 characters</value>
+  </data>
+  <data name="Hall name is required" xml:space="preserve">
+    <value>Hall name is required</value>
+  </data>
+  <data name="Hall name must not exceed 100 characters" xml:space="preserve">
+    <value>Hall name must not exceed 100 characters</value>
+  </data>
+  <data name="Invalid email address format" xml:space="preserve">
+    <value>Invalid email address format</value>
+  </data>
+  <data name="Invalid email format" xml:space="preserve">
+    <value>Invalid email format</value>
+  </data>
+  <data name="Invalid phone number format" xml:space="preserve">
+    <value>Invalid phone number format</value>
+  </data>
+  <data name="Invalid seat number format (e.g., A1, B12)" xml:space="preserve">
+    <value>Invalid seat number format (e.g., A1, B12)</value>
+  </data>
+  <data name="Last name is required" xml:space="preserve">
+    <value>Last name is required</value>
+  </data>
+  <data name="Last name must not exceed 100 characters" xml:space="preserve">
+    <value>Last name must not exceed 100 characters</value>
+  </data>
+  <data name="Logo URL must not exceed 500 characters" xml:space="preserve">
+    <value>Logo URL must not exceed 500 characters</value>
+  </data>
+  <data name="Movie ID is required" xml:space="preserve">
+    <value>Movie ID is required</value>
+  </data>
+  <data name="Password is required" xml:space="preserve">
+    <value>Password is required</value>
+  </data>
+  <data name="Password must be at least 8 characters" xml:space="preserve">
+    <value>Password must be at least 8 characters</value>
+  </data>
+  <data name="Password must contain at least one lowercase letter" xml:space="preserve">
+    <value>Password must contain at least one lowercase letter</value>
+  </data>
+  <data name="Password must contain at least one number" xml:space="preserve">
+    <value>Password must contain at least one number</value>
+  </data>
+  <data name="Password must contain at least one uppercase letter" xml:space="preserve">
+    <value>Password must contain at least one uppercase letter</value>
+  </data>
+  <data name="Payment method is required" xml:space="preserve">
+    <value>Payment method is required</value>
+  </data>
+  <data name="Payment method must not exceed 50 characters" xml:space="preserve">
+    <value>Payment method must not exceed 50 characters</value>
+  </data>
+  <data name="Phone number is required" xml:space="preserve">
+    <value>Phone number is required</value>
+  </data>
+  <data name="Phone number must not exceed 20 characters" xml:space="preserve">
+    <value>Phone number must not exceed 20 characters</value>
+  </data>
+  <data name="Poster URL is required" xml:space="preserve">
+    <value>Poster URL is required</value>
+  </data>
+  <data name="Poster URL must be a valid URL" xml:space="preserve">
+    <value>Poster URL must be a valid URL</value>
+  </data>
+  <data name="Rating is required" xml:space="preserve">
+    <value>Rating is required</value>
+  </data>
+  <data name="Rating must be G, PG, PG-13, R, or NC-17" xml:space="preserve">
+    <value>Rating must be G, PG, PG-13, R, or NC-17</value>
+  </data>
+  <data name="Release date is required" xml:space="preserve">
+    <value>Release date is required</value>
+  </data>
+  <data name="Reservation ID is required" xml:space="preserve">
+    <value>Reservation ID is required</value>
+  </data>
+  <data name="Rows must be greater than 0" xml:space="preserve">
+    <value>Rows must be greater than 0</value>
+  </data>
+  <data name="Rows must not exceed 50" xml:space="preserve">
+    <value>Rows must not exceed 50</value>
+  </data>
+  <data name="Seat layout is required" xml:space="preserve">
+    <value>Seat layout is required</value>
+  </data>
+  <data name="Seat number cannot be empty" xml:space="preserve">
+    <value>Seat number cannot be empty</value>
+  </data>
+  <data name="Seats list is required" xml:space="preserve">
+    <value>Seats list is required</value>
+  </data>
+  <data name="Seats per row must be greater than 0" xml:space="preserve">
+    <value>Seats per row must be greater than 0</value>
+  </data>
+  <data name="Seats per row must not exceed 100" xml:space="preserve">
+    <value>Seats per row must not exceed 100</value>
+  </data>
+  <data name="Showtime ID is required" xml:space="preserve">
+    <value>Showtime ID is required</value>
+  </data>
+  <data name="Start time is required" xml:space="preserve">
+    <value>Start time is required</value>
+  </data>
+  <data name="Start time must be in the future" xml:space="preserve">
+    <value>Start time must be in the future</value>
+  </data>
+  <data name="Ticket type must be specified for each seat" xml:space="preserve">
+    <value>Ticket type must be specified for each seat</value>
+  </data>
+  <data name="Title is required" xml:space="preserve">
+    <value>Title is required</value>
+  </data>
+  <data name="Title must not exceed 200 characters" xml:space="preserve">
+    <value>Title must not exceed 200 characters</value>
+  </data>
+  <data name="Validation failed" xml:space="preserve">
+    <value>Validation failed</value>
+  </data>
+
+  <!-- ── Service / endpoint messages ── -->
+  <data name="Account is inactive" xml:space="preserve">
+    <value>Account is inactive</value>
+  </data>
+  <data name="Associated movie not found" xml:space="preserve">
+    <value>Associated movie not found</value>
+  </data>
+  <data name="Booking cannot be cancelled" xml:space="preserve">
+    <value>Booking cannot be cancelled</value>
+  </data>
+  <data name="Booking not found" xml:space="preserve">
+    <value>Booking not found</value>
+  </data>
+  <data name="Cannot book past or ongoing showtimes" xml:space="preserve">
+    <value>Cannot book past or ongoing showtimes</value>
+  </data>
+  <data name="Cannot cancel a booking within 1 hour of the showtime" xml:space="preserve">
+    <value>Cannot cancel a booking within 1 hour of the showtime</value>
+  </data>
+  <data name="Cinema hall not found" xml:space="preserve">
+    <value>Cinema hall not found</value>
+  </data>
+  <data name="Cinema not found" xml:space="preserve">
+    <value>Cinema not found</value>
+  </data>
+  <data name="Email already registered" xml:space="preserve">
+    <value>Email already registered</value>
+  </data>
+  <data name="Failed to cancel booking" xml:space="preserve">
+    <value>Failed to cancel booking</value>
+  </data>
+  <data name="Failed to cancel reservation" xml:space="preserve">
+    <value>Failed to cancel reservation</value>
+  </data>
+  <data name="Failed to confirm booking" xml:space="preserve">
+    <value>Failed to confirm booking</value>
+  </data>
+  <data name="Failed to create cinema" xml:space="preserve">
+    <value>Failed to create cinema</value>
+  </data>
+  <data name="Failed to create cinema hall" xml:space="preserve">
+    <value>Failed to create cinema hall</value>
+  </data>
+  <data name="Failed to create movie" xml:space="preserve">
+    <value>Failed to create movie</value>
+  </data>
+  <data name="Failed to create reservation" xml:space="preserve">
+    <value>Failed to create reservation</value>
+  </data>
+  <data name="Failed to create showtime" xml:space="preserve">
+    <value>Failed to create showtime</value>
+  </data>
+  <data name="Failed to create ticket type" xml:space="preserve">
+    <value>Failed to create ticket type</value>
+  </data>
+  <data name="Failed to delete cinema" xml:space="preserve">
+    <value>Failed to delete cinema</value>
+  </data>
+  <data name="Failed to delete cinema hall" xml:space="preserve">
+    <value>Failed to delete cinema hall</value>
+  </data>
+  <data name="Failed to delete movie" xml:space="preserve">
+    <value>Failed to delete movie</value>
+  </data>
+  <data name="Failed to delete showtime" xml:space="preserve">
+    <value>Failed to delete showtime</value>
+  </data>
+  <data name="Failed to delete ticket type" xml:space="preserve">
+    <value>Failed to delete ticket type</value>
+  </data>
+  <data name="Failed to export CSV" xml:space="preserve">
+    <value>Failed to export CSV</value>
+  </data>
+  <data name="Failed to retrieve booking" xml:space="preserve">
+    <value>Failed to retrieve booking</value>
+  </data>
+  <data name="Failed to retrieve bookings" xml:space="preserve">
+    <value>Failed to retrieve bookings</value>
+  </data>
+  <data name="Failed to retrieve cinema" xml:space="preserve">
+    <value>Failed to retrieve cinema</value>
+  </data>
+  <data name="Failed to retrieve cinema hall" xml:space="preserve">
+    <value>Failed to retrieve cinema hall</value>
+  </data>
+  <data name="Failed to retrieve cinema halls" xml:space="preserve">
+    <value>Failed to retrieve cinema halls</value>
+  </data>
+  <data name="Failed to retrieve cinemas" xml:space="preserve">
+    <value>Failed to retrieve cinemas</value>
+  </data>
+  <data name="Failed to retrieve loyalty card" xml:space="preserve">
+    <value>Failed to retrieve loyalty card</value>
+  </data>
+  <data name="Failed to retrieve loyalty settings" xml:space="preserve">
+    <value>Failed to retrieve loyalty settings</value>
+  </data>
+  <data name="Failed to retrieve movie" xml:space="preserve">
+    <value>Failed to retrieve movie</value>
+  </data>
+  <data name="Failed to retrieve movies" xml:space="preserve">
+    <value>Failed to retrieve movies</value>
+  </data>
+  <data name="Failed to retrieve sales by date report" xml:space="preserve">
+    <value>Failed to retrieve sales by date report</value>
+  </data>
+  <data name="Failed to retrieve sales by location report" xml:space="preserve">
+    <value>Failed to retrieve sales by location report</value>
+  </data>
+  <data name="Failed to retrieve sales by movie report" xml:space="preserve">
+    <value>Failed to retrieve sales by movie report</value>
+  </data>
+  <data name="Failed to retrieve sales by showtime report" xml:space="preserve">
+    <value>Failed to retrieve sales by showtime report</value>
+  </data>
+  <data name="Failed to retrieve seat availability" xml:space="preserve">
+    <value>Failed to retrieve seat availability</value>
+  </data>
+  <data name="Failed to retrieve showtime" xml:space="preserve">
+    <value>Failed to retrieve showtime</value>
+  </data>
+  <data name="Failed to retrieve showtimes" xml:space="preserve">
+    <value>Failed to retrieve showtimes</value>
+  </data>
+  <data name="Failed to retrieve ticket types" xml:space="preserve">
+    <value>Failed to retrieve ticket types</value>
+  </data>
+  <data name="Failed to update cinema" xml:space="preserve">
+    <value>Failed to update cinema</value>
+  </data>
+  <data name="Failed to update cinema hall" xml:space="preserve">
+    <value>Failed to update cinema hall</value>
+  </data>
+  <data name="Failed to update loyalty settings" xml:space="preserve">
+    <value>Failed to update loyalty settings</value>
+  </data>
+  <data name="Failed to update movie" xml:space="preserve">
+    <value>Failed to update movie</value>
+  </data>
+  <data name="Failed to update showtime" xml:space="preserve">
+    <value>Failed to update showtime</value>
+  </data>
+  <data name="Failed to update ticket type" xml:space="preserve">
+    <value>Failed to update ticket type</value>
+  </data>
+  <data name="Invalid email or password" xml:space="preserve">
+    <value>Invalid email or password</value>
+  </data>
+  <data name="Login failed. Please try again." xml:space="preserve">
+    <value>Login failed. Please try again.</value>
+  </data>
+  <data name="Movie not found" xml:space="preserve">
+    <value>Movie not found</value>
+  </data>
+  <data name="Payment declined" xml:space="preserve">
+    <value>Payment declined</value>
+  </data>
+  <data name="Payment declined by bank" xml:space="preserve">
+    <value>Payment declined by bank</value>
+  </data>
+  <data name="Payment processing failed" xml:space="preserve">
+    <value>Payment processing failed</value>
+  </data>
+  <data name="Price modifier must be greater than zero" xml:space="preserve">
+    <value>Price modifier must be greater than zero</value>
+  </data>
+  <data name="Refund processing failed" xml:space="preserve">
+    <value>Refund processing failed</value>
+  </data>
+  <data name="Registration failed. Please try again." xml:space="preserve">
+    <value>Registration failed. Please try again.</value>
+  </data>
+  <data name="Reservation cannot be cancelled" xml:space="preserve">
+    <value>Reservation cannot be cancelled</value>
+  </data>
+  <data name="Reservation has expired" xml:space="preserve">
+    <value>Reservation has expired</value>
+  </data>
+  <data name="Reservation is no longer valid" xml:space="preserve">
+    <value>Reservation is no longer valid</value>
+  </data>
+  <data name="Reservation not found" xml:space="preserve">
+    <value>Reservation not found</value>
+  </data>
+  <data name="Selected seats are no longer available. Please try again." xml:space="preserve">
+    <value>Selected seats are no longer available. Please try again.</value>
+  </data>
+  <data name="Showtime not found" xml:space="preserve">
+    <value>Showtime not found</value>
+  </data>
+  <data name="Showtime overlaps with existing showtime in this hall" xml:space="preserve">
+    <value>Showtime overlaps with existing showtime in this hall</value>
+  </data>
+  <data name="Stamps required must be at least 1" xml:space="preserve">
+    <value>Stamps required must be at least 1</value>
+  </data>
+  <data name="Ticket type not found" xml:space="preserve">
+    <value>Ticket type not found</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Unauthorized</value>
+  </data>
+</root>

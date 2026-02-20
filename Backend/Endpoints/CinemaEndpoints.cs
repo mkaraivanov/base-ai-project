@@ -1,8 +1,10 @@
 using Application.DTOs.Cinemas;
+using Application.Resources;
 using Application.Services;
 using Application.Validators;
 using Backend.Models;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Backend.Endpoints;
 
@@ -79,13 +81,14 @@ public static class CinemaEndpoints
         CreateCinemaDto dto,
         ICinemaService cinemaService,
         IValidator<CreateCinemaDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<CinemaDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<CinemaDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await cinemaService.CreateCinemaAsync(dto, ct);
@@ -100,13 +103,14 @@ public static class CinemaEndpoints
         UpdateCinemaDto dto,
         ICinemaService cinemaService,
         IValidator<UpdateCinemaDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<CinemaDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<CinemaDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await cinemaService.UpdateCinemaAsync(id, dto, ct);

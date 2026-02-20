@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { movieApi } from '../../api/movieApi';
 import { showtimeApi } from '../../api/showtimeApi';
 import { cinemaApi } from '../../api/cinemaApi';
@@ -8,6 +9,7 @@ import { formatDate, formatDateTime, formatDuration, formatCurrency } from '../.
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const CinemaMovieDetailPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { cinemaId, movieId } = useParams<{ cinemaId: string; movieId: string }>();
   const [cinema, setCinema] = useState<CinemaDto | null>(null);
   const [movie, setMovie] = useState<MovieDto | null>(null);
@@ -40,7 +42,7 @@ export const CinemaMovieDetailPage: React.FC = () => {
 
   if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
   if (error) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
-  if (!movie) return <div className="page"><div className="error-message">Movie not found</div></div>;
+  if (!movie) return <div className="page"><div className="error-message">{t('movieDetail.notFound')}</div></div>;
 
   const activeShowtimes = showtimes.filter(
     (st) => st.isActive && new Date(st.startTime) > new Date(),
@@ -51,7 +53,7 @@ export const CinemaMovieDetailPage: React.FC = () => {
       <div className="container">
         <div className="page-breadcrumb">
           <Link to={`/cinemas/${cinemaId}/movies`}>
-            ← {cinema ? cinema.name : 'Back to Cinema'}
+            {cinema ? `← ${cinema.name}` : t('cinemaMovieDetail.backToCinema')}
           </Link>
         </div>
 
@@ -72,16 +74,16 @@ export const CinemaMovieDetailPage: React.FC = () => {
               <span className="badge">{movie.genre}</span>
               <span className="badge">{movie.rating}</span>
               <span>{formatDuration(movie.durationMinutes)}</span>
-              <span>Released: {formatDate(movie.releaseDate)}</span>
+              <span>{t('movieDetail.released', { date: formatDate(movie.releaseDate) })}</span>
             </div>
             <p className="movie-description">{movie.description}</p>
           </div>
         </div>
 
         <section className="section">
-          <h2>Available Showtimes at {cinema?.name}</h2>
+          <h2>{t('cinemaMovieDetail.availableShowtimesAt', { cinema: cinema?.name ?? '' })}</h2>
           {activeShowtimes.length === 0 ? (
-            <p className="empty-state">No showtimes available for this movie at this cinema.</p>
+            <p className="empty-state">{t('cinemaMovieDetail.noShowtimes')}</p>
           ) : (
             <div className="showtime-list">
               {activeShowtimes.map((showtime) => (
@@ -92,17 +94,17 @@ export const CinemaMovieDetailPage: React.FC = () => {
                     </span>
                     <span className="showtime-hall">{showtime.hallName}</span>
                     <span className="showtime-price">
-                      From {formatCurrency(showtime.basePrice)}
+                      {t('movieDetail.fromPrice', { price: formatCurrency(showtime.basePrice) })}
                     </span>
                     <span className="showtime-seats">
-                      {showtime.availableSeats} seats left
+                      {t('movieDetail.seatsLeft', { count: showtime.availableSeats })}
                     </span>
                   </div>
                   <Link
                     to={`/showtime/${showtime.id}/seats`}
                     className="btn btn-primary"
                   >
-                    Select Seats
+                    {t('movieDetail.selectSeats')}
                   </Link>
                 </div>
               ))}

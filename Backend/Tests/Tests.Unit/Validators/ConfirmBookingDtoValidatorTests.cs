@@ -1,5 +1,6 @@
 using Application.DTOs.Bookings;
 using Application.Validators;
+using Tests.Unit.Helpers;
 using Xunit;
 
 namespace Tests.Unit.Validators;
@@ -10,7 +11,7 @@ public class ConfirmBookingDtoValidatorTests
 
     public ConfirmBookingDtoValidatorTests()
     {
-        _validator = new ConfirmBookingDtoValidator();
+        _validator = new ConfirmBookingDtoValidator(LocalizerHelper.CreateDefault());
     }
 
     [Fact]

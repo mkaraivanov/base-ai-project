@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cinemaApi } from '../../api/cinemaApi';
 import type { CinemaDto, CreateCinemaDto, UpdateCinemaDto } from '../../types';
 import { extractErrorMessage } from '../../utils/errorHandler';
@@ -30,6 +31,7 @@ const EMPTY_FORM: CinemaFormData = {
 };
 
 export const CinemasManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -85,7 +87,7 @@ export const CinemasManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this cinema? All associated halls must be inactive first.')) return;
+    if (!window.confirm(t('cinemas.confirmDelete'))) return;
     try {
       await cinemaApi.delete(id);
       await loadCinemas();
@@ -139,15 +141,15 @@ export const CinemasManagementPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
 
   return (
     <div className="page">
       <div className="container">
         <div className="page-header">
-          <h1>Cinemas Management</h1>
+          <h1>{t('cinemas.title')}</h1>
           <button onClick={handleCreate} className="btn btn-primary">
-            + Add Cinema
+            + {t('cinemas.addCinema')}
           </button>
         </div>
 
@@ -156,47 +158,47 @@ export const CinemasManagementPage: React.FC = () => {
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingId ? 'Edit Cinema' : 'Add Cinema'}</h2>
+              <h2>{editingId ? t('cinemas.editCinema') : t('cinemas.addCinema')}</h2>
               <form onSubmit={handleSubmit} className="form">
                 <div className="form-group">
-                  <label htmlFor="name">Cinema Name *</label>
+                  <label htmlFor="name">{t('cinemas.form.name')}</label>
                   <input id="name" name="name" value={form.name} onChange={handleInputChange} className="input" required />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="address">Address *</label>
+                  <label htmlFor="address">{t('cinemas.form.address')}</label>
                   <input id="address" name="address" value={form.address} onChange={handleInputChange} className="input" required />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="city">City *</label>
+                    <label htmlFor="city">{t('cinemas.form.city')}</label>
                     <input id="city" name="city" value={form.city} onChange={handleInputChange} className="input" required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="country">Country *</label>
+                    <label htmlFor="country">{t('cinemas.form.country')}</label>
                     <input id="country" name="country" value={form.country} onChange={handleInputChange} className="input" required />
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="phoneNumber">Phone Number</label>
+                    <label htmlFor="phoneNumber">{t('cinemas.form.phone')}</label>
                     <input id="phoneNumber" name="phoneNumber" value={form.phoneNumber} onChange={handleInputChange} className="input" />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="email">{t('cinemas.form.email')}</label>
                     <input id="email" name="email" type="email" value={form.email} onChange={handleInputChange} className="input" />
                   </div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="logoUrl">Logo URL</label>
+                  <label htmlFor="logoUrl">{t('cinemas.form.logoUrl')}</label>
                   <input id="logoUrl" name="logoUrl" value={form.logoUrl} onChange={handleInputChange} className="input" placeholder="https://..." />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="openTime">Opening Time *</label>
+                    <label htmlFor="openTime">{t('cinemas.form.openTime')}</label>
                     <input id="openTime" name="openTime" type="time" value={form.openTime} onChange={handleInputChange} className="input" required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="closeTime">Closing Time *</label>
+                    <label htmlFor="closeTime">{t('cinemas.form.closeTime')}</label>
                     <input id="closeTime" name="closeTime" type="time" value={form.closeTime} onChange={handleInputChange} className="input" required />
                   </div>
                 </div>
@@ -204,14 +206,14 @@ export const CinemasManagementPage: React.FC = () => {
                   <div className="form-group form-check">
                     <label>
                       <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleInputChange} />
-                      {' '}Active
+                      {' '}{t('common.active')}
                     </label>
                   </div>
                 )}
                 <div className="form-actions">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">Cancel</button>
+                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">{t('common.cancel')}</button>
                   <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
                   </button>
                 </div>
               </form>
@@ -223,13 +225,13 @@ export const CinemasManagementPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Location</th>
-                <th>Contact</th>
-                <th>Hours</th>
-                <th>Halls</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{t('cinemas.columns.name')}</th>
+                <th>{t('cinemas.columns.location')}</th>
+                <th>{t('cinemas.columns.contact')}</th>
+                <th>{t('cinemas.columns.hours')}</th>
+                <th>{t('cinemas.columns.halls')}</th>
+                <th>{t('cinemas.columns.status')}</th>
+                <th>{t('cinemas.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -250,13 +252,13 @@ export const CinemasManagementPage: React.FC = () => {
                   <td>{cinema.hallCount}</td>
                   <td>
                     <span className={`status-badge status-${cinema.isActive ? 'confirmed' : 'cancelled'}`}>
-                      {cinema.isActive ? 'Active' : 'Inactive'}
+                      {cinema.isActive ? t('common.active') : t('common.inactive')}
                     </span>
                   </td>
                   <td>
                     <div className="table-actions">
-                      <button onClick={() => handleEdit(cinema)} className="btn btn-sm btn-outline">Edit</button>
-                      <button onClick={() => handleDelete(cinema.id)} className="btn btn-sm btn-danger">Delete</button>
+                      <button onClick={() => handleEdit(cinema)} className="btn btn-sm btn-outline">{t('common.edit')}</button>
+                      <button onClick={() => handleDelete(cinema.id)} className="btn btn-sm btn-danger">{t('common.delete')}</button>
                     </div>
                   </td>
                 </tr>

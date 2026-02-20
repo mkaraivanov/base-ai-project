@@ -1,8 +1,10 @@
 using Application.DTOs.CinemaHalls;
+using Application.Resources;
 using Application.Services;
 using Application.Validators;
 using Backend.Models;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Backend.Endpoints;
 
@@ -64,13 +66,14 @@ public static class CinemaHallEndpoints
         CreateCinemaHallDto dto,
         ICinemaHallService hallService,
         IValidator<CreateCinemaHallDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<CinemaHallDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<CinemaHallDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await hallService.CreateHallAsync(dto, ct);
@@ -85,13 +88,14 @@ public static class CinemaHallEndpoints
         UpdateCinemaHallDto dto,
         ICinemaHallService hallService,
         IValidator<UpdateCinemaHallDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<CinemaHallDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<CinemaHallDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await hallService.UpdateHallAsync(id, dto, ct);

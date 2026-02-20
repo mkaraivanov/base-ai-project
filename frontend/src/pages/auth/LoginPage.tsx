@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const LoginPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +17,7 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError(t('login.fillAllFields'));
       return;
     }
 
@@ -25,7 +27,7 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Invalid email or password.');
+      const message = extractErrorMessage(err, t('login.error'));
       setError(message);
     } finally {
       setLoading(false);
@@ -36,33 +38,33 @@ export const LoginPage: React.FC = () => {
     <div className="page auth-page">
       <div className="container container-xs">
         <div className="auth-card">
-          <h1>Login</h1>
-          <p className="auth-subtitle">Welcome back! Sign in to your account.</p>
+          <h1>{t('login.title')}</h1>
+          <p className="auth-subtitle">{t('login.subtitle')}</p>
 
           {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
           <form onSubmit={handleSubmit} className="form">
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">{t('login.email')}</label>
               <input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('login.emailPlaceholder')}
                 className="input"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('login.password')}</label>
               <input
                 type="password"
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t('register.passwordPlaceholder')}
                 className="input"
                 required
               />
@@ -73,13 +75,13 @@ export const LoginPage: React.FC = () => {
               className="btn btn-primary btn-full"
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('login.signingIn') : t('login.submit')}
             </button>
           </form>
 
           <p className="auth-footer">
-            Don&apos;t have an account?{' '}
-            <Link to="/register">Sign up</Link>
+            {t('login.noAccount')}{' '}
+            <Link to="/register">{t('login.signUpLink')}</Link>
           </p>
         </div>
       </div>

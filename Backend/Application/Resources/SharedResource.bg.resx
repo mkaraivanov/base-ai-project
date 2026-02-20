@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- ── Validator messages ── -->
+  <data name="Address is required" xml:space="preserve">
+    <value>Адресът е задължителен</value>
+  </data>
+  <data name="Address must not exceed 200 characters" xml:space="preserve">
+    <value>Адресът не трябва да надвишава 200 знака</value>
+  </data>
+  <data name="At least one seat must be defined" xml:space="preserve">
+    <value>Трябва да бъде дефинирано поне едно място</value>
+  </data>
+  <data name="At least one seat must be selected" xml:space="preserve">
+    <value>Трябва да бъде избрано поне едно място</value>
+  </data>
+  <data name="Base price must be greater than 0" xml:space="preserve">
+    <value>Базовата цена трябва да бъде по-голяма от 0</value>
+  </data>
+  <data name="Base price must not exceed 1000" xml:space="preserve">
+    <value>Базовата цена не трябва да надвишава 1000</value>
+  </data>
+  <data name="CVV is required" xml:space="preserve">
+    <value>CVV е задължителен</value>
+  </data>
+  <data name="CVV must be 3 or 4 digits" xml:space="preserve">
+    <value>CVV трябва да бъде 3 или 4 цифри</value>
+  </data>
+  <data name="Cannot reserve more than 10 seats at once" xml:space="preserve">
+    <value>Не може да се резервират повече от 10 места наведнъж</value>
+  </data>
+  <data name="Card holder name is required" xml:space="preserve">
+    <value>Името на картодържателя е задължително</value>
+  </data>
+  <data name="Card holder name must not exceed 100 characters" xml:space="preserve">
+    <value>Името на картодържателя не трябва да надвишава 100 знака</value>
+  </data>
+  <data name="Card number is required" xml:space="preserve">
+    <value>Номерът на картата е задължителен</value>
+  </data>
+  <data name="Card number must be between 13 and 19 digits" xml:space="preserve">
+    <value>Номерът на картата трябва да бъде между 13 и 19 цифри</value>
+  </data>
+  <data name="Cinema Hall ID is required" xml:space="preserve">
+    <value>ID на киносалона е задължително</value>
+  </data>
+  <data name="Cinema is required" xml:space="preserve">
+    <value>Киното е задължително</value>
+  </data>
+  <data name="Cinema name is required" xml:space="preserve">
+    <value>Името на киното е задължително</value>
+  </data>
+  <data name="Cinema name must not exceed 100 characters" xml:space="preserve">
+    <value>Името на киното не трябва да надвишава 100 знака</value>
+  </data>
+  <data name="City is required" xml:space="preserve">
+    <value>Градът е задължителен</value>
+  </data>
+  <data name="City must not exceed 100 characters" xml:space="preserve">
+    <value>Градът не трябва да надвишава 100 знака</value>
+  </data>
+  <data name="Country is required" xml:space="preserve">
+    <value>Страната е задължителна</value>
+  </data>
+  <data name="Country must not exceed 100 characters" xml:space="preserve">
+    <value>Страната не трябва да надвишава 100 знака</value>
+  </data>
+  <data name="Description is required" xml:space="preserve">
+    <value>Описанието е задължително</value>
+  </data>
+  <data name="Description must not exceed 2000 characters" xml:space="preserve">
+    <value>Описанието не трябва да надвишава 2000 знака</value>
+  </data>
+  <data name="Duplicate seat numbers are not allowed" xml:space="preserve">
+    <value>Дублиращи се номера на места не са разрешени</value>
+  </data>
+  <data name="Duration must be greater than 0" xml:space="preserve">
+    <value>Продължителността трябва да бъде по-голяма от 0</value>
+  </data>
+  <data name="Duration must not exceed 500 minutes" xml:space="preserve">
+    <value>Продължителността не трябва да надвишава 500 минути</value>
+  </data>
+  <data name="Email is required" xml:space="preserve">
+    <value>Имейлът е задължителен</value>
+  </data>
+  <data name="Email must not exceed 200 characters" xml:space="preserve">
+    <value>Имейлът не трябва да надвишава 200 знака</value>
+  </data>
+  <data name="Expiry date is required" xml:space="preserve">
+    <value>Датата на изтичане е задължителна</value>
+  </data>
+  <data name="Expiry date must be in MM/YY format" xml:space="preserve">
+    <value>Датата на изтичане трябва да бъде в формат MM/YY</value>
+  </data>
+  <data name="First name is required" xml:space="preserve">
+    <value>Името е задължително</value>
+  </data>
+  <data name="First name must not exceed 100 characters" xml:space="preserve">
+    <value>Името не трябва да надвишава 100 знака</value>
+  </data>
+  <data name="Genre is required" xml:space="preserve">
+    <value>Жанрът е задължителен</value>
+  </data>
+  <data name="Genre must not exceed 50 characters" xml:space="preserve">
+    <value>Жанрът не трябва да надвишава 50 знака</value>
+  </data>
+  <data name="Hall name is required" xml:space="preserve">
+    <value>Името на залата е задължително</value>
+  </data>
+  <data name="Hall name must not exceed 100 characters" xml:space="preserve">
+    <value>Името на залата не трябва да надвишава 100 знака</value>
+  </data>
+  <data name="Invalid email address format" xml:space="preserve">
+    <value>Невалиден формат на имейл адрес</value>
+  </data>
+  <data name="Invalid email format" xml:space="preserve">
+    <value>Невалиден формат на имейл</value>
+  </data>
+  <data name="Invalid phone number format" xml:space="preserve">
+    <value>Невалиден формат на телефонен номер</value>
+  </data>
+  <data name="Invalid seat number format (e.g., A1, B12)" xml:space="preserve">
+    <value>Невалиден формат на номер на място (напр. A1, B12)</value>
+  </data>
+  <data name="Last name is required" xml:space="preserve">
+    <value>Фамилното име е задължително</value>
+  </data>
+  <data name="Last name must not exceed 100 characters" xml:space="preserve">
+    <value>Фамилното име не трябва да надвишава 100 знака</value>
+  </data>
+  <data name="Logo URL must not exceed 500 characters" xml:space="preserve">
+    <value>URL на логото не трябва да надвишава 500 знака</value>
+  </data>
+  <data name="Movie ID is required" xml:space="preserve">
+    <value>ID на филма е задължително</value>
+  </data>
+  <data name="Password is required" xml:space="preserve">
+    <value>Паролата е задължителна</value>
+  </data>
+  <data name="Password must be at least 8 characters" xml:space="preserve">
+    <value>Паролата трябва да бъде поне 8 знака</value>
+  </data>
+  <data name="Password must contain at least one lowercase letter" xml:space="preserve">
+    <value>Паролата трябва да съдържа поне една малка буква</value>
+  </data>
+  <data name="Password must contain at least one number" xml:space="preserve">
+    <value>Паролата трябва да съдържа поне една цифра</value>
+  </data>
+  <data name="Password must contain at least one uppercase letter" xml:space="preserve">
+    <value>Паролата трябва да съдържа поне една главна буква</value>
+  </data>
+  <data name="Payment method is required" xml:space="preserve">
+    <value>Начинът на плащане е задължителен</value>
+  </data>
+  <data name="Payment method must not exceed 50 characters" xml:space="preserve">
+    <value>Начинът на плащане не трябва да надвишава 50 знака</value>
+  </data>
+  <data name="Phone number is required" xml:space="preserve">
+    <value>Телефонният номер е задължителен</value>
+  </data>
+  <data name="Phone number must not exceed 20 characters" xml:space="preserve">
+    <value>Телефонният номер не трябва да надвишава 20 знака</value>
+  </data>
+  <data name="Poster URL is required" xml:space="preserve">
+    <value>URL на постера е задължителен</value>
+  </data>
+  <data name="Poster URL must be a valid URL" xml:space="preserve">
+    <value>URL на постера трябва да бъде валиден URL</value>
+  </data>
+  <data name="Rating is required" xml:space="preserve">
+    <value>Рейтингът е задължителен</value>
+  </data>
+  <data name="Rating must be G, PG, PG-13, R, or NC-17" xml:space="preserve">
+    <value>Рейтингът трябва да бъде G, PG, PG-13, R или NC-17</value>
+  </data>
+  <data name="Release date is required" xml:space="preserve">
+    <value>Датата на излизане е задължителна</value>
+  </data>
+  <data name="Reservation ID is required" xml:space="preserve">
+    <value>ID на резервацията е задължително</value>
+  </data>
+  <data name="Rows must be greater than 0" xml:space="preserve">
+    <value>Редовете трябва да бъдат повече от 0</value>
+  </data>
+  <data name="Rows must not exceed 50" xml:space="preserve">
+    <value>Редовете не трябва да надвишават 50</value>
+  </data>
+  <data name="Seat layout is required" xml:space="preserve">
+    <value>Наредбата на местата е задължителна</value>
+  </data>
+  <data name="Seat number cannot be empty" xml:space="preserve">
+    <value>Номерът на мястото не може да бъде празен</value>
+  </data>
+  <data name="Seats list is required" xml:space="preserve">
+    <value>Списъкът с места е задължителен</value>
+  </data>
+  <data name="Seats per row must be greater than 0" xml:space="preserve">
+    <value>Местата на ред трябва да бъдат повече от 0</value>
+  </data>
+  <data name="Seats per row must not exceed 100" xml:space="preserve">
+    <value>Местата на ред не трябва да надвишават 100</value>
+  </data>
+  <data name="Showtime ID is required" xml:space="preserve">
+    <value>ID на прожекцията е задължително</value>
+  </data>
+  <data name="Start time is required" xml:space="preserve">
+    <value>Началният час е задължителен</value>
+  </data>
+  <data name="Start time must be in the future" xml:space="preserve">
+    <value>Началният час трябва да бъде в бъдещето</value>
+  </data>
+  <data name="Ticket type must be specified for each seat" xml:space="preserve">
+    <value>Типът на билета трябва да бъде посочен за всяко място</value>
+  </data>
+  <data name="Title is required" xml:space="preserve">
+    <value>Заглавието е задължително</value>
+  </data>
+  <data name="Title must not exceed 200 characters" xml:space="preserve">
+    <value>Заглавието не трябва да надвишава 200 знака</value>
+  </data>
+  <data name="Validation failed" xml:space="preserve">
+    <value>Валидацията е неуспешна</value>
+  </data>
+
+  <!-- ── Service / endpoint messages ── -->
+  <data name="Account is inactive" xml:space="preserve">
+    <value>Акаунтът е неактивен</value>
+  </data>
+  <data name="Associated movie not found" xml:space="preserve">
+    <value>Свързаният филм не е намерен</value>
+  </data>
+  <data name="Booking cannot be cancelled" xml:space="preserve">
+    <value>Резервацията не може да бъде отменена</value>
+  </data>
+  <data name="Booking not found" xml:space="preserve">
+    <value>Резервацията не е намерена</value>
+  </data>
+  <data name="Cannot book past or ongoing showtimes" xml:space="preserve">
+    <value>Не може да се резервира за минали или текущи прожекции</value>
+  </data>
+  <data name="Cannot cancel a booking within 1 hour of the showtime" xml:space="preserve">
+    <value>Не може да се анулира резервация в рамките на 1 час от прожекцията</value>
+  </data>
+  <data name="Cinema hall not found" xml:space="preserve">
+    <value>Киносалонът не е намерен</value>
+  </data>
+  <data name="Cinema not found" xml:space="preserve">
+    <value>Киното не е намерено</value>
+  </data>
+  <data name="Email already registered" xml:space="preserve">
+    <value>Имейлът вече е регистриран</value>
+  </data>
+  <data name="Failed to cancel booking" xml:space="preserve">
+    <value>Неуспешно анулиране на резервацията</value>
+  </data>
+  <data name="Failed to cancel reservation" xml:space="preserve">
+    <value>Неуспешно анулиране на резервацията (предварителна)</value>
+  </data>
+  <data name="Failed to confirm booking" xml:space="preserve">
+    <value>Неуспешно потвърждение на резервацията</value>
+  </data>
+  <data name="Failed to create cinema" xml:space="preserve">
+    <value>Неуспешно създаване на кино</value>
+  </data>
+  <data name="Failed to create cinema hall" xml:space="preserve">
+    <value>Неуспешно създаване на киносалон</value>
+  </data>
+  <data name="Failed to create movie" xml:space="preserve">
+    <value>Неуспешно създаване на филм</value>
+  </data>
+  <data name="Failed to create reservation" xml:space="preserve">
+    <value>Неуспешно създаване на резервация</value>
+  </data>
+  <data name="Failed to create showtime" xml:space="preserve">
+    <value>Неуспешно създаване на прожекция</value>
+  </data>
+  <data name="Failed to create ticket type" xml:space="preserve">
+    <value>Неуспешно създаване на тип билет</value>
+  </data>
+  <data name="Failed to delete cinema" xml:space="preserve">
+    <value>Неуспешно изтриване на кино</value>
+  </data>
+  <data name="Failed to delete cinema hall" xml:space="preserve">
+    <value>Неуспешно изтриване на киносалон</value>
+  </data>
+  <data name="Failed to delete movie" xml:space="preserve">
+    <value>Неуспешно изтриване на филм</value>
+  </data>
+  <data name="Failed to delete showtime" xml:space="preserve">
+    <value>Неуспешно изтриване на прожекция</value>
+  </data>
+  <data name="Failed to delete ticket type" xml:space="preserve">
+    <value>Неуспешно изтриване на тип билет</value>
+  </data>
+  <data name="Failed to export CSV" xml:space="preserve">
+    <value>Неуспешен износ на CSV</value>
+  </data>
+  <data name="Failed to retrieve booking" xml:space="preserve">
+    <value>Неуспешно извличане на резервация</value>
+  </data>
+  <data name="Failed to retrieve bookings" xml:space="preserve">
+    <value>Неуспешно извличане на резервации</value>
+  </data>
+  <data name="Failed to retrieve cinema" xml:space="preserve">
+    <value>Неуспешно извличане на кино</value>
+  </data>
+  <data name="Failed to retrieve cinema hall" xml:space="preserve">
+    <value>Неуспешно извличане на киносалон</value>
+  </data>
+  <data name="Failed to retrieve cinema halls" xml:space="preserve">
+    <value>Неуспешно извличане на киносалони</value>
+  </data>
+  <data name="Failed to retrieve cinemas" xml:space="preserve">
+    <value>Неуспешно извличане на кина</value>
+  </data>
+  <data name="Failed to retrieve loyalty card" xml:space="preserve">
+    <value>Неуспешно извличане на карта за лоялност</value>
+  </data>
+  <data name="Failed to retrieve loyalty settings" xml:space="preserve">
+    <value>Неуспешно извличане на настройките за лоялност</value>
+  </data>
+  <data name="Failed to retrieve movie" xml:space="preserve">
+    <value>Неуспешно извличане на филм</value>
+  </data>
+  <data name="Failed to retrieve movies" xml:space="preserve">
+    <value>Неуспешно извличане на филми</value>
+  </data>
+  <data name="Failed to retrieve sales by date report" xml:space="preserve">
+    <value>Неуспешно извличане на отчет за продажби по дата</value>
+  </data>
+  <data name="Failed to retrieve sales by location report" xml:space="preserve">
+    <value>Неуспешно извличане на отчет за продажби по местоположение</value>
+  </data>
+  <data name="Failed to retrieve sales by movie report" xml:space="preserve">
+    <value>Неуспешно извличане на отчет за продажби по филм</value>
+  </data>
+  <data name="Failed to retrieve sales by showtime report" xml:space="preserve">
+    <value>Неуспешно извличане на отчет за продажби по прожекция</value>
+  </data>
+  <data name="Failed to retrieve seat availability" xml:space="preserve">
+    <value>Неуспешно извличане на наличност на места</value>
+  </data>
+  <data name="Failed to retrieve showtime" xml:space="preserve">
+    <value>Неуспешно извличане на прожекция</value>
+  </data>
+  <data name="Failed to retrieve showtimes" xml:space="preserve">
+    <value>Неуспешно извличане на прожекции</value>
+  </data>
+  <data name="Failed to retrieve ticket types" xml:space="preserve">
+    <value>Неуспешно извличане на типове билети</value>
+  </data>
+  <data name="Failed to update cinema" xml:space="preserve">
+    <value>Неуспешно актуализиране на кино</value>
+  </data>
+  <data name="Failed to update cinema hall" xml:space="preserve">
+    <value>Неуспешно актуализиране на киносалон</value>
+  </data>
+  <data name="Failed to update loyalty settings" xml:space="preserve">
+    <value>Неуспешно актуализиране на настройките за лоялност</value>
+  </data>
+  <data name="Failed to update movie" xml:space="preserve">
+    <value>Неуспешно актуализиране на филм</value>
+  </data>
+  <data name="Failed to update showtime" xml:space="preserve">
+    <value>Неуспешно актуализиране на прожекция</value>
+  </data>
+  <data name="Failed to update ticket type" xml:space="preserve">
+    <value>Неуспешно актуализиране на тип билет</value>
+  </data>
+  <data name="Invalid email or password" xml:space="preserve">
+    <value>Невалиден имейл или парола</value>
+  </data>
+  <data name="Login failed. Please try again." xml:space="preserve">
+    <value>Влизането е неуспешно. Моля, опитайте отново.</value>
+  </data>
+  <data name="Movie not found" xml:space="preserve">
+    <value>Филмът не е намерен</value>
+  </data>
+  <data name="Payment declined" xml:space="preserve">
+    <value>Плащането е отхвърлено</value>
+  </data>
+  <data name="Payment declined by bank" xml:space="preserve">
+    <value>Плащането е отхвърлено от банката</value>
+  </data>
+  <data name="Payment processing failed" xml:space="preserve">
+    <value>Обработката на плащането е неуспешна</value>
+  </data>
+  <data name="Price modifier must be greater than zero" xml:space="preserve">
+    <value>Ценовият модификатор трябва да бъде по-голям от нула</value>
+  </data>
+  <data name="Refund processing failed" xml:space="preserve">
+    <value>Обработката на възстановяването е неуспешна</value>
+  </data>
+  <data name="Registration failed. Please try again." xml:space="preserve">
+    <value>Регистрацията е неуспешна. Моля, опитайте отново.</value>
+  </data>
+  <data name="Reservation cannot be cancelled" xml:space="preserve">
+    <value>Резервацията не може да бъде анулирана</value>
+  </data>
+  <data name="Reservation has expired" xml:space="preserve">
+    <value>Резервацията е изтекла</value>
+  </data>
+  <data name="Reservation is no longer valid" xml:space="preserve">
+    <value>Резервацията вече не е валидна</value>
+  </data>
+  <data name="Reservation not found" xml:space="preserve">
+    <value>Резервацията не е намерена</value>
+  </data>
+  <data name="Selected seats are no longer available. Please try again." xml:space="preserve">
+    <value>Избраните места вече не са налични. Моля, опитайте отново.</value>
+  </data>
+  <data name="Showtime not found" xml:space="preserve">
+    <value>Прожекцията не е намерена</value>
+  </data>
+  <data name="Showtime overlaps with existing showtime in this hall" xml:space="preserve">
+    <value>Прожекцията се застъпва с вече съществуваща прожекция в тази зала</value>
+  </data>
+  <data name="Stamps required must be at least 1" xml:space="preserve">
+    <value>Необходимите марки трябва да бъдат поне 1</value>
+  </data>
+  <data name="Ticket type not found" xml:space="preserve">
+    <value>Типът на билета не е намерен</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Неоторизиран достъп</value>
+  </data>
+  <data name="Car license plate must be a valid Bulgarian format (e.g. CB1234AB)" xml:space="preserve">
+    <value>Регистрационният номер трябва да е в валиден български формат (напр. CB1234AB)</value>
+  </data>
+</root>

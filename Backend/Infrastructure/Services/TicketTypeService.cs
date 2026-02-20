@@ -1,8 +1,10 @@
 using Application.DTOs.TicketTypes;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
 using Domain.Entities;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -11,11 +13,16 @@ public class TicketTypeService : ITicketTypeService
 {
     private readonly ITicketTypeRepository _repository;
     private readonly ILogger<TicketTypeService> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
-    public TicketTypeService(ITicketTypeRepository repository, ILogger<TicketTypeService> logger)
+    public TicketTypeService(
+        ITicketTypeRepository repository,
+        ILogger<TicketTypeService> logger,
+        IStringLocalizer<SharedResource> localizer)
     {
         _repository = repository;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task<Result<List<TicketTypeDto>>> GetAllActiveAsync(CancellationToken ct = default)
@@ -28,7 +35,7 @@ public class TicketTypeService : ITicketTypeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving active ticket types");
-            return Result<List<TicketTypeDto>>.Failure("Failed to retrieve ticket types");
+            return Result<List<TicketTypeDto>>.Failure(_localizer["Failed to retrieve ticket types"]);
         }
     }
 
@@ -42,7 +49,7 @@ public class TicketTypeService : ITicketTypeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving all ticket types");
-            return Result<List<TicketTypeDto>>.Failure("Failed to retrieve ticket types");
+            return Result<List<TicketTypeDto>>.Failure(_localizer["Failed to retrieve ticket types"]);
         }
     }
 
@@ -51,7 +58,7 @@ public class TicketTypeService : ITicketTypeService
         try
         {
             if (dto.PriceModifier <= 0)
-                return Result<TicketTypeDto>.Failure("Price modifier must be greater than zero");
+                return Result<TicketTypeDto>.Failure(_localizer["Price modifier must be greater than zero"]);
 
             var ticketType = new TicketType
             {
@@ -71,7 +78,7 @@ public class TicketTypeService : ITicketTypeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating ticket type");
-            return Result<TicketTypeDto>.Failure("Failed to create ticket type");
+            return Result<TicketTypeDto>.Failure(_localizer["Failed to create ticket type"]);
         }
     }
 
@@ -81,10 +88,10 @@ public class TicketTypeService : ITicketTypeService
         {
             var existing = await _repository.GetByIdAsync(id, ct);
             if (existing is null)
-                return Result<TicketTypeDto>.Failure("Ticket type not found");
+                return Result<TicketTypeDto>.Failure(_localizer["Ticket type not found"]);
 
             if (dto.PriceModifier <= 0)
-                return Result<TicketTypeDto>.Failure("Price modifier must be greater than zero");
+                return Result<TicketTypeDto>.Failure(_localizer["Price modifier must be greater than zero"]);
 
             var updated = existing with
             {
@@ -102,7 +109,7 @@ public class TicketTypeService : ITicketTypeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating ticket type {Id}", id);
-            return Result<TicketTypeDto>.Failure("Failed to update ticket type");
+            return Result<TicketTypeDto>.Failure(_localizer["Failed to update ticket type"]);
         }
     }
 
@@ -112,7 +119,7 @@ public class TicketTypeService : ITicketTypeService
         {
             var existing = await _repository.GetByIdAsync(id, ct);
             if (existing is null)
-                return Result.Failure("Ticket type not found");
+                return Result.Failure(_localizer["Ticket type not found"]);
 
             await _repository.DeleteAsync(id, ct);
             _logger.LogInformation("Ticket type deleted (deactivated): {Id}", id);
@@ -121,7 +128,7 @@ public class TicketTypeService : ITicketTypeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting ticket type {Id}", id);
-            return Result.Failure("Failed to delete ticket type");
+            return Result.Failure(_localizer["Failed to delete ticket type"]);
         }
     }
 

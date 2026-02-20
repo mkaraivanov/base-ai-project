@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { movieApi } from '../../api/movieApi';
 import { MovieCard } from '../../components/MovieCard/MovieCard';
 import type { MovieDto } from '../../types';
 
 export const MoviesPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,18 +36,18 @@ export const MoviesPage: React.FC = () => {
   });
 
   if (loading) {
-    return <div className="page"><div className="loading">Loading movies...</div></div>;
+    return <div className="page"><div className="loading">{t('movies.loading')}</div></div>;
   }
 
   return (
     <div className="page">
       <div className="container">
-        <h1>Movies</h1>
+        <h1>{t('movies.title')}</h1>
 
         <div className="filters">
           <input
             type="text"
-            placeholder="Search movies..."
+            placeholder={t('movies.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="input"
@@ -55,7 +57,7 @@ export const MoviesPage: React.FC = () => {
             onChange={(e) => setGenreFilter(e.target.value)}
             className="input"
           >
-            <option value="">All Genres</option>
+            <option value="">{t('movies.allGenres')}</option>
             {genres.map((genre) => (
               <option key={genre} value={genre}>
                 {genre}
@@ -65,7 +67,7 @@ export const MoviesPage: React.FC = () => {
         </div>
 
         {filteredMovies.length === 0 ? (
-          <p className="empty-state">No movies found matching your criteria.</p>
+          <p className="empty-state">{t('movies.noResults')}</p>
         ) : (
           <div className="movie-grid">
             {filteredMovies.map((movie) => (

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cinemaApi } from '../../api/cinemaApi';
 import type { CinemaDto } from '../../types';
 
 export const CinemaSelectionPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,32 +16,32 @@ export const CinemaSelectionPage: React.FC = () => {
         const data = await cinemaApi.getAll(true);
         setCinemas(data);
       } catch {
-        setError('Failed to load cinemas');
+        setError(t('cinemaSelection.error'));
       } finally {
         setLoading(false);
       }
     };
     loadCinemas();
-  }, []);
+  }, [t]);
 
   return (
     <div className="page home-page">
       <section className="hero">
         <div className="hero-content">
-          <h1>Welcome to CineBook</h1>
-          <p>Pick your nearest cinema and book tickets in seconds.</p>
+          <h1>{t('cinemaSelection.welcome')}</h1>
+          <p>{t('cinemaSelection.heroSubtitle')}</p>
         </div>
       </section>
 
       <section className="section">
         <div className="container">
-          <h2>Select a Cinema</h2>
+          <h2>{t('cinemaSelection.title')}</h2>
           {loading ? (
-            <div className="loading">Loading cinemas...</div>
+            <div className="loading">{t('cinemaSelection.loading')}</div>
           ) : error ? (
             <p className="error-message">{error}</p>
           ) : cinemas.length === 0 ? (
-            <p className="empty-state">No cinemas available at the moment.</p>
+            <p className="empty-state">{t('cinemaSelection.noCinemasAtMoment')}</p>
           ) : (
             <div className="cinema-grid">
               {cinemas.map((cinema) => (
@@ -66,7 +68,7 @@ export const CinemaSelectionPage: React.FC = () => {
                     {cinema.openTime} – {cinema.closeTime}
                   </p>
                   <p className="cinema-halls">
-                    {cinema.hallCount} hall{cinema.hallCount !== 1 ? 's' : ''}
+                    {t('cinemaSelection.halls', { count: cinema.hallCount })}
                   </p>
                 </Link>
               ))}

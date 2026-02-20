@@ -1,8 +1,10 @@
 using Application.DTOs.Reporting;
+using Application.Resources;
 using Application.Services;
 using Backend.Infrastructure.Caching;
 using Domain.Common;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -12,16 +14,19 @@ public class ReportingService : IReportingService
     private readonly IReportingRepository _repository;
     private readonly ICacheService _cache;
     private readonly ILogger<ReportingService> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
     public ReportingService(
         IReportingRepository repository,
         ICacheService cache,
-        ILogger<ReportingService> logger)
+        ILogger<ReportingService> logger,
+        IStringLocalizer<SharedResource> localizer)
     {
         _repository = repository;
         _cache = cache;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task<Result<List<SalesByDateDto>>> GetSalesByDateAsync(
@@ -46,7 +51,7 @@ public class ReportingService : IReportingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving sales-by-date report");
-            return Result<List<SalesByDateDto>>.Failure("Failed to retrieve sales by date report");
+            return Result<List<SalesByDateDto>>.Failure(_localizer["Failed to retrieve sales by date report"]);
         }
     }
 
@@ -72,7 +77,7 @@ public class ReportingService : IReportingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving sales-by-movie report");
-            return Result<List<SalesByMovieDto>>.Failure("Failed to retrieve sales by movie report");
+            return Result<List<SalesByMovieDto>>.Failure(_localizer["Failed to retrieve sales by movie report"]);
         }
     }
 
@@ -98,7 +103,7 @@ public class ReportingService : IReportingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving sales-by-showtime report");
-            return Result<List<SalesByShowtimeDto>>.Failure("Failed to retrieve sales by showtime report");
+            return Result<List<SalesByShowtimeDto>>.Failure(_localizer["Failed to retrieve sales by showtime report"]);
         }
     }
 
@@ -124,7 +129,7 @@ public class ReportingService : IReportingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving sales-by-location report");
-            return Result<List<SalesByLocationDto>>.Failure("Failed to retrieve sales by location report");
+            return Result<List<SalesByLocationDto>>.Failure(_localizer["Failed to retrieve sales by location report"]);
         }
     }
 
@@ -150,7 +155,7 @@ public class ReportingService : IReportingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error exporting CSV for report type {ReportType}", reportType);
-            return Result<byte[]>.Failure("Failed to export CSV");
+            return Result<byte[]>.Failure(_localizer["Failed to export CSV"]);
         }
     }
 

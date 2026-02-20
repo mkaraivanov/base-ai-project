@@ -1,8 +1,10 @@
 using Application.DTOs.Movies;
+using Application.Resources;
 using Application.Services;
 using Application.Validators;
 using Backend.Models;
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 
 namespace Backend.Endpoints;
 
@@ -63,13 +65,14 @@ public static class MovieEndpoints
         CreateMovieDto dto,
         IMovieService movieService,
         IValidator<CreateMovieDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<MovieDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<MovieDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await movieService.CreateMovieAsync(dto, ct);
@@ -84,13 +87,14 @@ public static class MovieEndpoints
         UpdateMovieDto dto,
         IMovieService movieService,
         IValidator<UpdateMovieDto> validator,
+        IStringLocalizer<SharedResource> localizer,
         CancellationToken ct)
     {
         var validationResult = await validator.ValidateAsync(dto, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return Results.BadRequest(new ApiResponse<MovieDto>(false, null, "Validation failed", errors));
+            return Results.BadRequest(new ApiResponse<MovieDto>(false, null, localizer["Validation failed"], errors));
         }
 
         var result = await movieService.UpdateMovieAsync(id, dto, ct);

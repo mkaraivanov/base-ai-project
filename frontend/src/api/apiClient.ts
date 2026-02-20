@@ -1,4 +1,5 @@
 import axios from 'axios';
+import i18n from '../i18n';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5076/api',
@@ -7,13 +8,15 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and Accept-Language header
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    const lang = i18n.language?.split('-')[0] ?? 'en';
+    config.headers['Accept-Language'] = lang;
     return config;
   },
   (error) => Promise.reject(error),

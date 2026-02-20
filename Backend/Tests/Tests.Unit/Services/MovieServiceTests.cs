@@ -25,6 +25,7 @@ public class MovieServiceTests
         _movieService = new MovieService(
             _movieRepositoryMock.Object,
             _loggerMock.Object,
+            Helpers.LocalizerHelper.CreateDefault(),
             _timeProvider);
     }
 

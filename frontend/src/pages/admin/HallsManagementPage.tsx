@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { hallApi } from '../../api/hallApi';
 import { cinemaApi } from '../../api/cinemaApi';
 import type { CinemaDto, CinemaHallDto, CreateCinemaHallDto, UpdateCinemaHallDto, SeatLayout, SeatDefinition } from '../../types';
@@ -40,6 +41,7 @@ const generateSeatLayout = (rows: number, seatsPerRow: number): SeatLayout => {
 };
 
 export const HallsManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
   const [filterCinemaId, setFilterCinemaId] = useState<string>('');
@@ -110,7 +112,7 @@ export const HallsManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this hall?')) return;
+    if (!window.confirm(t('halls.confirmDelete'))) return;
     try {
       await hallApi.delete(id);
       await loadHalls();
@@ -160,15 +162,15 @@ export const HallsManagementPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
 
   return (
     <div className="page">
       <div className="container">
         <div className="page-header">
-          <h1>Cinema Halls Management</h1>
+          <h1>{t('halls.title')}</h1>
           <button onClick={handleCreate} className="btn btn-primary">
-            + Add Hall
+            + {t('halls.addHall')}
           </button>
         </div>
 
@@ -179,7 +181,7 @@ export const HallsManagementPage: React.FC = () => {
             className="input"
             style={{ maxWidth: 260 }}
           >
-            <option value="">All Cinemas</option>
+            <option value="">{t('common.allCinemas')}</option>
             {cinemas.map((c) => (
               <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
             ))}
@@ -191,13 +193,13 @@ export const HallsManagementPage: React.FC = () => {
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingId ? 'Edit Hall' : 'Add Hall'}</h2>
+              <h2>{editingId ? t('halls.editHall') : t('halls.addHall')}</h2>
               <form onSubmit={handleSubmit} className="form">
                 {!editingId && (
                   <div className="form-group">
-                    <label htmlFor="cinemaId">Cinema *</label>
+                    <label htmlFor="cinemaId">{t('halls.form.cinema')}</label>
                     <select id="cinemaId" name="cinemaId" value={form.cinemaId} onChange={handleInputChange} className="input" required>
-                      <option value="">Select Cinema</option>
+                      <option value="">{t('halls.form.selectCinema')}</option>
                       {cinemas.map((c) => (
                         <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
                       ))}
@@ -205,32 +207,32 @@ export const HallsManagementPage: React.FC = () => {
                   </div>
                 )}
                 <div className="form-group">
-                  <label htmlFor="name">Hall Name *</label>
+                  <label htmlFor="name">{t('halls.form.name')}</label>
                   <input id="name" name="name" value={form.name} onChange={handleInputChange} className="input" required />
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="rows">Rows</label>
+                    <label htmlFor="rows">{t('halls.form.rows')}</label>
                     <input id="rows" name="rows" type="number" min="1" max="26" value={form.rows} onChange={handleInputChange} className="input" required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="seatsPerRow">Seats per Row</label>
+                    <label htmlFor="seatsPerRow">{t('halls.form.seatsPerRow')}</label>
                     <input id="seatsPerRow" name="seatsPerRow" type="number" min="1" max="30" value={form.seatsPerRow} onChange={handleInputChange} className="input" required />
                   </div>
                 </div>
-                <p className="form-help">Total seats: {parseInt(form.rows || '0', 10) * parseInt(form.seatsPerRow || '0', 10)}</p>
+                <p className="form-help">{t('halls.form.totalSeats', { count: parseInt(form.rows || '0', 10) * parseInt(form.seatsPerRow || '0', 10) })}</p>
                 {editingId && (
                   <div className="form-group form-check">
                     <label>
                       <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleInputChange} />
-                      {' '}Active
+                      {' '}{t('common.active')}
                     </label>
                   </div>
                 )}
                 <div className="form-actions">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">Cancel</button>
+                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">{t('common.cancel')}</button>
                   <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
                   </button>
                 </div>
               </form>
@@ -242,12 +244,12 @@ export const HallsManagementPage: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Cinema</th>
-                <th>Name</th>
-                <th>Total Seats</th>
-                <th>Layout</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{t('halls.columns.cinema')}</th>
+                <th>{t('halls.columns.name')}</th>
+                <th>{t('halls.columns.totalSeats')}</th>
+                <th>{t('halls.columns.layout')}</th>
+                <th>{t('halls.columns.status')}</th>
+                <th>{t('halls.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -259,13 +261,13 @@ export const HallsManagementPage: React.FC = () => {
                   <td>{hall.seatLayout.rows} x {hall.seatLayout.seatsPerRow}</td>
                   <td>
                     <span className={`status-badge status-${hall.isActive ? 'confirmed' : 'cancelled'}`}>
-                      {hall.isActive ? 'Active' : 'Inactive'}
+                      {hall.isActive ? t('common.active') : t('common.inactive')}
                     </span>
                   </td>
                   <td>
                     <div className="table-actions">
-                      <button onClick={() => handleEdit(hall)} className="btn btn-sm btn-outline">Edit</button>
-                      <button onClick={() => handleDelete(hall.id)} className="btn btn-sm btn-danger">Delete</button>
+                      <button onClick={() => handleEdit(hall)} className="btn btn-sm btn-outline">{t('common.edit')}</button>
+                      <button onClick={() => handleDelete(hall.id)} className="btn btn-sm btn-danger">{t('common.delete')}</button>
                     </div>
                   </td>
                 </tr>

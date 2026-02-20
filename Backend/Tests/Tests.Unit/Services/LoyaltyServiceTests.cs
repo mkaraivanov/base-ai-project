@@ -37,6 +37,7 @@ public class LoyaltyServiceTests
             _loyaltyRepositoryMock.Object,
             _bookingRepositoryMock.Object,
             _loggerMock.Object,
+            Helpers.LocalizerHelper.CreateDefault(),
             _timeProvider
         );
     }

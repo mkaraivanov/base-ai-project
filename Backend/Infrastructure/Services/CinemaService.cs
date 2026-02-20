@@ -1,8 +1,10 @@
 using Application.DTOs.Cinemas;
+using Application.Resources;
 using Application.Services;
 using Domain.Common;
 using Domain.Entities;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services;
@@ -12,14 +14,17 @@ public class CinemaService : ICinemaService
     private readonly ICinemaRepository _cinemaRepository;
     private readonly ILogger<CinemaService> _logger;
     private readonly TimeProvider _timeProvider;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     public CinemaService(
         ICinemaRepository cinemaRepository,
         ILogger<CinemaService> logger,
+        IStringLocalizer<SharedResource> localizer,
         TimeProvider? timeProvider = null)
     {
         _cinemaRepository = cinemaRepository;
         _logger = logger;
+        _localizer = localizer;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -39,7 +44,7 @@ public class CinemaService : ICinemaService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving cinemas");
-            return Result<List<CinemaDto>>.Failure("Failed to retrieve cinemas");
+            return Result<List<CinemaDto>>.Failure(_localizer["Failed to retrieve cinemas"]);
         }
     }
 
@@ -50,7 +55,7 @@ public class CinemaService : ICinemaService
             var cinema = await _cinemaRepository.GetByIdAsync(id, ct);
             if (cinema is null)
             {
-                return Result<CinemaDto>.Failure("Cinema not found");
+                return Result<CinemaDto>.Failure(_localizer["Cinema not found"]);
             }
 
             var hallCount = await _cinemaRepository.GetHallCountAsync(id, ct);
@@ -59,7 +64,7 @@ public class CinemaService : ICinemaService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving cinema {CinemaId}", id);
-            return Result<CinemaDto>.Failure("Failed to retrieve cinema");
+            return Result<CinemaDto>.Failure(_localizer["Failed to retrieve cinema"]);
         }
     }
 
@@ -93,7 +98,7 @@ public class CinemaService : ICinemaService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating cinema: {Name}", dto.Name);
-            return Result<CinemaDto>.Failure("Failed to create cinema");
+            return Result<CinemaDto>.Failure(_localizer["Failed to create cinema"]);
         }
     }
 
@@ -104,7 +109,7 @@ public class CinemaService : ICinemaService
             var existing = await _cinemaRepository.GetByIdAsync(id, ct);
             if (existing is null)
             {
-                return Result<CinemaDto>.Failure("Cinema not found");
+                return Result<CinemaDto>.Failure(_localizer["Cinema not found"]);
             }
 
             var updated = existing with
@@ -131,7 +136,7 @@ public class CinemaService : ICinemaService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating cinema {CinemaId}", id);
-            return Result<CinemaDto>.Failure("Failed to update cinema");
+            return Result<CinemaDto>.Failure(_localizer["Failed to update cinema"]);
         }
     }
 
@@ -142,7 +147,7 @@ public class CinemaService : ICinemaService
             var existing = await _cinemaRepository.GetByIdAsync(id, ct);
             if (existing is null)
             {
-                return Result.Failure("Cinema not found");
+                return Result.Failure(_localizer["Cinema not found"]);
             }
 
             await _cinemaRepository.DeleteAsync(id, ct);
@@ -153,7 +158,7 @@ public class CinemaService : ICinemaService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting cinema {CinemaId}", id);
-            return Result.Failure("Failed to delete cinema");
+            return Result.Failure(_localizer["Failed to delete cinema"]);
         }
     }
 

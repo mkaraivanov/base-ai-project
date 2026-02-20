@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { loyaltyApi } from '../../api/loyaltyApi';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const LoyaltyManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [stampsRequired, setStampsRequired] = useState<number>(5);
   const [inputValue, setInputValue] = useState<string>('5');
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ export const LoyaltyManagementPage: React.FC = () => {
         setStampsRequired(settings.stampsRequired);
         setInputValue(String(settings.stampsRequired));
       } catch (err: unknown) {
-        setError(extractErrorMessage(err, 'Failed to load loyalty settings'));
+        setError(extractErrorMessage(err, t('loyalty.failedToLoad')));
       } finally {
         setLoading(false);
       }
@@ -28,7 +30,7 @@ export const LoyaltyManagementPage: React.FC = () => {
   const handleSave = async () => {
     const parsed = parseInt(inputValue, 10);
     if (isNaN(parsed) || parsed < 1) {
-      setError('Number of visits must be at least 1');
+      setError(t('loyalty.invalidVisits'));
       return;
     }
 
@@ -40,23 +42,22 @@ export const LoyaltyManagementPage: React.FC = () => {
       const updated = await loyaltyApi.updateSettings({ stampsRequired: parsed });
       setStampsRequired(updated.stampsRequired);
       setInputValue(String(updated.stampsRequired));
-      setSuccess('Loyalty settings saved successfully.');
+      setSuccess(t('loyalty.savedSuccess'));
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, 'Failed to save loyalty settings'));
+      setError(extractErrorMessage(err, t('loyalty.failedToSave')));
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">Loading...</div></div>;
+  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
 
   return (
     <div className="page">
       <div className="container">
-        <h1>🎁 Loyalty Program Settings</h1>
+        <h1>{t('loyalty.pageTitle')}</h1>
         <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px' }}>
-          Configure how many paid movie visits a customer needs to earn a free ticket.
-          Multiple tickets in one transaction count as a single visit.
+          {t('loyalty.pageSubtitle')}
         </p>
 
         <div className="form-card" style={{
@@ -68,7 +69,7 @@ export const LoyaltyManagementPage: React.FC = () => {
         }}>
           <div className="form-group" style={{ marginBottom: '24px' }}>
             <label htmlFor="stampsRequired" style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>
-              Visits required for a free ticket
+              {t('loyalty.visitsRequired')}
             </label>
             <input
               id="stampsRequired"
@@ -86,9 +87,9 @@ export const LoyaltyManagementPage: React.FC = () => {
                 fontSize: '1rem',
               }}
             />
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginTop: '6px' }}>
-              Currently set to <strong>{stampsRequired}</strong> visits.
-            </p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginTop: '6px' }}
+              dangerouslySetInnerHTML={{ __html: t('loyalty.currentlySet', { count: stampsRequired }) }}
+            />
           </div>
 
           {error && (
@@ -115,18 +116,18 @@ export const LoyaltyManagementPage: React.FC = () => {
             className="btn btn-primary"
             style={{ width: '100%' }}
           >
-            {saving ? 'Saving...' : 'Save Settings'}
+            {saving ? t('loyalty.saving') : t('loyalty.saveSettings')}
           </button>
         </div>
 
         <div style={{ marginTop: '40px', maxWidth: '480px' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '12px' }}>How it works</h2>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '12px' }}>{t('loyalty.howItWorks')}</h2>
           <ul style={{ paddingLeft: '20px', lineHeight: '2', color: 'var(--color-text-secondary)' }}>
-            <li>Each qualifying booking awards the customer 1 stamp.</li>
-            <li>A booking qualifies if payment is successful and the reservation is not cancelled or refunded.</li>
-            <li>Multiple tickets in one transaction count as one visit.</li>
-            <li>When a customer reaches the required number of stamps, they automatically receive a free ticket voucher.</li>
-            <li>The stamp counter resets after each reward is issued.</li>
+            <li>{t('loyalty.bullet1')}</li>
+            <li>{t('loyalty.bullet2')}</li>
+            <li>{t('loyalty.bullet3')}</li>
+            <li>{t('loyalty.bullet4')}</li>
+            <li>{t('loyalty.bullet5')}</li>
           </ul>
         </div>
       </div>

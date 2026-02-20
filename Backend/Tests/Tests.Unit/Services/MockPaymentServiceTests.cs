@@ -18,7 +18,7 @@ public class MockPaymentServiceTests
     {
         _loggerMock = new Mock<ILogger<MockPaymentService>>();
         _timeProvider = new FakeTimeProvider(new DateTime(2024, 1, 15, 10, 0, 0, DateTimeKind.Utc));
-        _paymentService = new MockPaymentService(_loggerMock.Object, _timeProvider);
+        _paymentService = new MockPaymentService(_loggerMock.Object, Helpers.LocalizerHelper.CreateDefault(), _timeProvider);
     }
 
     #region ProcessPaymentAsync Tests
