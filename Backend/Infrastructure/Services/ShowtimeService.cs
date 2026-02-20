@@ -186,6 +186,51 @@ public class ShowtimeService : IShowtimeService
         }
     }
 
+    public async Task<Result<ShowtimeDto>> UpdateShowtimeAsync(Guid id, UpdateShowtimeDto dto, CancellationToken ct = default)
+    {
+        try
+        {
+            var existing = await _showtimeRepository.GetByIdAsync(id, ct);
+            if (existing is null)
+                return Result<ShowtimeDto>.Failure("Showtime not found");
+
+            var movie = await _movieRepository.GetByIdAsync(existing.MovieId, ct);
+            if (movie is null)
+                return Result<ShowtimeDto>.Failure("Associated movie not found");
+
+            var newEndTime = dto.StartTime.AddMinutes(movie.DurationMinutes + 30);
+
+            var hasOverlap = await _showtimeRepository.HasOverlappingShowtimeAsync(
+                existing.CinemaHallId,
+                dto.StartTime,
+                newEndTime,
+                excludeShowtimeId: id,
+                ct);
+
+            if (hasOverlap)
+                return Result<ShowtimeDto>.Failure("Showtime overlaps with existing showtime in this hall");
+
+            var updated = existing with
+            {
+                StartTime = dto.StartTime,
+                EndTime = newEndTime,
+                BasePrice = dto.BasePrice,
+                IsActive = dto.IsActive
+            };
+
+            var saved = await _showtimeRepository.UpdateAsync(updated, ct);
+            _logger.LogInformation("Showtime updated: {ShowtimeId}", id);
+
+            var availableSeats = await GetAvailableSeatCountAsync(saved.Id, ct);
+            return Result<ShowtimeDto>.Success(MapToShowtimeDto(saved, availableSeats));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating showtime {ShowtimeId}", id);
+            return Result<ShowtimeDto>.Failure("Failed to update showtime");
+        }
+    }
+
     public async Task<Result> DeleteShowtimeAsync(Guid id, CancellationToken ct = default)
     {
         try

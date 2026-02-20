@@ -748,6 +748,271 @@ public class ShowtimeServiceTests : IDisposable
         }
     }
 
+    // UpdateShowtimeAsync tests
+
+    [Fact]
+    public async Task UpdateShowtimeAsync_ValidData_ReturnsUpdatedDto()
+    {
+        // Arrange
+        var movie = new Movie
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Movie",
+            Description = "Test Description",
+            Genre = "Action",
+            DurationMinutes = 120,
+            Rating = "PG-13",
+            PosterUrl = "https://example.com/poster.jpg",
+            ReleaseDate = DateOnly.FromDateTime(DateTime.Today),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var hall = new CinemaHall
+        {
+            Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
+            Name = "Hall 1",
+            TotalSeats = 0,
+            SeatLayoutJson = "{}",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var showtime = new Showtime
+        {
+            Id = Guid.NewGuid(),
+            MovieId = movie.Id,
+            CinemaHallId = hall.Id,
+            StartTime = DateTime.UtcNow.AddDays(1),
+            EndTime = DateTime.UtcNow.AddDays(1).AddMinutes(150),
+            BasePrice = 10.00m,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _context.Movies.AddAsync(movie);
+        await _context.CinemaHalls.AddAsync(hall);
+        await _context.Showtimes.AddAsync(showtime);
+        await _context.SaveChangesAsync();
+
+        var newStartTime = DateTime.UtcNow.AddDays(2);
+        var dto = new UpdateShowtimeDto(newStartTime, 15.00m, false);
+
+        // Act
+        var result = await _service.UpdateShowtimeAsync(showtime.Id, dto);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.BasePrice.Should().Be(15.00m);
+        result.Value.IsActive.Should().BeFalse();
+        result.Value.StartTime.Should().Be(newStartTime);
+    }
+
+    [Fact]
+    public async Task UpdateShowtimeAsync_ShowtimeNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var dto = new UpdateShowtimeDto(DateTime.UtcNow.AddDays(1), 10.00m, true);
+
+        // Act
+        var result = await _service.UpdateShowtimeAsync(Guid.NewGuid(), dto);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Showtime not found");
+    }
+
+    [Fact]
+    public async Task UpdateShowtimeAsync_OverlapsWithOtherShowtime_ReturnsFailure()
+    {
+        // Arrange
+        var movie = new Movie
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Movie",
+            Description = "Test Description",
+            Genre = "Action",
+            DurationMinutes = 120,
+            Rating = "PG-13",
+            PosterUrl = "https://example.com/poster.jpg",
+            ReleaseDate = DateOnly.FromDateTime(DateTime.Today),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var hall = new CinemaHall
+        {
+            Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
+            Name = "Hall 1",
+            TotalSeats = 0,
+            SeatLayoutJson = "{}",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var otherStartTime = DateTime.UtcNow.AddDays(3);
+        var otherShowtime = new Showtime
+        {
+            Id = Guid.NewGuid(),
+            MovieId = movie.Id,
+            CinemaHallId = hall.Id,
+            StartTime = otherStartTime,
+            EndTime = otherStartTime.AddMinutes(150),
+            BasePrice = 10.00m,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var showtimeToEdit = new Showtime
+        {
+            Id = Guid.NewGuid(),
+            MovieId = movie.Id,
+            CinemaHallId = hall.Id,
+            StartTime = DateTime.UtcNow.AddDays(1),
+            EndTime = DateTime.UtcNow.AddDays(1).AddMinutes(150),
+            BasePrice = 10.00m,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _context.Movies.AddAsync(movie);
+        await _context.CinemaHalls.AddAsync(hall);
+        await _context.Showtimes.AddRangeAsync(otherShowtime, showtimeToEdit);
+        await _context.SaveChangesAsync();
+
+        // Move showtimeToEdit to overlap with otherShowtime
+        var dto = new UpdateShowtimeDto(otherStartTime.AddMinutes(30), 10.00m, true);
+
+        // Act
+        var result = await _service.UpdateShowtimeAsync(showtimeToEdit.Id, dto);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("overlaps");
+    }
+
+    [Fact]
+    public async Task UpdateShowtimeAsync_ShiftingOwnTime_DoesNotOverlapItself()
+    {
+        // Arrange
+        var movie = new Movie
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Movie",
+            Description = "Test Description",
+            Genre = "Action",
+            DurationMinutes = 120,
+            Rating = "PG-13",
+            PosterUrl = "https://example.com/poster.jpg",
+            ReleaseDate = DateOnly.FromDateTime(DateTime.Today),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var hall = new CinemaHall
+        {
+            Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
+            Name = "Hall 1",
+            TotalSeats = 0,
+            SeatLayoutJson = "{}",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var originalStart = DateTime.UtcNow.AddDays(1);
+        var showtime = new Showtime
+        {
+            Id = Guid.NewGuid(),
+            MovieId = movie.Id,
+            CinemaHallId = hall.Id,
+            StartTime = originalStart,
+            EndTime = originalStart.AddMinutes(150),
+            BasePrice = 10.00m,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _context.Movies.AddAsync(movie);
+        await _context.CinemaHalls.AddAsync(hall);
+        await _context.Showtimes.AddAsync(showtime);
+        await _context.SaveChangesAsync();
+
+        // Shift start time by 30 minutes — still within original window, would overlap if not excluded
+        var dto = new UpdateShowtimeDto(originalStart.AddMinutes(30), 10.00m, true);
+
+        // Act
+        var result = await _service.UpdateShowtimeAsync(showtime.Id, dto);
+
+        // Assert — self-overlap must be excluded
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateShowtimeAsync_RecalculatesEndTimeFromMovieDuration()
+    {
+        // Arrange
+        var movie = new Movie
+        {
+            Id = Guid.NewGuid(),
+            Title = "Test Movie",
+            Description = "Test Description",
+            Genre = "Action",
+            DurationMinutes = 90,
+            Rating = "PG-13",
+            PosterUrl = "https://example.com/poster.jpg",
+            ReleaseDate = DateOnly.FromDateTime(DateTime.Today),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var hall = new CinemaHall
+        {
+            Id = Guid.NewGuid(),
+            CinemaId = DefaultCinemaId,
+            Name = "Hall 1",
+            TotalSeats = 0,
+            SeatLayoutJson = "{}",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var showtime = new Showtime
+        {
+            Id = Guid.NewGuid(),
+            MovieId = movie.Id,
+            CinemaHallId = hall.Id,
+            StartTime = DateTime.UtcNow.AddDays(1),
+            EndTime = DateTime.UtcNow.AddDays(1).AddMinutes(120),
+            BasePrice = 10.00m,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _context.Movies.AddAsync(movie);
+        await _context.CinemaHalls.AddAsync(hall);
+        await _context.Showtimes.AddAsync(showtime);
+        await _context.SaveChangesAsync();
+
+        var newStartTime = DateTime.UtcNow.AddDays(2);
+        var dto = new UpdateShowtimeDto(newStartTime, 12.00m, true);
+
+        // Act
+        var result = await _service.UpdateShowtimeAsync(showtime.Id, dto);
+
+        // Assert — EndTime = StartTime + DurationMinutes + 30 min buffer
+        result.IsSuccess.Should().BeTrue();
+        var expectedEndTime = newStartTime.AddMinutes(90 + 30);
+        result.Value!.EndTime.Should().Be(expectedEndTime);
+    }
+
     public void Dispose()
     {
         _context.Database.EnsureDeleted();
