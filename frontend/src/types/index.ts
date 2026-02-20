@@ -178,6 +178,12 @@ export interface CreateShowtimeDto {
   readonly basePrice: number;
 }
 
+export interface UpdateShowtimeDto {
+  readonly startTime: string;
+  readonly basePrice: number;
+  readonly isActive: boolean;
+}
+
 // Bookings / Seats
 export interface SeatDto {
   readonly seatNumber: string;

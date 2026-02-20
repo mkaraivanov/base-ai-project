@@ -9,5 +9,6 @@ public interface IShowtimeService
     Task<Result<List<ShowtimeDto>>> GetShowtimesByMovieAsync(Guid movieId, Guid? cinemaId = null, CancellationToken ct = default);
     Task<Result<ShowtimeDto>> GetShowtimeByIdAsync(Guid id, CancellationToken ct = default);
     Task<Result<ShowtimeDto>> CreateShowtimeAsync(CreateShowtimeDto dto, CancellationToken ct = default);
+    Task<Result<ShowtimeDto>> UpdateShowtimeAsync(Guid id, UpdateShowtimeDto dto, CancellationToken ct = default);
     Task<Result> DeleteShowtimeAsync(Guid id, CancellationToken ct = default);
 }

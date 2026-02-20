@@ -125,6 +125,7 @@ export const TicketTypesManagementPage: React.FC = () => {
       }
 
       setShowForm(false);
+      setForm(EMPTY_FORM);
       setEditingId(null);
       await loadTicketTypes();
     } catch (err: unknown) {
@@ -145,107 +146,107 @@ export const TicketTypesManagementPage: React.FC = () => {
   return (
     <div className="page">
       <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div className="page-header">
           <h1>Ticket Types</h1>
-          {!showForm && (
-            <button onClick={handleCreate} className="btn btn-primary">
-              + Add Ticket Type
-            </button>
-          )}
+          <button onClick={handleCreate} className="btn btn-primary">
+            + Add Ticket Type
+          </button>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
 
         {showForm && (
-          <div className="form-container" style={{ marginBottom: '2rem', padding: '1.5rem', border: '1px solid #ddd', borderRadius: '8px' }}>
-            <h2>{editingId ? 'Edit Ticket Type' : 'Create Ticket Type'}</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label className="form-label">Name *</label>
-                <input
-                  name="name"
-                  className="form-control"
-                  value={form.name}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="e.g. Adult, Children, Senior"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Description</label>
-                <input
-                  name="description"
-                  className="form-control"
-                  value={form.description}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Children aged 12 and under — 50% discount"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">
-                  Price Modifier *{' '}
-                  <small style={{ fontWeight: 'normal', color: '#666' }}>
-                    (1.0 = full price, 0.5 = 50% off, 1.2 = 20% surcharge)
-                  </small>
-                </label>
-                <input
-                  name="priceModifier"
-                  type="number"
-                  className="form-control"
-                  value={form.priceModifier}
-                  onChange={handleInputChange}
-                  min="0.01"
-                  max="5"
-                  step="0.01"
-                  required
-                  style={{ maxWidth: '160px' }}
-                />
-                {form.priceModifier && !isNaN(parseFloat(form.priceModifier)) && (
-                  <small style={{ display: 'block', marginTop: '4px', color: '#555' }}>
-                    {formatModifier(parseFloat(form.priceModifier))}
-                  </small>
-                )}
-              </div>
-              <div className="form-group">
-                <label className="form-label">Sort Order</label>
-                <input
-                  name="sortOrder"
-                  type="number"
-                  className="form-control"
-                  value={form.sortOrder}
-                  onChange={handleInputChange}
-                  style={{ maxWidth: '100px' }}
-                />
-              </div>
-              {editingId && (
+          <div className="modal-overlay" onClick={handleCancel}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <h2>{editingId ? 'Edit Ticket Type' : 'Add Ticket Type'}</h2>
+              <form onSubmit={handleSubmit} className="form">
                 <div className="form-group">
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <input
-                      name="isActive"
-                      type="checkbox"
-                      checked={form.isActive}
-                      onChange={handleInputChange}
-                    />
-                    Active
-                  </label>
+                  <label htmlFor="name">Name *</label>
+                  <input
+                    id="name"
+                    name="name"
+                    className="input"
+                    value={form.name}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="e.g. Adult, Children, Senior"
+                  />
                 </div>
-              )}
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
-                </button>
-                <button type="button" className="btn btn-secondary" onClick={handleCancel}>
-                  Cancel
-                </button>
-              </div>
-            </form>
+                <div className="form-group">
+                  <label htmlFor="description">Description</label>
+                  <input
+                    id="description"
+                    name="description"
+                    className="input"
+                    value={form.description}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Children aged 12 and under — 50% discount"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="priceModifier">
+                    Price Modifier *{' '}
+                    <small style={{ fontWeight: 'normal', color: '#666' }}>
+                      (1.0 = full price, 0.5 = 50% off, 1.2 = 20% surcharge)
+                    </small>
+                  </label>
+                  <input
+                    id="priceModifier"
+                    name="priceModifier"
+                    type="number"
+                    className="input"
+                    value={form.priceModifier}
+                    onChange={handleInputChange}
+                    min="0.01"
+                    max="5"
+                    step="0.01"
+                    required
+                    style={{ maxWidth: '160px' }}
+                  />
+                  {form.priceModifier && !isNaN(parseFloat(form.priceModifier)) && (
+                    <small style={{ display: 'block', marginTop: '4px', color: '#555' }}>
+                      {formatModifier(parseFloat(form.priceModifier))}
+                    </small>
+                  )}
+                </div>
+                <div className="form-group">
+                  <label htmlFor="sortOrder">Sort Order</label>
+                  <input
+                    id="sortOrder"
+                    name="sortOrder"
+                    type="number"
+                    className="input"
+                    value={form.sortOrder}
+                    onChange={handleInputChange}
+                    style={{ maxWidth: '100px' }}
+                  />
+                </div>
+                {editingId && (
+                  <div className="form-group form-check">
+                    <label>
+                      <input
+                        name="isActive"
+                        type="checkbox"
+                        checked={form.isActive}
+                        onChange={handleInputChange}
+                      />
+                      Active
+                    </label>
+                  </div>
+                )}
+                <div className="form-actions">
+                  <button type="button" className="btn btn-outline" onClick={handleCancel}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={saving}>
+                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 
-        {ticketTypes.length === 0 ? (
-          <p>No ticket types found. Create one above.</p>
-        ) : (
-          <table className="table">
+        <div className="data-table-container">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>Name</th>
@@ -257,37 +258,32 @@ export const TicketTypesManagementPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {ticketTypes.map((tt) => (
-                <tr key={tt.id}>
-                  <td><strong>{tt.name}</strong></td>
-                  <td>{tt.description || '—'}</td>
-                  <td>{formatModifier(tt.priceModifier)}</td>
-                  <td>{tt.sortOrder}</td>
-                  <td>
-                    <span className={`badge ${tt.isActive ? 'badge-success' : 'badge-secondary'}`}>
-                      {tt.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => handleEdit(tt)}
-                      style={{ marginRight: '0.5rem' }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDelete(tt.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {ticketTypes.length === 0 ? (
+                <tr><td colSpan={6}>No ticket types found.</td></tr>
+              ) : (
+                ticketTypes.map((tt) => (
+                  <tr key={tt.id}>
+                    <td><strong>{tt.name}</strong></td>
+                    <td>{tt.description || '—'}</td>
+                    <td>{formatModifier(tt.priceModifier)}</td>
+                    <td>{tt.sortOrder}</td>
+                    <td>
+                      <span className={`status-badge status-${tt.isActive ? 'confirmed' : 'cancelled'}`}>
+                        {tt.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions">
+                        <button className="btn btn-sm btn-outline" onClick={() => handleEdit(tt)}>Edit</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(tt.id)}>Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -18,10 +18,13 @@ export const Navbar: React.FC = () => {
           🎬 CineBook
         </Link>
 
+        
         <div className="navbar-links">
+          {isAuthenticated && (
           <Link to="/movies" className="nav-link">
             Movies
           </Link>
+          )}
 
           {isAuthenticated && (
             <Link to="/my-bookings" className="nav-link">
