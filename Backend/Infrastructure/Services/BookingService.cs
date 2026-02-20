@@ -595,6 +595,9 @@ public class BookingService : IBookingService
 
             _logger.LogInformation("Booking cancelled: {BookingNumber}", booking.BookingNumber);
 
+            // Deduct the loyalty stamp that was awarded when this booking was confirmed
+            await _loyaltyService.RemoveStampAsync(userId, ct);
+
             var resultDto = new BookingDto(
                 cancelledBooking.Id,
                 cancelledBooking.BookingNumber,
@@ -628,10 +631,19 @@ public class BookingService : IBookingService
             var bookingIds = bookings.Select(b => b.Id).ToList();
             var ticketsByBooking = await _bookingTicketRepository.GetByBookingIdsAsync(bookingIds, ct);
 
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+
             var bookingDtos = bookings.Select(b =>
             {
                 ticketsByBooking.TryGetValue(b.Id, out var tickets);
                 var ticketLineDtos = MapTicketsToDto(tickets ?? []);
+
+                // Dynamically compute effective status: confirmed bookings whose
+                // showtime is in the past are treated as "Completed".
+                var effectiveStatus = b.Status == BookingStatus.Confirmed && b.Showtime!.StartTime <= now
+                    ? "Completed"
+                    : b.Status.ToString();
+
                 return new BookingDto(
                     b.Id,
                     b.BookingNumber,
@@ -642,7 +654,7 @@ public class BookingService : IBookingService
                     b.SeatNumbers,
                     ticketLineDtos,
                     b.TotalAmount,
-                    b.Status.ToString(),
+                    effectiveStatus,
                     b.BookedAt,
                     b.CarLicensePlate
                 );
