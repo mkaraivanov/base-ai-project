@@ -544,12 +544,12 @@ public class BookingService : IBookingService
                 return Result<BookingDto>.Failure("Booking cannot be cancelled");
             }
 
-            // Check if showtime is in the future
+            // Check if showtime is more than 1 hour away
             var showtime = await _showtimeRepository.GetByIdAsync(booking.ShowtimeId, ct);
-            if (showtime is null || showtime.StartTime <= _timeProvider.GetUtcNow().UtcDateTime)
+            if (showtime is null || showtime.StartTime <= _timeProvider.GetUtcNow().UtcDateTime.AddHours(1))
             {
                 await _unitOfWork.RollbackTransactionAsync(ct);
-                return Result<BookingDto>.Failure("Cannot cancel past or ongoing showtimes");
+                return Result<BookingDto>.Failure("Cannot cancel a booking within 1 hour of the showtime");
             }
 
             // Process refund

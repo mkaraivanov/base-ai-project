@@ -984,7 +984,55 @@ public class BookingServiceTests
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal("Cannot cancel past or ongoing showtimes", result.Error);
+        Assert.Equal("Cannot cancel a booking within 1 hour of the showtime", result.Error);
+        _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_ShowtimeWithinOneHour_ReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookingId = Guid.NewGuid();
+        var showtimeId = Guid.NewGuid();
+
+        var booking = new Booking
+        {
+            Id = bookingId,
+            BookingNumber = "BK-240115-ABC12",
+            UserId = userId,
+            ShowtimeId = showtimeId,
+            SeatNumbers = new List<string> { "A1" },
+            TotalAmount = 10m,
+            Status = BookingStatus.Confirmed,
+            PaymentId = Guid.NewGuid(),
+            BookedAt = _timeProvider.GetUtcNow().DateTime
+        };
+
+        var showtime = new Showtime
+        {
+            Id = showtimeId,
+            StartTime = _timeProvider.GetUtcNow().AddMinutes(30).DateTime, // 30 minutes away — within the 1-hour cutoff
+            MovieId = Guid.NewGuid(),
+            CinemaHallId = Guid.NewGuid(),
+            BasePrice = 10m,
+            IsActive = true
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByIdAsync(bookingId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(booking);
+
+        _showtimeRepositoryMock
+            .Setup(x => x.GetByIdAsync(showtimeId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(showtime);
+
+        // Act
+        var result = await _bookingService.CancelBookingAsync(userId, bookingId);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Cannot cancel a booking within 1 hour of the showtime", result.Error);
         _unitOfWorkMock.Verify(x => x.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

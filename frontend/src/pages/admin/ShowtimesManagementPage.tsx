@@ -3,7 +3,7 @@ import { showtimeApi } from '../../api/showtimeApi';
 import { movieApi } from '../../api/movieApi';
 import { hallApi } from '../../api/hallApi';
 import { cinemaApi } from '../../api/cinemaApi';
-import type { ShowtimeDto, MovieDto, CinemaHallDto, CinemaDto, CreateShowtimeDto } from '../../types';
+import type { ShowtimeDto, MovieDto, CinemaHallDto, CinemaDto, CreateShowtimeDto, UpdateShowtimeDto } from '../../types';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
@@ -13,6 +13,7 @@ interface ShowtimeFormData {
   cinemaHallId: string;
   startTime: string;
   basePrice: string;
+  isActive: boolean;
 }
 
 const EMPTY_FORM: ShowtimeFormData = {
@@ -21,6 +22,7 @@ const EMPTY_FORM: ShowtimeFormData = {
   cinemaHallId: '',
   startTime: '',
   basePrice: '',
+  isActive: true,
 };
 
 export const ShowtimesManagementPage: React.FC = () => {
@@ -35,6 +37,7 @@ export const ShowtimesManagementPage: React.FC = () => {
   const [filteredHalls, setFilteredHalls] = useState<readonly CinemaHallDto[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async (cinemaId?: string) => {
     try {
@@ -73,7 +76,12 @@ export const ShowtimesManagementPage: React.FC = () => {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setForm((prev) => ({ ...prev, [name]: checked }));
+      return;
+    }
     setForm((prev) => {
       const updated = { ...prev, [name]: value };
       // Reset hall selection when cinema changes
@@ -85,7 +93,22 @@ export const ShowtimesManagementPage: React.FC = () => {
   };
 
   const handleCreate = () => {
+    setEditingId(null);
     setForm(EMPTY_FORM);
+    setShowForm(true);
+    setError(null);
+  };
+
+  const handleEdit = (showtime: ShowtimeDto) => {
+    setEditingId(showtime.id);
+    setForm({
+      movieId: showtime.movieId,
+      formCinemaId: showtime.cinemaId,
+      cinemaHallId: showtime.cinemaHallId,
+      startTime: showtime.startTime.slice(0, 16),
+      basePrice: showtime.basePrice.toString(),
+      isActive: showtime.isActive,
+    });
     setShowForm(true);
     setError(null);
   };
@@ -107,18 +130,28 @@ export const ShowtimesManagementPage: React.FC = () => {
     setError(null);
 
     try {
-      const createData: CreateShowtimeDto = {
-        movieId: form.movieId,
-        cinemaHallId: form.cinemaHallId,
-        startTime: new Date(form.startTime).toISOString(),
-        basePrice: parseFloat(form.basePrice),
-      };
-      await showtimeApi.create(createData);
+      if (editingId) {
+        const updateData: UpdateShowtimeDto = {
+          startTime: new Date(form.startTime).toISOString(),
+          basePrice: parseFloat(form.basePrice),
+          isActive: form.isActive,
+        };
+        await showtimeApi.update(editingId, updateData);
+      } else {
+        const createData: CreateShowtimeDto = {
+          movieId: form.movieId,
+          cinemaHallId: form.cinemaHallId,
+          startTime: new Date(form.startTime).toISOString(),
+          basePrice: parseFloat(form.basePrice),
+        };
+        await showtimeApi.create(createData);
+      }
+      setEditingId(null);
       setShowForm(false);
       setForm(EMPTY_FORM);
       await loadData(filterCinemaId || undefined);
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Failed to create showtime');
+      const message = extractErrorMessage(err, editingId ? 'Failed to update showtime' : 'Failed to create showtime');
       setError(message);
     } finally {
       setSaving(false);
@@ -156,11 +189,11 @@ export const ShowtimesManagementPage: React.FC = () => {
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>Schedule Showtime</h2>
+              <h2>{editingId ? 'Edit Showtime' : 'Schedule Showtime'}</h2>
               <form onSubmit={handleSubmit} className="form">
                 <div className="form-group">
                   <label htmlFor="movieId">Movie</label>
-                  <select id="movieId" name="movieId" value={form.movieId} onChange={handleInputChange} className="input" required>
+                  <select id="movieId" name="movieId" value={form.movieId} onChange={handleInputChange} className="input" required disabled={!!editingId}>
                     <option value="">Select a movie</option>
                     {movies.map((movie) => (
                       <option key={movie.id} value={movie.id}>{movie.title}</option>
@@ -169,7 +202,7 @@ export const ShowtimesManagementPage: React.FC = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="formCinemaId">Cinema</label>
-                  <select id="formCinemaId" name="formCinemaId" value={form.formCinemaId} onChange={handleInputChange} className="input" required>
+                  <select id="formCinemaId" name="formCinemaId" value={form.formCinemaId} onChange={handleInputChange} className="input" required disabled={!!editingId}>
                     <option value="">Select a cinema</option>
                     {cinemas.map((c) => (
                       <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
@@ -178,7 +211,7 @@ export const ShowtimesManagementPage: React.FC = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="cinemaHallId">Cinema Hall</label>
-                  <select id="cinemaHallId" name="cinemaHallId" value={form.cinemaHallId} onChange={handleInputChange} className="input" required disabled={!form.formCinemaId}>
+                  <select id="cinemaHallId" name="cinemaHallId" value={form.cinemaHallId} onChange={handleInputChange} className="input" required disabled={!form.formCinemaId || !!editingId}>
                     <option value="">Select a hall</option>
                     {filteredHalls.map((hall) => (
                       <option key={hall.id} value={hall.id}>{hall.name} ({hall.totalSeats} seats)</option>
@@ -198,10 +231,23 @@ export const ShowtimesManagementPage: React.FC = () => {
                     <input id="basePrice" name="basePrice" type="number" step="0.01" min="0" value={form.basePrice} onChange={handleInputChange} className="input" required />
                   </div>
                 </div>
+                {editingId && (
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        name="isActive"
+                        checked={form.isActive}
+                        onChange={handleInputChange}
+                      />
+                      Active
+                    </label>
+                  </div>
+                )}
                 <div className="form-actions">
                   <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">Cancel</button>
                   <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? 'Saving...' : 'Create'}
+                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
                   </button>
                 </div>
               </form>
@@ -239,6 +285,7 @@ export const ShowtimesManagementPage: React.FC = () => {
                   </td>
                   <td>
                     <div className="table-actions">
+                      <button onClick={() => handleEdit(showtime)} className="btn btn-sm btn-outline">Edit</button>
                       <button onClick={() => handleDelete(showtime.id)} className="btn btn-sm btn-danger">Delete</button>
                     </div>
                   </td>

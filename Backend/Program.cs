@@ -1,7 +1,10 @@
 using System.Text;
 using Application.Services;
 using Application.Validators;
+using AspNetCoreRateLimit;
 using Backend.Endpoints;
+using Backend.Infrastructure.Caching;
+using Backend.Middleware;
 using FluentValidation;
 using Infrastructure.BackgroundServices;
 using Infrastructure.Data;
@@ -9,23 +12,66 @@ using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .WriteTo.Console()
-    .WriteTo.File("logs/cinema-booking-.txt", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "CinemaBooking")
+    .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .WriteTo.File(
+        "logs/cinema-booking-.txt",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 30,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddOpenApi();
+
+// Memory Cache
+builder.Services.AddMemoryCache();
+
+// Rate Limiting
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+// Caching
+builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
+
+// Response Compression
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/json" });
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
 
 // Database
 builder.Services.AddDbContext<CinemaDbContext>(options =>
@@ -95,18 +141,28 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
 });
 
-// CORS
+// CORS - Restrict to specific origins
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',') ?? Array.Empty<string>();
+        var allowedOrigins = builder.Configuration
+            .GetSection("AllowedOrigins")
+            .Get<string[]>()
+            ?? builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
+            ?? new[] { "http://localhost:5173" };
+
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
 });
+
+// Health Checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<CinemaDbContext>("database")
+    .AddCheck("self", () => HealthCheckResult.Healthy());
 
 var app = builder.Build();
 
@@ -124,6 +180,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Middleware pipeline (order matters)
+app.UseMiddleware<GlobalExceptionHandler>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
+app.UseMiddleware<InputSanitizationMiddleware>();
+app.UseIpRateLimiting();
+app.UseResponseCompression();
 app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
@@ -131,9 +193,24 @@ app.UseAuthorization();
 app.UseSerilogRequestLogging();
 
 // Map endpoints
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }))
-    .WithTags("Health")
-    .AllowAnonymous();
+app.MapHealthChecks("/health", new()
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var result = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                duration = e.Value.Duration.TotalMilliseconds
+            })
+        });
+        await context.Response.WriteAsync(result);
+    }
+}).AllowAnonymous();
 
 app.MapGroup("/api/auth")
     .MapAuthEndpoints()

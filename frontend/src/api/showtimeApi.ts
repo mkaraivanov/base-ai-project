@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   ShowtimeDto,
   CreateShowtimeDto,
+  UpdateShowtimeDto,
 } from '../types';
 
 export const showtimeApi = {
@@ -28,6 +29,11 @@ export const showtimeApi = {
 
   create: async (data: CreateShowtimeDto): Promise<ShowtimeDto> => {
     const response = await apiClient.post<ApiResponse<ShowtimeDto>>('/showtimes', data);
+    return response.data.data!;
+  },
+
+  update: async (id: string, data: UpdateShowtimeDto): Promise<ShowtimeDto> => {
+    const response = await apiClient.put<ApiResponse<ShowtimeDto>>(`/showtimes/${id}`, data);
     return response.data.data!;
   },
 

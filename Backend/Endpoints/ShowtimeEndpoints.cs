@@ -28,6 +28,10 @@ public static class ShowtimeEndpoints
             .WithName("CreateShowtime")
             .RequireAuthorization("Admin");
 
+        group.MapPut("/{id:guid}", UpdateShowtimeAsync)
+            .WithName("UpdateShowtime")
+            .RequireAuthorization("Admin");
+
         group.MapDelete("/{id:guid}", DeleteShowtimeAsync)
             .WithName("DeleteShowtime")
             .RequireAuthorization("Admin");
@@ -91,6 +95,27 @@ public static class ShowtimeEndpoints
 
         return result.IsSuccess
             ? Results.Created($"/api/showtimes/{result.Value!.Id}", new ApiResponse<ShowtimeDto>(true, result.Value, null))
+            : Results.BadRequest(new ApiResponse<ShowtimeDto>(false, null, result.Error));
+    }
+
+    private static async Task<IResult> UpdateShowtimeAsync(
+        Guid id,
+        UpdateShowtimeDto dto,
+        IShowtimeService showtimeService,
+        IValidator<UpdateShowtimeDto> validator,
+        CancellationToken ct)
+    {
+        var validationResult = await validator.ValidateAsync(dto, ct);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+            return Results.BadRequest(new ApiResponse<ShowtimeDto>(false, null, "Validation failed", errors));
+        }
+
+        var result = await showtimeService.UpdateShowtimeAsync(id, dto, ct);
+
+        return result.IsSuccess
+            ? Results.Ok(new ApiResponse<ShowtimeDto>(true, result.Value, null))
             : Results.BadRequest(new ApiResponse<ShowtimeDto>(false, null, result.Error));
     }
 
