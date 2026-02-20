@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Film } from 'lucide-react';
+import { toast } from 'sonner';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import MuiButton from '@mui/material/Button';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Grid from '@mui/material/Grid';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from '../../contexts/AuthContext';
 import type { RegisterDto } from '../../types';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
+const POSTER = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80';
+
 export const RegisterPage: React.FC = () => {
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phoneNumber: '',
+    firstName: '', lastName: '', email: '',
+    password: '', confirmPassword: '', phoneNumber: '',
   });
-  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const { register } = useAuth();
@@ -21,152 +31,147 @@ export const RegisterPage: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-
-    if (form.password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-
+    if (form.password !== form.confirmPassword) { toast.error('Passwords do not match.'); return; }
+    if (form.password.length < 6) { toast.error('Password must be at least 6 characters.'); return; }
     try {
       setLoading(true);
       const registerData: RegisterDto = {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        password: form.password,
-        phoneNumber: form.phoneNumber,
+        firstName: form.firstName, lastName: form.lastName,
+        email: form.email, password: form.password, phoneNumber: form.phoneNumber,
       };
       await register(registerData);
       navigate('/');
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Registration failed. Please try again.');
-      setError(message);
+      toast.error(extractErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="page auth-page">
-      <div className="container container-xs">
-        <div className="auth-card">
-          <h1>Create Account</h1>
-          <p className="auth-subtitle">Join CineBook to start booking tickets.</p>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Left panel — cinematic backdrop */}
+      <Box sx={{ display: { xs: 'none', md: 'flex' }, width: '50%', position: 'relative', overflow: 'hidden' }}>
+        <Box component="img" src={POSTER} alt="Cinema" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(30,27,75,0.9) 0%, rgba(88,28,135,0.8) 50%, rgba(0,0,0,0.7) 100%)' }} />
+        <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 5, width: '100%' }}>
+          <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 20 }}>
+            <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Film size={18} color="#fff" />
+            </Box>
+            CineBook
+          </Box>
+          <Box>
+            <Typography variant="h4" fontWeight={700} color="#fff" lineHeight={1.2} mb={1.5}>
+              Join the experience.
+            </Typography>
+            <Typography sx={{ color: '#c7d2fe' }}>
+              Create your free account and start booking in seconds.
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
-          {error && (
-            <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>
-          )}
+      {/* Right panel — form */}
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3, bgcolor: 'background.default', overflowY: 'auto' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          style={{ width: '100%', maxWidth: 360, paddingTop: 32, paddingBottom: 32 }}
+        >
+          <Box component={Link} to="/" sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit', fontWeight: 700, fontSize: 20, mb: 4 }}>
+            <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Film size={18} color="#fff" />
+            </Box>
+            CineBook
+          </Box>
 
-          <form onSubmit={handleSubmit} className="form">
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="firstName">First Name</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={form.firstName}
-                  onChange={handleChange}
-                  className="input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="lastName">Last Name</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  className="input"
-                  required
-                />
-              </div>
-            </div>
+          <Typography variant="h5" fontWeight={700} mb={0.5}>Create an account</Typography>
+          <Typography variant="body2" color="text.secondary" mb={3}>
+            Fill in your details to get started.
+          </Typography>
 
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                className="input"
-                required
-              />
-            </div>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Grid container spacing={1.5}>
+              <Grid size={6}>
+                <TextField label="First name" name="firstName" value={form.firstName} onChange={handleChange} required autoComplete="given-name" fullWidth size="small" />
+              </Grid>
+              <Grid size={6}>
+                <TextField label="Last name" name="lastName" value={form.lastName} onChange={handleChange} required autoComplete="family-name" fullWidth size="small" />
+              </Grid>
+            </Grid>
 
-            <div className="form-group">
-              <label htmlFor="phoneNumber">Phone Number</label>
-              <input
-                type="tel"
-                id="phoneNumber"
-                name="phoneNumber"
-                value={form.phoneNumber}
-                onChange={handleChange}
-                placeholder="+1 (555) 000-0000"
-                className="input"
-                required
-              />
-            </div>
+            <TextField label="Email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required autoComplete="email" fullWidth size="small" />
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className="input"
-                required
-              />
-            </div>
+            <TextField label="Phone number" name="phoneNumber" type="tel" value={form.phoneNumber} onChange={handleChange} placeholder="+1 (555) 000-0000" required autoComplete="tel" fullWidth size="small" />
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className="input"
-                required
-              />
-            </div>
+            <TextField
+              label="Password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              autoComplete="new-password"
+              fullWidth
+              size="small"
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setShowPassword(v => !v)} tabIndex={-1}>
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
 
-            <button
-              type="submit"
-              className="btn btn-primary btn-full"
-              disabled={loading}
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
+            <TextField
+              label="Confirm password"
+              name="confirmPassword"
+              type={showConfirm ? 'text' : 'password'}
+              value={form.confirmPassword}
+              onChange={handleChange}
+              placeholder="••••••••"
+              required
+              autoComplete="new-password"
+              fullWidth
+              size="small"
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}>
+                        {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
 
-          <p className="auth-footer">
+            <MuiButton type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 1, py: 1.25 }}>
+              {loading ? <CircularProgress size={20} color="inherit" /> : 'Create Account'}
+            </MuiButton>
+          </Box>
+
+          <Typography variant="body2" color="text.secondary" textAlign="center" mt={3}>
             Already have an account?{' '}
-            <Link to="/login">Sign in</Link>
-          </p>
-        </div>
-      </div>
-    </div>
+            <Box component={Link} to="/login" sx={{ color: 'primary.main', fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
+              Sign in
+            </Box>
+          </Typography>
+        </motion.div>
+      </Box>
+    </Box>
   );
 };

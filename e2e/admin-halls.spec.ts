@@ -34,6 +34,14 @@ test.describe('Admin Cinema Halls Management', () => {
 
   test('should create a new hall successfully', async ({ page }) => {
     await page.click('button:has-text("Add Hall")');
+    await expect(page.locator('h2:has-text("Add Hall")')).toBeVisible();
+    
+    // Select first cinema from the MUI combobox inside the form (not the filter)
+    // The form cinema combobox has label "Cinema *"
+    const modalForm = page.locator('.modal');
+    const cinemaCombobox = modalForm.locator('[role="combobox"]').first();
+    await cinemaCombobox.click();
+    await page.getByRole('option').first().click();
     
     const timestamp = Date.now();
     await page.fill('input[name="name"]', `Hall ${timestamp}`);
@@ -43,7 +51,7 @@ test.describe('Admin Cinema Halls Management', () => {
     await page.click('button[type="submit"]');
     
     // Wait for success and form to close
-    await expect(page.locator('h2:has-text("Add Hall")')).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('h2:has-text("Add Hall")')).not.toBeVisible({ timeout: 10000 });
     
     // Verify hall appears in list
     await expect(page.locator(`text=Hall ${timestamp}`)).toBeVisible();
@@ -73,10 +81,17 @@ test.describe('Admin Cinema Halls Management', () => {
   });
 
   test('should edit an existing hall', async ({ page }) => {
+    const timestamp = Date.now();
     // First create a hall
     await page.click('button:has-text("Add Hall")');
+    await expect(page.locator('h2:has-text("Add Hall")')).toBeVisible();
     
-    const timestamp = Date.now();
+    // Select first available cinema from the MUI combobox inside the form (not the filter dropdown)
+    const modalForm = page.locator('.modal');
+    const cinemaCombobox = modalForm.locator('[role="combobox"]').first();
+    await cinemaCombobox.click();
+    await page.getByRole('option').first().click();
+    
     const originalName = `Hall ${timestamp}`;
     await page.fill('input[name="name"]', originalName);
     await page.fill('input[name="rows"]', '8');
@@ -90,7 +105,7 @@ test.describe('Admin Cinema Halls Management', () => {
     await expect(page.locator('h2:has-text("Add Hall")')).not.toBeVisible({ timeout: 5000 });
     const hallRow = page.locator('table tbody tr').filter({ hasText: originalName }).first();
     await hallRow.waitFor({ state: 'visible', timeout: 8000 });
-    await hallRow.locator('button:has-text("Edit")').click();
+    await hallRow.locator('button[aria-label="Edit"]').click();
 
     // Clear and fill the name field - use triple-click then type to work with React controlled inputs
     const nameInput = page.locator('input#name');

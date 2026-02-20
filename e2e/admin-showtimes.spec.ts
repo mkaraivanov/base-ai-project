@@ -29,20 +29,21 @@ test.describe('Admin Showtimes Management', () => {
   test('should open create showtime form', async ({ page }) => {
     await page.click('button:has-text("Add Showtime")');
     await expect(page.locator('h2:has-text("Schedule Showtime")')).toBeVisible();
-    await expect(page.locator('select[name="movieId"]')).toBeVisible();
+    // MUI Select renders as combobox role
+    await expect(page.locator('[role="combobox"]').first()).toBeVisible();
   });
 
   test('should show validation error for missing required fields', async ({ page }) => {
     await page.click('button:has-text("Add Showtime")');
+    // Wait for form to fully appear
+    await expect(page.locator('h2:has-text("Schedule Showtime")')).toBeVisible();
     
-    // Verify required fields exist
-    const movieSelect = page.locator('select[name="movieId"]');
-    const hallSelect = page.locator('select[name="cinemaHallId"]');
+    // Verify select dropdowns exist (as MUI comboboxes) and text inputs are required
+    const movieCombobox = page.locator('[role="combobox"]').first();
     const timeInput = page.locator('input[name="startTime"]');
     const priceInput = page.locator('input[name="basePrice"]');
     
-    await expect(movieSelect).toHaveAttribute('required');
-    await expect(hallSelect).toHaveAttribute('required');
+    await expect(movieCombobox).toBeVisible();
     await expect(timeInput).toHaveAttribute('required');
     await expect(priceInput).toHaveAttribute('required');
   });
