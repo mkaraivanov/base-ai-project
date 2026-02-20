@@ -80,12 +80,18 @@ public class ShowtimeRepository : IShowtimeRepository
 
     public async Task<Showtime> UpdateAsync(Showtime showtime, CancellationToken ct = default)
     {
-        DetachTracked(showtime.Id);
-        // Null out navigation properties to avoid change tracking conflicts with related entities
-        var toUpdate = showtime with { Movie = null, CinemaHall = null };
-        _context.Showtimes.Update(toUpdate);
+        // Detach navigation properties to avoid EF attempting to update related entities
+        var detached = showtime with { Movie = null, CinemaHall = null };
+
+        // Detach any already-tracked instance with the same key to avoid duplicate tracking errors
+        var tracked = _context.ChangeTracker.Entries<Showtime>()
+            .FirstOrDefault(e => e.Entity.Id == detached.Id);
+        if (tracked is not null)
+            tracked.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+
+        _context.Showtimes.Update(detached);
         await _context.SaveChangesAsync(ct);
-        return showtime;
+        return detached;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)

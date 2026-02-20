@@ -11,35 +11,7 @@ namespace Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<Guid>(
-                name: "CinemaId",
-                table: "CinemaHalls",
-                type: "uniqueidentifier",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
-
-            migrationBuilder.CreateTable(
-                name: "Cinemas",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    LogoUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    OpenTime = table.Column<TimeOnly>(type: "time", nullable: false),
-                    CloseTime = table.Column<TimeOnly>(type: "time", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Cinemas", x => x.Id);
-                });
+            // CinemaId column, Cinemas table, and related index/FK already added by AddCinemaEntity migration
 
             migrationBuilder.CreateTable(
                 name: "LoyaltyCards",
@@ -98,21 +70,7 @@ namespace Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_CinemaHalls_CinemaId",
-                table: "CinemaHalls",
-                column: "CinemaId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Cinemas_IsActive",
-                table: "Cinemas",
-                column: "IsActive");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Cinemas_Name_City",
-                table: "Cinemas",
-                columns: new[] { "Name", "City" });
-
+            // IX_CinemaHalls_CinemaId, IX_Cinemas_IsActive, IX_Cinemas_Name_City already created by AddCinemaEntity migration
             migrationBuilder.CreateIndex(
                 name: "IX_LoyaltyCards_UserId",
                 table: "LoyaltyCards",
@@ -135,24 +93,13 @@ namespace Infrastructure.Migrations
                 table: "LoyaltyVouchers",
                 columns: new[] { "UserId", "IsUsed" });
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_CinemaHalls_Cinemas_CinemaId",
-                table: "CinemaHalls",
-                column: "CinemaId",
-                principalTable: "Cinemas",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+            // FK_CinemaHalls_Cinemas_CinemaId already added by AddCinemaEntity migration
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_CinemaHalls_Cinemas_CinemaId",
-                table: "CinemaHalls");
-
-            migrationBuilder.DropTable(
-                name: "Cinemas");
+            // FK_CinemaHalls_Cinemas_CinemaId, Cinemas table managed by AddCinemaEntity migration
 
             migrationBuilder.DropTable(
                 name: "LoyaltySettings");
@@ -163,13 +110,7 @@ namespace Infrastructure.Migrations
             migrationBuilder.DropTable(
                 name: "LoyaltyCards");
 
-            migrationBuilder.DropIndex(
-                name: "IX_CinemaHalls_CinemaId",
-                table: "CinemaHalls");
-
-            migrationBuilder.DropColumn(
-                name: "CinemaId",
-                table: "CinemaHalls");
+            // IX_CinemaHalls_CinemaId and CinemaId column managed by AddCinemaEntity migration
         }
     }
 }

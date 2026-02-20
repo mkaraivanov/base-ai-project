@@ -42,6 +42,20 @@ public class LoyaltyRepository : ILoyaltyRepository
         return voucher;
     }
 
+    public async Task DeleteOldestUnusedVoucherAsync(Guid userId, CancellationToken ct = default)
+    {
+        var voucher = await _context.LoyaltyVouchers
+            .Where(v => v.UserId == userId && !v.IsUsed)
+            .OrderBy(v => v.IssuedAt)
+            .FirstOrDefaultAsync(ct);
+
+        if (voucher is not null)
+        {
+            _context.LoyaltyVouchers.Remove(voucher);
+            await _context.SaveChangesAsync(ct);
+        }
+    }
+
     public async Task<LoyaltySettings?> GetSettingsAsync(CancellationToken ct = default)
     {
         return await _context.LoyaltySettings

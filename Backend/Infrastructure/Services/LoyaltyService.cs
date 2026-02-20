@@ -12,15 +12,18 @@ public class LoyaltyService : ILoyaltyService
     private const int DefaultStampsRequired = 5;
 
     private readonly ILoyaltyRepository _loyaltyRepository;
+    private readonly IBookingRepository _bookingRepository;
     private readonly ILogger<LoyaltyService> _logger;
     private readonly TimeProvider _timeProvider;
 
     public LoyaltyService(
         ILoyaltyRepository loyaltyRepository,
+        IBookingRepository bookingRepository,
         ILogger<LoyaltyService> logger,
         TimeProvider? timeProvider = null)
     {
         _loyaltyRepository = loyaltyRepository;
+        _bookingRepository = bookingRepository;
         _logger = logger;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
@@ -33,19 +36,80 @@ public class LoyaltyService : ILoyaltyService
             var stampsRequired = settings?.StampsRequired ?? DefaultStampsRequired;
 
             var card = await _loyaltyRepository.GetByUserIdAsync(userId, ct);
+
+            // Sync: count confirmed bookings to catch stamps that were never awarded
+            // (e.g. bookings confirmed before the loyalty feature was deployed).
+            var confirmedCount = await _bookingRepository.GetConfirmedCountByUserIdAsync(userId, ct);
+
+            // Historical vouchers earned = total completed cycles
+            var historicalVouchers = (int)(confirmedCount / stampsRequired);
+            // Current position within the cycle
+            var expectedStamps = (int)(confirmedCount % stampsRequired);
+            var effectiveStamps = card is null
+                ? expectedStamps
+                : Math.Max(card.Stamps, expectedStamps);
+
             if (card is null)
             {
-                var dto = new LoyaltyCardDto(
-                    Guid.Empty,
-                    0,
-                    stampsRequired,
-                    stampsRequired,
-                    new List<LoyaltyVoucherDto>()
-                );
-                return Result<LoyaltyCardDto>.Success(dto);
+                if (effectiveStamps == 0 && historicalVouchers == 0)
+                {
+                    var dto = new LoyaltyCardDto(
+                        Guid.Empty,
+                        0,
+                        stampsRequired,
+                        stampsRequired,
+                        new List<LoyaltyVoucherDto>()
+                    );
+                    return Result<LoyaltyCardDto>.Success(dto);
+                }
+
+                // Backfill: create a card with the correct stamp count
+                var now = _timeProvider.GetUtcNow().UtcDateTime;
+                card = new LoyaltyCard
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Stamps = effectiveStamps,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                };
+                await _loyaltyRepository.CreateAsync(card, ct);
+
+                // Backfill missing vouchers from historical completed cycles
+                var existingVoucherCount = card.Vouchers?.Count ?? 0;
+                for (var i = existingVoucherCount; i < historicalVouchers; i++)
+                {
+                    var backfillVoucher = new LoyaltyVoucher
+                    {
+                        Id = Guid.NewGuid(),
+                        LoyaltyCardId = card.Id,
+                        UserId = userId,
+                        Code = GenerateVoucherCode(),
+                        IsUsed = false,
+                        IssuedAt = now,
+                        UsedAt = null
+                    };
+                    await _loyaltyRepository.CreateVoucherAsync(backfillVoucher, ct);
+                }
+            }
+            else if (card.Stamps < effectiveStamps)
+            {
+                // Backfill missing stamps
+                var now = _timeProvider.GetUtcNow().UtcDateTime;
+                var syncedCard = new LoyaltyCard
+                {
+                    Id = card.Id,
+                    UserId = card.UserId,
+                    Stamps = effectiveStamps,
+                    CreatedAt = card.CreatedAt,
+                    UpdatedAt = now
+                };
+                await _loyaltyRepository.UpdateAsync(syncedCard, ct);
+                // Re-fetch to get vouchers loaded
+                card = await _loyaltyRepository.GetByUserIdAsync(userId, ct) ?? syncedCard;
             }
 
-            var activeVouchers = card.Vouchers
+            var activeVouchers = (card.Vouchers ?? Enumerable.Empty<LoyaltyVoucher>())
                 .Where(v => !v.IsUsed)
                 .Select(v => new LoyaltyVoucherDto(v.Id, v.Code, v.IsUsed, v.IssuedAt, v.UsedAt))
                 .ToList();
@@ -136,6 +200,69 @@ public class LoyaltyService : ILoyaltyService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error adding loyalty stamp for user {UserId}", userId);
+        }
+    }
+
+    public async Task RemoveStampAsync(Guid userId, CancellationToken ct = default)
+    {
+        try
+        {
+            var settings = await _loyaltyRepository.GetSettingsAsync(ct);
+            var stampsRequired = settings?.StampsRequired ?? DefaultStampsRequired;
+
+            var card = await _loyaltyRepository.GetByUserIdAsync(userId, ct);
+            if (card is null)
+            {
+                // Nothing to remove
+                return;
+            }
+
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+
+            if (card.Stamps > 0)
+            {
+                // Normal case: just decrement the stamp counter
+                var updatedCard = new LoyaltyCard
+                {
+                    Id = card.Id,
+                    UserId = card.UserId,
+                    Stamps = card.Stamps - 1,
+                    CreatedAt = card.CreatedAt,
+                    UpdatedAt = now
+                };
+                await _loyaltyRepository.UpdateAsync(updatedCard, ct);
+
+                _logger.LogInformation(
+                    "Loyalty stamp removed for user {UserId} due to booking cancellation. New stamp count: {Stamps}",
+                    userId,
+                    updatedCard.Stamps);
+            }
+            else
+            {
+                // Stamps are already at 0, which means the previous booking triggered a voucher.
+                // Revoke the oldest unused voucher to prevent abuse.
+                await _loyaltyRepository.DeleteOldestUnusedVoucherAsync(userId, ct);
+
+                // Restore stamps to stampsRequired - 1 (undo the threshold reset)
+                var updatedCard = new LoyaltyCard
+                {
+                    Id = card.Id,
+                    UserId = card.UserId,
+                    Stamps = stampsRequired - 1,
+                    CreatedAt = card.CreatedAt,
+                    UpdatedAt = now
+                };
+                await _loyaltyRepository.UpdateAsync(updatedCard, ct);
+
+                _logger.LogInformation(
+                    "Loyalty voucher revoked and stamps restored to {Stamps} for user {UserId} due to booking cancellation",
+                    updatedCard.Stamps,
+                    userId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing loyalty stamp for user {UserId}", userId);
         }
     }
 

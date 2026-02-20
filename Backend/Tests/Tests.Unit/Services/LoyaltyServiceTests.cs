@@ -13,6 +13,7 @@ namespace Tests.Unit.Services;
 public class LoyaltyServiceTests
 {
     private readonly Mock<ILoyaltyRepository> _loyaltyRepositoryMock;
+    private readonly Mock<IBookingRepository> _bookingRepositoryMock;
     private readonly Mock<ILogger<LoyaltyService>> _loggerMock;
     private readonly FakeTimeProvider _timeProvider;
     private readonly ILoyaltyService _loyaltyService;
@@ -23,11 +24,18 @@ public class LoyaltyServiceTests
     public LoyaltyServiceTests()
     {
         _loyaltyRepositoryMock = new Mock<ILoyaltyRepository>();
+        _bookingRepositoryMock = new Mock<IBookingRepository>();
         _loggerMock = new Mock<ILogger<LoyaltyService>>();
         _timeProvider = new FakeTimeProvider(FixedNow);
 
+        // Default: no historical bookings (produces clean empty card)
+        _bookingRepositoryMock
+            .Setup(x => x.GetConfirmedCountByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
+
         _loyaltyService = new LoyaltyService(
             _loyaltyRepositoryMock.Object,
+            _bookingRepositoryMock.Object,
             _loggerMock.Object,
             _timeProvider
         );
@@ -73,6 +81,9 @@ public class LoyaltyServiceTests
         _loyaltyRepositoryMock
             .Setup(x => x.GetSettingsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new LoyaltySettings { Id = Guid.NewGuid(), StampsRequired = 5, UpdatedAt = FixedNow });
+        _bookingRepositoryMock
+            .Setup(x => x.GetConfirmedCountByUserIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(3);
 
         // Act
         var result = await _loyaltyService.GetLoyaltyCardAsync(UserId);
@@ -267,5 +278,142 @@ public class LoyaltyServiceTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.Error);
+    }
+
+    [Fact]
+    public async Task GetLoyaltyCardAsync_ExactMultipleOfThreshold_BackfillsVoucher()
+    {
+        // Arrange: 10 confirmed bookings, stampsRequired=5 → 2 earned vouchers, 0 current stamps
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LoyaltyCard?)null);
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetSettingsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LoyaltySettings?)null);
+        _bookingRepositoryMock
+            .Setup(x => x.GetConfirmedCountByUserIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(10); // 10 % 5 == 0, 10 / 5 == 2 vouchers
+
+        LoyaltyCard? createdCard = null;
+        _loyaltyRepositoryMock
+            .Setup(x => x.CreateAsync(It.IsAny<LoyaltyCard>(), It.IsAny<CancellationToken>()))
+            .Callback<LoyaltyCard, CancellationToken>((c, _) => createdCard = c)
+            .ReturnsAsync((LoyaltyCard c, CancellationToken _) => c);
+        _loyaltyRepositoryMock
+            .Setup(x => x.CreateVoucherAsync(It.IsAny<LoyaltyVoucher>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LoyaltyVoucher v, CancellationToken _) => v);
+
+        // Re-fetch returns the card we created
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => createdCard);
+
+        // Act
+        var result = await _loyaltyService.GetLoyaltyCardAsync(UserId);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        // Should backfill 2 vouchers because 10 / 5 = 2 completed cycles
+        _loyaltyRepositoryMock.Verify(
+            x => x.CreateVoucherAsync(It.IsAny<LoyaltyVoucher>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task RemoveStampAsync_StampsAboveZero_DecrementsStamp()
+    {
+        // Arrange
+        var card = new LoyaltyCard
+        {
+            Id = Guid.NewGuid(),
+            UserId = UserId,
+            Stamps = 3,
+            CreatedAt = FixedNow,
+            UpdatedAt = FixedNow
+        };
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(card);
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetSettingsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LoyaltySettings?)null);
+
+        LoyaltyCard? updatedCard = null;
+        _loyaltyRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<LoyaltyCard>(), It.IsAny<CancellationToken>()))
+            .Callback<LoyaltyCard, CancellationToken>((c, _) => updatedCard = c)
+            .ReturnsAsync((LoyaltyCard c, CancellationToken _) => c);
+
+        // Act
+        await _loyaltyService.RemoveStampAsync(UserId);
+
+        // Assert
+        Assert.NotNull(updatedCard);
+        Assert.Equal(2, updatedCard!.Stamps);
+        _loyaltyRepositoryMock.Verify(
+            x => x.DeleteOldestUnusedVoucherAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoveStampAsync_StampsAtZero_RevokesVoucherAndRestoresStamps()
+    {
+        // Arrange: stamps == 0 means a voucher was just issued when the threshold was reached
+        var card = new LoyaltyCard
+        {
+            Id = Guid.NewGuid(),
+            UserId = UserId,
+            Stamps = 0,
+            CreatedAt = FixedNow,
+            UpdatedAt = FixedNow
+        };
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(card);
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetSettingsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LoyaltySettings?)null); // default stampsRequired = 5
+        _loyaltyRepositoryMock
+            .Setup(x => x.DeleteOldestUnusedVoucherAsync(UserId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        LoyaltyCard? updatedCard = null;
+        _loyaltyRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<LoyaltyCard>(), It.IsAny<CancellationToken>()))
+            .Callback<LoyaltyCard, CancellationToken>((c, _) => updatedCard = c)
+            .ReturnsAsync((LoyaltyCard c, CancellationToken _) => c);
+
+        // Act
+        await _loyaltyService.RemoveStampAsync(UserId);
+
+        // Assert: voucher revoked and stamps restored to stampsRequired-1 (4)
+        _loyaltyRepositoryMock.Verify(
+            x => x.DeleteOldestUnusedVoucherAsync(UserId, It.IsAny<CancellationToken>()),
+            Times.Once);
+        Assert.NotNull(updatedCard);
+        Assert.Equal(4, updatedCard!.Stamps); // stampsRequired(5) - 1
+    }
+
+    [Fact]
+    public async Task RemoveStampAsync_NoCard_DoesNothing()
+    {
+        // Arrange
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LoyaltyCard?)null);
+        _loyaltyRepositoryMock
+            .Setup(x => x.GetSettingsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LoyaltySettings?)null);
+
+        // Act
+        await _loyaltyService.RemoveStampAsync(UserId);
+
+        // Assert
+        _loyaltyRepositoryMock.Verify(
+            x => x.UpdateAsync(It.IsAny<LoyaltyCard>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _loyaltyRepositoryMock.Verify(
+            x => x.DeleteOldestUnusedVoucherAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 }
