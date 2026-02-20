@@ -29,6 +29,7 @@ import { HallsManagementPage } from './pages/admin/HallsManagementPage';
 import { ShowtimesManagementPage } from './pages/admin/ShowtimesManagementPage';
 import { TicketTypesManagementPage } from './pages/admin/TicketTypesManagementPage';
 import { LoyaltyManagementPage } from './pages/admin/LoyaltyManagementPage';
+import { ReportsPage } from './pages/admin/ReportsPage';
 
 // Auth pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -98,6 +99,7 @@ function AnimatedRoutes() {
           <Route path="/admin/showtimes" element={<AdminRoute><ShowtimesManagementPage /></AdminRoute>} />
           <Route path="/admin/ticket-types" element={<AdminRoute><TicketTypesManagementPage /></AdminRoute>} />
           <Route path="/admin/loyalty" element={<AdminRoute><LoyaltyManagementPage /></AdminRoute>} />
+          <Route path="/admin/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

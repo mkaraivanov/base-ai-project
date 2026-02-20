@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building2, Layers, Film, Clock4, Ticket, Gift } from 'lucide-react';
+import { Building2, Layers, Film, Clock4, Ticket, Gift, BarChart2 } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -23,6 +23,7 @@ const cards: NavCard[] = [
   { to: '/admin/showtimes', icon: Clock4, label: 'Showtimes', desc: 'Schedule and manage movie showtimes', color: '#3b82f6' },
   { to: '/admin/ticket-types', icon: Ticket, label: 'Ticket Types', desc: 'Manage ticket types and price modifiers', color: '#06b6d4' },
   { to: '/admin/loyalty', icon: Gift, label: 'Loyalty Program', desc: 'Configure free ticket reward program', color: '#14b8a6' },
+  { to: '/admin/reports', icon: BarChart2, label: 'Reports', desc: 'Ticket sales by date, movie, showtime, and location', color: '#f59e0b' },
 ];
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };

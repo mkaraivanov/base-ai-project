@@ -1,4 +1,7 @@
+
 import { test, expect, type Page } from '@playwright/test';
+
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:5173';
 
 const adminUser = {
   email: 'admin@cinebook.local',
@@ -6,11 +9,11 @@ const adminUser = {
 };
 
 async function loginAsAdmin(page: Page) {
-  await page.goto('/login');
+  await page.goto(`${baseURL}/login`);
   await page.fill('input[type="email"]', adminUser.email);
   await page.fill('input[type="password"]', adminUser.password);
   await page.click('button[type="submit"]');
-  await page.waitForURL('/', { timeout: 10000 });
+  await page.waitForURL(`${baseURL}/`, { timeout: 10000 });
 }
 
 test.describe('Customer - Movies Pages', () => {
@@ -20,8 +23,8 @@ test.describe('Customer - Movies Pages', () => {
 
   test.describe('Movies List Page', () => {
     test('should display movies page', async ({ page }) => {
-      await page.goto('/movies');
-      await expect(page).toHaveURL('/movies');
+      await page.goto(`${baseURL}/movies`);
+      await expect(page).toHaveURL(`${baseURL}/movies`);
       
       // Check for movies page heading — the page shows "Now Showing" in a Typography element
       const heading = page.locator('h1, h2, h3, h4, h5, h6').filter({ hasText: /movies|now showing/i }).first();
@@ -29,7 +32,7 @@ test.describe('Customer - Movies Pages', () => {
     });
 
     test('should display movie cards', async ({ page }) => {
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       
       // Wait for movies to load
       await page.waitForLoadState('networkidle');
@@ -40,7 +43,7 @@ test.describe('Customer - Movies Pages', () => {
     });
 
     test('should navigate to movie detail when clicking a movie', async ({ page }) => {
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       await page.waitForLoadState('networkidle');
       
       // Click on the "View Showtimes" link inside the first movie card
@@ -53,7 +56,7 @@ test.describe('Customer - Movies Pages', () => {
     });
 
     test('should have search/filter functionality', async ({ page }) => {
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       
       // Check for search or filter input (if implemented)
       const searchInput = page.locator('input[type="search"], input[placeholder*="search" i], input[placeholder*="filter" i]').first();
@@ -69,7 +72,7 @@ test.describe('Customer - Movies Pages', () => {
   test.describe('Movie Detail Page', () => {
     test('should display movie details', async ({ page }) => {
       // Navigate to movies page first
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       await page.waitForLoadState('networkidle');
       
       // Click the "View Showtimes" link inside the first movie card
@@ -91,7 +94,7 @@ test.describe('Customer - Movies Pages', () => {
     });
 
     test('should display showtimes for the movie', async ({ page }) => {
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       await page.waitForLoadState('networkidle');
       
       const firstMovieLink = page.locator('.movie-card a.btn').first();
@@ -108,7 +111,7 @@ test.describe('Customer - Movies Pages', () => {
     });
 
     test('should allow navigation to seat selection when clicking a showtime', async ({ page }) => {
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       await page.waitForLoadState('networkidle');
       
       const firstMovieLink = page.locator('.movie-card a.btn').first();
@@ -131,7 +134,7 @@ test.describe('Customer - Movies Pages', () => {
     });
 
     test('should display movie poster/image', async ({ page }) => {
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       await page.waitForLoadState('networkidle');
       
       const firstMovieLink = page.locator('.movie-card a.btn').first();

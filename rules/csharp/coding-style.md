@@ -7,241 +7,42 @@ paths:
 
 > This file extends [common/coding-style.md](../common/coding-style.md) with C# specific content.
 
-## Immutability
+## Immutability (CRITICAL)
 
-Use records and init-only properties for immutable data:
+- Use `record` types for data objects; use `with` expressions to produce new copies
+- Use `init`-only properties on classes where mutation must be prevented
+- Never mutate an object passed into a method — return a new instance
 
-```csharp
-// WRONG: Mutation
-public void UpdateUser(User user, string name)
-{
-    user.Name = name;  // MUTATION!
-    return user;
-}
+## Nullable Reference Types
 
-// CORRECT: Immutability with records
-public record User(string Id, string Name, string Email);
+- Always enable `<Nullable>enable</Nullable>` in every project
+- Handle `null` explicitly — avoid `!` (null-forgiving) unless the value is provably non-null
+- Use `is null` / `is not null` pattern checks, not `== null`
 
-public User UpdateUser(User user, string name)
-{
-    return user with { Name = name };
-}
+## Async / Await
 
-// CORRECT: Immutability with init-only properties
-public class User
-{
-    public string Id { get; init; }
-    public string Name { get; init; }
-    public string Email { get; init; }
-}
-```
+- Return `async Task` (never `async void`, except event handlers)
+- Every async public method must accept `CancellationToken cancellationToken = default`
+- No `ConfigureAwait(false)` in ASP.NET Core code (no sync context); use it in library code
 
-## Nullable Reference Types (NRT)
+## LINQ
 
-ALWAYS enable NRT and handle nullability explicitly:
-
-```csharp
-// In .csproj
-<Nullable>enable</Nullable>
-
-// Code
-public string GetUserName(User? user)
-{
-    if (user is null)
-    {
-        return "Unknown";
-    }
-    
-    return user.Name; // Safe, null checked
-}
-
-// Use null-forgiving operator only when certain
-public string GetRequiredConfig(IConfiguration config)
-{
-    return config["ApiKey"]!; // Only if you're certain it exists
-}
-```
-
-## Async/Await Best Practices
-
-```csharp
-// WRONG: async void (except event handlers)
-public async void ProcessData() { } // ❌
-
-// CORRECT: async Task
-public async Task ProcessDataAsync() { } // ✅
-
-// CORRECT: Use CancellationToken
-public async Task<User> GetUserAsync(string id, CancellationToken cancellationToken = default)
-{
-    return await _httpClient.GetFromJsonAsync<User>($"/users/{id}", cancellationToken);
-}
-
-// CORRECT: Use ConfigureAwait(false) in library code
-public async Task<Data> GetDataAsync()
-{
-    var response = await _httpClient.GetAsync("/data").ConfigureAwait(false);
-    return await response.Content.ReadFromJsonAsync<Data>().ConfigureAwait(false);
-}
-
-// ASP.NET Core code - no ConfigureAwait needed (no synchronization context)
-public async Task<IActionResult> GetUser(string id)
-{
-    var user = await _userService.GetUserAsync(id);
-    return Ok(user);
-}
-```
-
-## LINQ Best Practices
-
-```csharp
-// WRONG: Multiple enumeration
-var users = GetUsers().Where(u => u.IsActive);
-var count = users.Count(); // First enumeration
-var list = users.ToList(); // Second enumeration - wasteful!
-
-// CORRECT: Single enumeration
-var users = GetUsers().Where(u => u.IsActive).ToList();
-var count = users.Count;
-
-// CORRECT: Use Any() for existence checks
-if (users.Any()) { } // ✅ Efficient
-
-// WRONG: Count() for existence checks
-if (users.Count() > 0) { } // ❌ Enumerates entire collection
-```
-
-## Pattern Matching
-
-Use modern pattern matching for cleaner code:
-
-```csharp
-// Property patterns
-public decimal GetDiscount(Customer customer) => customer switch
-{
-    { IsPremium: true, YearsActive: > 5 } => 0.20m,
-    { IsPremium: true } => 0.10m,
-    { YearsActive: > 3 } => 0.05m,
-    _ => 0m
-};
-
-// Type patterns with declarations
-public string Describe(object obj) => obj switch
-{
-    int i => $"Integer: {i}",
-    string s when s.Length > 10 => "Long string",
-    string s => $"String: {s}",
-    null => "Null",
-    _ => "Unknown"
-};
-
-// Positional patterns with records
-public record Point(int X, int Y);
-
-public string GetQuadrant(Point point) => point switch
-{
-    (0, 0) => "Origin",
-    (> 0, > 0) => "Quadrant I",
-    (< 0, > 0) => "Quadrant II",
-    _ => "Other"
-};
-```
+- Materialise queries once: call `.ToList()` / `.ToArrayAsync()` before iterating multiple times
+- Use `Any()` for existence checks, not `Count() > 0`
+- Prefer method syntax over query syntax for consistency
 
 ## Naming Conventions
 
-```csharp
-// PascalCase for public members
-public class UserService
-{
-    public string FirstName { get; set; }
-    public void ProcessData() { }
-}
-
-// camelCase with underscore for private fields
-public class UserRepository
-{
-    private readonly IDbContext _context;
-    private readonly ILogger<UserRepository> _logger;
-    
-    public UserRepository(IDbContext context, ILogger<UserRepository> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-}
-
-// Async suffix for async methods
-public async Task<User> GetUserAsync(string id) { }
-public async Task SaveChangesAsync(CancellationToken cancellationToken = default) { }
-```
-
-## Modern C# Features
-
-```csharp
-// File-scoped namespaces (C# 10+)
-namespace MyApp.Services;
-
-public class UserService { }
-
-// Global usings (in separate GlobalUsings.cs or .csproj)
-global using System;
-global using System.Linq;
-global using System.Threading.Tasks;
-
-// Top-level statements (Program.cs)
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-app.Run();
-
-// Raw string literals (C# 11+)
-var json = """
-    {
-        "name": "John",
-        "age": 30
-    }
-    """;
-
-// Collection expressions (C# 12+)
-int[] numbers = [1, 2, 3, 4, 5];
-List<string> names = ["Alice", "Bob", "Charlie"];
-```
+- PascalCase: types, public members, methods, properties
+- `_camelCase`: private fields
+- `Async` suffix on all async methods
+- File-scoped namespaces (`namespace MyApp.Services;`)
 
 ## Error Handling
 
-```csharp
-// ALWAYS handle specific exceptions
-try
-{
-    var result = await _service.ProcessAsync(data);
-    return result;
-}
-catch (ValidationException ex)
-{
-    _logger.LogWarning(ex, "Validation failed for {Data}", data);
-    return BadRequest(new { error = ex.Message });
-}
-catch (NotFoundException ex)
-{
-    _logger.LogInformation("Resource not found: {Message}", ex.Message);
-    return NotFound();
-}
-catch (Exception ex)
-{
-    _logger.LogError(ex, "Unexpected error processing data");
-    return StatusCode(500, new { error = "An error occurred processing your request" });
-}
-
-// Use Result pattern for expected failures
-public record Result<T>
-{
-    public bool IsSuccess { get; init; }
-    public T? Value { get; init; }
-    public string? Error { get; init; }
-    
-    public static Result<T> Success(T value) => new() { IsSuccess = true, Value = value };
-    public static Result<T> Failure(string error) => new() { IsSuccess = false, Error = error };
-}
-```
+- Catch specific exceptions; log with `ILogger` structured logging
+- Return `Result<T>` for expected failures — never throw for flow control
+- Never log passwords, tokens, or PII
 
 ## Code Quality Checklist
 
@@ -256,3 +57,4 @@ Before marking work complete:
 - [ ] Async methods have `Async` suffix
 - [ ] File-scoped namespaces used
 - [ ] Proper exception handling with logging
+

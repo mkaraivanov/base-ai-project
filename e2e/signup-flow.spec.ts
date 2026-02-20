@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:5173';
+
 test.describe('Sign Up Flow', () => {
   const timestamp = Date.now();
   const testUser = {
@@ -11,7 +13,7 @@ test.describe('Sign Up Flow', () => {
   };
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/register');
+    await page.goto(`${baseURL}/register`);
   });
 
   test('should display sign up form', async ({ page }) => {

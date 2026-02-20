@@ -91,6 +91,7 @@ builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 builder.Services.AddScoped<IReservationTicketRepository, ReservationTicketRepository>();
 builder.Services.AddScoped<IBookingTicketRepository, BookingTicketRepository>();
 builder.Services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
+builder.Services.AddScoped<IReportingRepository, ReportingRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -102,6 +103,7 @@ builder.Services.AddScoped<IPaymentService, MockPaymentService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
+builder.Services.AddScoped<IReportingService, ReportingService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Unit of Work
@@ -146,11 +148,17 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        var allowedOrigins = builder.Configuration
-            .GetSection("AllowedOrigins")
-            .Get<string[]>()
-            ?? builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
-            ?? new[] { "http://localhost:5173" };
+        // Try to get from Cors:AllowedOrigins (Development), then AllowedOrigins (default), fallback to 5173/5174
+        var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
+            ?? builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+            ?? new[] { "http://localhost:5173", "http://localhost:5174" };
+
+        // Always add the current frontend dev port if not present
+        var frontendDevPorts = new[] { "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:4173" };
+        allowedOrigins = allowedOrigins.Union(frontendDevPorts).ToArray();
+
+        // Log the allowed origins at startup
+        Console.WriteLine($"[CORS] Allowed origins: {string.Join(", ", allowedOrigins)}");
 
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
@@ -243,6 +251,10 @@ app.MapGroup("/api/loyalty")
 app.MapGroup("/api/ticket-types")
     .MapTicketTypeEndpoints()
     .WithTags("Ticket Types");
+
+app.MapGroup("/api/reports")
+    .MapReportingEndpoints()
+    .WithTags("Reports");
 
 app.Run();
 

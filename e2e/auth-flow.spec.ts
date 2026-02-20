@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:5173';
+
 test.describe('Authentication Flow', () => {
   const adminUser = {
     email: 'admin@cinebook.local',
@@ -8,7 +10,7 @@ test.describe('Authentication Flow', () => {
 
   test.describe('Login Page', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('/login');
+      await page.goto(`${baseURL}/login`);
     });
 
     test('should display login page', async ({ page }) => {
@@ -101,7 +103,7 @@ test.describe('Authentication Flow', () => {
   test.describe('Logout Flow', () => {
     test.beforeEach(async ({ page }) => {
       // Login first
-      await page.goto('/login');
+      await page.goto(`${baseURL}/login`);
       await page.fill('input#email, input[type="email"]', adminUser.email);
       await page.fill('input#password, input[type="password"]', adminUser.password);
       await page.click('button[type="submit"]');
@@ -130,7 +132,7 @@ test.describe('Authentication Flow', () => {
       await page.waitForLoadState('networkidle');
 
       // Try to access protected route
-      await page.goto('/my-bookings');
+      await page.goto(`${baseURL}/my-bookings`);
 
       // Should redirect to login
       await expect(page).toHaveURL(/\/login/);
@@ -139,28 +141,28 @@ test.describe('Authentication Flow', () => {
 
   test.describe('Protected Routes', () => {
     test('should redirect to login when accessing homepage without authentication', async ({ page }) => {
-      await page.goto('/');
+      await page.goto(`${baseURL}/`);
       await expect(page).toHaveURL(/\/login/);
     });
 
     test('should redirect to login when accessing movies without authentication', async ({ page }) => {
-      await page.goto('/movies');
+      await page.goto(`${baseURL}/movies`);
       await expect(page).toHaveURL(/\/login/);
     });
 
     test('should redirect to login when accessing protected customer routes', async ({ page }) => {
-      await page.goto('/my-bookings');
+      await page.goto(`${baseURL}/my-bookings`);
       await expect(page).toHaveURL(/\/login/);
     });
 
     test('should redirect to login when accessing admin routes', async ({ page }) => {
-      await page.goto('/admin');
+      await page.goto(`${baseURL}/admin`);
       await expect(page).toHaveURL(/\/login/);
     });
 
     test('should retain intended destination after login', async ({ page }) => {
       // Try to access protected route
-      await page.goto('/my-bookings');
+      await page.goto(`${baseURL}/my-bookings`);
       
       // Should be on login page
       await expect(page).toHaveURL(/\/login/);
@@ -180,7 +182,7 @@ test.describe('Authentication Flow', () => {
   test.describe('Session Persistence', () => {
     test('should maintain session across page refreshes', async ({ page }) => {
       // Login
-      await page.goto('/login');
+      await page.goto(`${baseURL}/login`);
       await page.fill('input#email, input[type="email"]', adminUser.email);
       await page.fill('input#password, input[type="password"]', adminUser.password);
       await page.click('button[type="submit"]');

@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:5173';
+
 test.describe('Customer - My Bookings Page', () => {
   const testUser = {
     email: 'admin@cinebook.local', // Using admin account as we know it exists
@@ -8,7 +10,7 @@ test.describe('Customer - My Bookings Page', () => {
 
   test.beforeEach(async ({ page }) => {
     // Login before each test
-    await page.goto('/login');
+    await page.goto(`${baseURL}/login`);
     await page.fill('input#email, input[type="email"]', testUser.email);
     await page.fill('input#password, input[type="password"]', testUser.password);
     await page.click('button[type="submit"]');
@@ -29,14 +31,14 @@ test.describe('Customer - My Bookings Page', () => {
     }
     
     // Try to access my bookings without authentication
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     
     // Should redirect to login
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('should display my bookings page when authenticated', async ({ page }) => {
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     
     // Should stay on my bookings page
     await expect(page).toHaveURL('/my-bookings');
@@ -47,7 +49,7 @@ test.describe('Customer - My Bookings Page', () => {
   });
 
   test('should display booking history or empty state', async ({ page }) => {
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     await page.waitForLoadState('networkidle');
     
     // Check if there are bookings or an empty state message
@@ -62,7 +64,7 @@ test.describe('Customer - My Bookings Page', () => {
   });
 
   test('should display booking details if bookings exist', async ({ page }) => {
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     await page.waitForLoadState('networkidle');
     
     // Check for booking cards
@@ -80,7 +82,7 @@ test.describe('Customer - My Bookings Page', () => {
   });
 
   test('should show booking reference number', async ({ page }) => {
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     await page.waitForLoadState('networkidle');
     
     const bookingCard = page.locator('[data-testid="booking-card"], .booking-card, article').first();
@@ -94,7 +96,7 @@ test.describe('Customer - My Bookings Page', () => {
   });
 
   test('should allow canceling a booking if cancellation is available', async ({ page }) => {
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     await page.waitForLoadState('networkidle');
     
     // Check for cancel button
@@ -116,7 +118,7 @@ test.describe('Customer - My Bookings Page', () => {
   });
 
   test('should have navigation to make new bookings', async ({ page }) => {
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     await page.waitForLoadState('networkidle');
     
     // Look for a link/button to browse movies or make new bookings
@@ -129,7 +131,7 @@ test.describe('Customer - My Bookings Page', () => {
   });
 
   test('should display seat information for each booking', async ({ page }) => {
-    await page.goto('/my-bookings');
+    await page.goto(`${baseURL}/my-bookings`);
     await page.waitForLoadState('networkidle');
     
     const bookingCard = page.locator('[data-testid="booking-card"], .booking-card, article').first();
