@@ -146,11 +146,17 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        var allowedOrigins = builder.Configuration
-            .GetSection("AllowedOrigins")
-            .Get<string[]>()
-            ?? builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
-            ?? new[] { "http://localhost:5173" };
+        // Try to get from Cors:AllowedOrigins (Development), then AllowedOrigins (default), fallback to 5173/5174
+        var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
+            ?? builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+            ?? new[] { "http://localhost:5173", "http://localhost:5174" };
+
+        // Always add the current frontend dev port if not present
+        var frontendDevPorts = new[] { "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:4173" };
+        allowedOrigins = allowedOrigins.Union(frontendDevPorts).ToArray();
+
+        // Log the allowed origins at startup
+        Console.WriteLine($"[CORS] Allowed origins: {string.Join(", ", allowedOrigins)}");
 
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
