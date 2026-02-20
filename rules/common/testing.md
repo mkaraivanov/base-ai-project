@@ -1,3 +1,15 @@
+---
+applyTo:
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/*.test.tsx"
+  - "**/*Tests.cs"
+  - "**/*Test.cs"
+  - "**/Tests/**"
+  - "**/*.cs"
+  - "**/*.ts"
+  - "**/*.tsx"
+---
 # Testing Requirements
 
 ## Minimum Test Coverage: 80%

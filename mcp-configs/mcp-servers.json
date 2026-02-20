@@ -87,5 +87,11 @@
     "env_vars": "Replace YOUR_*_HERE placeholders with actual values",
     "disabling": "Use disabledMcpServers array in project config to disable per-project",
     "context_warning": "Keep under 10 MCPs enabled to preserve context window"
+  },
+  "_recommended_for_this_project": {
+    "note": "Enable only these 8 for the cinema booking project (ASP.NET Core + React):",
+    "active": ["github", "memory", "sequential-thinking", "context7", "filesystem", "firecrawl", "magic", "supabase"],
+    "optional": ["vercel", "railway"],
+    "not_applicable": ["cloudflare-docs", "cloudflare-workers-builds", "cloudflare-workers-bindings", "cloudflare-observability", "clickhouse"]
   }
 }
