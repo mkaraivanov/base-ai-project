@@ -96,13 +96,26 @@ public class ShowtimeRepository : IShowtimeRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var showtime = await _context.Showtimes.FindAsync(new object[] { id }, ct);
+        var showtime = await _context.Showtimes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == id, ct);
         if (showtime is not null)
         {
-            var updated = showtime with { IsActive = false };
+            // Clear all tracked entities to prevent conflicts from prior AsNoTracking queries
+            // that may still leave entries in EF Core's internal identity map
+            _context.ChangeTracker.Clear();
+            var updated = showtime with { IsActive = false, Movie = null, CinemaHall = null };
             _context.Showtimes.Update(updated);
             await _context.SaveChangesAsync(ct);
         }
+    }
+
+    private void DetachTracked(Guid id)
+    {
+        var tracked = _context.ChangeTracker.Entries<Showtime>()
+            .FirstOrDefault(e => e.Entity.Id == id);
+        if (tracked is not null)
+            tracked.State = EntityState.Detached;
     }
 
     public async Task<bool> HasOverlappingShowtimeAsync(

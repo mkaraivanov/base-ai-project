@@ -346,20 +346,45 @@ public class ShowtimeServiceTests : IDisposable
         result.Value.Should().HaveCount(1);
     }
 
-    [Fact(Skip = "InMemory database doesn't support transactions - move to integration tests")]
+    [Fact]
     public async Task DeleteShowtimeAsync_ExistingShowtime_ReturnsSuccess()
     {
-        // NOTE: This test requires database transaction support
-        // InMemory provider has limitations with update operations in transactions
-        // This test should be implemented as an integration test with SQL Server
-
         // Arrange
+        var movieId = Guid.NewGuid();
+        var hallId = Guid.NewGuid();
         var showtimeId = Guid.NewGuid();
+
+        var movie = new Movie
+        {
+            Id = movieId,
+            Title = "Test Movie",
+            Description = "Test Description",
+            Genre = "Action",
+            DurationMinutes = 120,
+            Rating = "PG-13",
+            PosterUrl = "https://example.com/poster.jpg",
+            ReleaseDate = DateOnly.FromDateTime(DateTime.Today),
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var hall = new CinemaHall
+        {
+            Id = hallId,
+            CinemaId = DefaultCinemaId,
+            Name = "Hall 1",
+            TotalSeats = 0,
+            SeatLayoutJson = "{}",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
         var showtime = new Showtime
         {
             Id = showtimeId,
-            MovieId = Guid.NewGuid(),
-            CinemaHallId = Guid.NewGuid(),
+            MovieId = movieId,
+            CinemaHallId = hallId,
             StartTime = DateTime.UtcNow.AddDays(1),
             EndTime = DateTime.UtcNow.AddDays(1).AddHours(2),
             BasePrice = 10.00m,
@@ -367,7 +392,8 @@ public class ShowtimeServiceTests : IDisposable
             CreatedAt = DateTime.UtcNow
         };
 
-        // Add showtime to database
+        await _context.Movies.AddAsync(movie);
+        await _context.CinemaHalls.AddAsync(hall);
         await _context.Showtimes.AddAsync(showtime);
         await _context.SaveChangesAsync();
 
