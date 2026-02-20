@@ -250,10 +250,6 @@ app.MapGroup("/api/ticket-types")
     .MapTicketTypeEndpoints()
     .WithTags("Ticket Types");
 
-app.MapGroup("/api/loyalty")
-    .MapLoyaltyEndpoints()
-    .WithTags("Loyalty");
-
 app.Run();
 
 // Make Program accessible to tests

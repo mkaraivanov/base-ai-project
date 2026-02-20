@@ -1,9 +1,11 @@
+using AspNetCoreRateLimit;
 using DotNet.Testcontainers.Builders;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Testcontainers.MsSql;
 
 namespace Tests.Integration;
@@ -33,6 +35,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             services.AddDbContext<CinemaDbContext>(options =>
             {
                 options.UseSqlServer(_dbContainer.GetConnectionString());
+            });
+
+            // Disable rate limiting in tests so concurrent tests don't exhaust quotas
+            services.Configure<IpRateLimitOptions>(options =>
+            {
+                options.EnableEndpointRateLimiting = false;
+                options.GeneralRules = [];
             });
 
             // Build service provider and create database
