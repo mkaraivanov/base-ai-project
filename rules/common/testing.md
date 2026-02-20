@@ -19,6 +19,15 @@ Test Types (ALL required):
 2. **Integration Tests** - API endpoints, database operations
 3. **E2E Tests** - Critical user flows (Playwright for web applications)
 
+## CRITICAL: Feature Implementation is INCOMPLETE Without Unit and Integration Tests
+
+**E2E tests alone are NEVER sufficient.** Every new feature MUST include:
+- Unit tests for all business logic, services, and utilities
+- Integration tests for all API endpoints
+- E2E tests for user-facing flows
+
+Do NOT consider a feature done, do NOT commit, and do NOT open a PR until all three test types exist and pass.
+
 ## Test-Driven Development
 
 MANDATORY workflow:

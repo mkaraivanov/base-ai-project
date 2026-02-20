@@ -24,6 +24,7 @@ import { HallsManagementPage } from './pages/admin/HallsManagementPage';
 import { ShowtimesManagementPage } from './pages/admin/ShowtimesManagementPage';
 import { TicketTypesManagementPage } from './pages/admin/TicketTypesManagementPage';
 import { LoyaltyManagementPage } from './pages/admin/LoyaltyManagementPage';
+import { ReportsPage } from './pages/admin/ReportsPage';
 
 // Auth pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -148,6 +149,14 @@ const AppRoutes: React.FC = () => {
             element={
               <AdminRoute>
                 <LoyaltyManagementPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <AdminRoute>
+                <ReportsPage />
               </AdminRoute>
             }
           />

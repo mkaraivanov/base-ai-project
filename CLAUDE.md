@@ -69,7 +69,7 @@ npx playwright test --ui   # debug mode
 - **Async**: always `async Task`, always accept `CancellationToken`; no `async void`
 - **Error handling**: never swallow silently; return `Result<T>` from services
 - **Validation**: FluentValidation on DTOs (C#), Zod at API boundaries (TS)
-- **Testing**: TDD (RED → GREEN → REFACTOR), 80%+ coverage, E2E before PR
+- **Testing**: TDD (RED → GREEN → REFACTOR), 80%+ coverage; **unit + integration + E2E tests ALL required** — E2E alone is never sufficient; feature is INCOMPLETE without non-E2E tests
 - **Secrets**: environment variables only — never hardcode
 - **CORS**: re-verify after every backend rebuild
 

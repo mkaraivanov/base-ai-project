@@ -91,6 +91,7 @@ builder.Services.AddScoped<ITicketTypeRepository, TicketTypeRepository>();
 builder.Services.AddScoped<IReservationTicketRepository, ReservationTicketRepository>();
 builder.Services.AddScoped<IBookingTicketRepository, BookingTicketRepository>();
 builder.Services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
+builder.Services.AddScoped<IReportingRepository, ReportingRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -102,6 +103,7 @@ builder.Services.AddScoped<IPaymentService, MockPaymentService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
+builder.Services.AddScoped<IReportingService, ReportingService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Unit of Work
@@ -249,6 +251,10 @@ app.MapGroup("/api/loyalty")
 app.MapGroup("/api/ticket-types")
     .MapTicketTypeEndpoints()
     .WithTags("Ticket Types");
+
+app.MapGroup("/api/reports")
+    .MapReportingEndpoints()
+    .WithTags("Reports");
 
 app.Run();
 

@@ -43,6 +43,12 @@ export const DashboardPage: React.FC = () => {
             <h3>Loyalty Program</h3>
             <p>Configure required visits for a free ticket reward</p>
           </Link>
+
+          <Link to="/admin/reports" className="admin-card">
+            <div className="admin-card-icon">📊</div>
+            <h3>Reports</h3>
+            <p>Ticket sales reports by date, movie, showtime, and location</p>
+          </Link>
         </div>
       </div>
     </div>

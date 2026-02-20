@@ -32,9 +32,11 @@ public async Task CreateUser_WithDuplicateEmail_ReturnsFailure() { }
 
 ## Requirements
 
+**BLOCKING**: A feature is not complete until unit tests AND integration tests are written and passing. E2E tests do not substitute for these.
+
 - 80%+ code coverage (`dotnet test --collect:"XPlat Code Coverage"`)
-- Unit tests for all business logic
-- Integration tests for all API endpoints
+- Unit tests for all business logic (services, domain logic, validators)
+- Integration tests for all API endpoints (using WebApplicationFactory)
 - Test both success **and** failure paths; cover edge cases (null, empty, invalid)
 - Async methods must be tested with `CancellationToken` handling
 
