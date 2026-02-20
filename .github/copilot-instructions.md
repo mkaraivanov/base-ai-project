@@ -119,53 +119,9 @@ Use structured logging (`ILogger` in C#, a logging library in TypeScript).
 
 ## Design Patterns
 
-### Repository Pattern
-
-```csharp
-public interface IRepository<T> where T : class
-{
-    Task<IEnumerable<T>> GetAllAsync(CancellationToken ct = default);
-    Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default);
-    Task<T> CreateAsync(T entity, CancellationToken ct = default);
-    Task<T> UpdateAsync(T entity, CancellationToken ct = default);
-    Task DeleteAsync(Guid id, CancellationToken ct = default);
-}
-```
-
-```typescript
-interface Repository<T> {
-  findAll(filters?: Filters): Promise<T[]>;
-  findById(id: string): Promise<T | null>;
-  create(data: CreateDto): Promise<T>;
-  update(id: string, data: UpdateDto): Promise<T>;
-  delete(id: string): Promise<void>;
-}
-```
-
-### Result Pattern (C#)
-
-```csharp
-public record Result<T>
-{
-    public bool IsSuccess { get; init; }
-    public T? Value { get; init; }
-    public string? Error { get; init; }
-
-    public static Result<T> Success(T value) => new() { IsSuccess = true, Value = value };
-    public static Result<T> Failure(string error) => new() { IsSuccess = false, Error = error };
-}
-```
-
-### API Response Envelope (TypeScript)
-
-```typescript
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  meta?: { total: number; page: number; limit: number };
-}
-```
+- **Repository pattern** — all data access goes through `IRepository<T>` (C#) or a typed `Repository<T>` interface (TS). See `rules/csharp/patterns.md` and `rules/typescript/patterns.md`.
+- **Result pattern (C#)** — services return `Result<T>.Success(value)` or `Result<T>.Failure(error)`; never throw for expected failures. See `rules/csharp/patterns.md`.
+- **API response envelope (TS)** — wrap all responses in `{ success, data?, error?, meta? }`. See `rules/typescript/patterns.md`.
 
 ---
 
@@ -275,17 +231,4 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`
 - PRs require review
 - Include E2E test results in PR description
 
----
 
-## Code Quality Checklist
-
-Before marking any task complete:
-
-- [ ] Code is readable and well-named
-- [ ] Functions are small (< 50 lines)
-- [ ] Files are focused (< 800 lines)
-- [ ] No deep nesting (> 4 levels)
-- [ ] Proper error handling at every level
-- [ ] No hardcoded values — use constants or config
-- [ ] No mutation — immutable patterns used
-- [ ] CORS verified if backend was changed or rebuilt

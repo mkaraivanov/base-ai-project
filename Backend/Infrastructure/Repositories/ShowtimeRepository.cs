@@ -95,8 +95,10 @@ public class ShowtimeRepository : IShowtimeRepository
             .FirstOrDefaultAsync(s => s.Id == id, ct);
         if (showtime is not null)
         {
-            DetachTracked(id);
-            var updated = showtime with { IsActive = false };
+            // Clear all tracked entities to prevent conflicts from prior AsNoTracking queries
+            // that may still leave entries in EF Core's internal identity map
+            _context.ChangeTracker.Clear();
+            var updated = showtime with { IsActive = false, Movie = null, CinemaHall = null };
             _context.Showtimes.Update(updated);
             await _context.SaveChangesAsync(ct);
         }
