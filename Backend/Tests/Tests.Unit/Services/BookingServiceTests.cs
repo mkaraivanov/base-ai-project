@@ -89,6 +89,10 @@ public class BookingServiceTests
             .Setup(x => x.AddStampAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        _loyaltyServiceMock
+            .Setup(x => x.RemoveStampAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         _bookingService = new BookingService(
             _seatRepositoryMock.Object,
             _reservationRepositoryMock.Object,
@@ -913,6 +917,7 @@ public class BookingServiceTests
         _paymentServiceMock.Verify(x => x.RefundPaymentAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
         _bookingRepositoryMock.Verify(x => x.UpdateAsync(It.IsAny<Booking>(), It.IsAny<CancellationToken>()), Times.Once);
         _seatRepositoryMock.Verify(x => x.UpdateRangeAsync(It.IsAny<List<Seat>>(), It.IsAny<CancellationToken>()), Times.Once);
+        _loyaltyServiceMock.Verify(x => x.RemoveStampAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -1029,6 +1034,100 @@ public class BookingServiceTests
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.Single(result.Value);
+    }
+
+    [Fact]
+    public async Task GetMyBookingsAsync_FutureShowtime_ReturnsConfirmedStatus()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookings = new List<Booking>
+        {
+            new Booking
+            {
+                Id = Guid.NewGuid(),
+                BookingNumber = "BK-240115-FUT01",
+                UserId = userId,
+                ShowtimeId = Guid.NewGuid(),
+                SeatNumbers = new List<string> { "B1" },
+                TotalAmount = 10m,
+                Status = BookingStatus.Confirmed,
+                BookedAt = _timeProvider.GetUtcNow().DateTime,
+                Showtime = new Showtime
+                {
+                    Id = Guid.NewGuid(),
+                    StartTime = _timeProvider.GetUtcNow().AddHours(3).DateTime, // Future showtime
+                    MovieId = Guid.NewGuid(),
+                    CinemaHallId = Guid.NewGuid(),
+                    BasePrice = 10m,
+                    IsActive = true,
+                    Movie = new Movie { Id = Guid.NewGuid(), Title = "Future Movie", Genre = "Drama", Rating = "PG", DurationMinutes = 100, IsActive = true },
+                    CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 1", TotalSeats = 100, IsActive = true, SeatLayoutJson = "{}" }
+                }
+            }
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bookings);
+        _bookingTicketRepositoryMock
+            .Setup(x => x.GetByBookingIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, List<BookingTicket>>());
+
+        // Act
+        var result = await _bookingService.GetMyBookingsAsync(userId);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Single(result.Value!);
+        Assert.Equal("Confirmed", result.Value![0].Status);
+    }
+
+    [Fact]
+    public async Task GetMyBookingsAsync_PastShowtime_ReturnsCompletedStatus()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var bookings = new List<Booking>
+        {
+            new Booking
+            {
+                Id = Guid.NewGuid(),
+                BookingNumber = "BK-240115-PST01",
+                UserId = userId,
+                ShowtimeId = Guid.NewGuid(),
+                SeatNumbers = new List<string> { "C1" },
+                TotalAmount = 10m,
+                Status = BookingStatus.Confirmed,
+                BookedAt = _timeProvider.GetUtcNow().DateTime,
+                Showtime = new Showtime
+                {
+                    Id = Guid.NewGuid(),
+                    StartTime = _timeProvider.GetUtcNow().AddHours(-2).DateTime, // Past showtime
+                    MovieId = Guid.NewGuid(),
+                    CinemaHallId = Guid.NewGuid(),
+                    BasePrice = 10m,
+                    IsActive = true,
+                    Movie = new Movie { Id = Guid.NewGuid(), Title = "Past Movie", Genre = "Comedy", Rating = "G", DurationMinutes = 90, IsActive = true },
+                    CinemaHall = new CinemaHall { Id = Guid.NewGuid(), Name = "Hall 2", TotalSeats = 80, IsActive = true, SeatLayoutJson = "{}" }
+                }
+            }
+        };
+
+        _bookingRepositoryMock
+            .Setup(x => x.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bookings);
+        _bookingTicketRepositoryMock
+            .Setup(x => x.GetByBookingIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<Guid, List<BookingTicket>>());
+
+        // Act
+        var result = await _bookingService.GetMyBookingsAsync(userId);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Single(result.Value!);
+        Assert.Equal("Completed", result.Value![0].Status);
     }
 
     #endregion
