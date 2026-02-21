@@ -48,7 +48,7 @@ public class ShowtimeServiceTests : IDisposable
 
         // Use real repositories with InMemory database
         _showtimeRepository = new ShowtimeRepository(_context);
-        _movieRepository = new MovieRepository(_context);
+        _movieRepository = new MovieRepository(_context, new AuditCaptureService());
         _hallRepository = new CinemaHallRepository(_context);
         _loggerMock = new Mock<ILogger<ShowtimeService>>();
 

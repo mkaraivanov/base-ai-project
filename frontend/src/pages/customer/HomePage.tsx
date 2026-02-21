@@ -14,7 +14,7 @@ import { MovieCard } from '../../components/MovieCard/MovieCard';
 import type { MovieDto } from '../../types';
 
 export const HomePage: React.FC = () => {
-  const { t } = useTranslation('customer');
+  const { t } = useTranslation(['customer', 'common']);
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,20 +54,19 @@ export const HomePage: React.FC = () => {
           <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }}>
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 5, px: 2, py: 0.5, mb: 3 }}>
               <Film size={14} color="#a5b4fc" />
-              <Typography sx={{ color: '#a5b4fc', fontSize: 13, fontWeight: 500 }}>Your cinema experience starts here</Typography>
+              <Typography sx={{ color: '#a5b4fc', fontSize: 13, fontWeight: 500 }}>{t('home.heroTagline')}</Typography>
             </Box>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Typography variant="h2" fontWeight={800} color="#fff" lineHeight={1.15} mb={2} sx={{ fontSize: { xs: '2.25rem', md: '3.5rem' } }}>
-              Welcome to{' '}
-              <Box component="span" sx={{ color: '#818cf8' }}>CineBook</Box>
+              {t('home.heroTitle')}
             </Typography>
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <Typography sx={{ color: '#c7d2fe', fontSize: { xs: 16, md: 18 }, mb: 4, maxWidth: 480, mx: 'auto' }}>
-              Book your favorite movie tickets in seconds. Browse movies, pick seats, and enjoy the show!
+              {t('home.heroDescription')}
             </Typography>
           </motion.div>
 
@@ -79,7 +78,7 @@ export const HomePage: React.FC = () => {
               size="large"
               sx={{ px: 4, py: 1.5, fontSize: 16, bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' } }}
             >
-              Browse Movies
+              {t('home.browseMovies')}
             </MuiButton>
           </motion.div>
         </Container>
@@ -90,7 +89,7 @@ export const HomePage: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
           <Typography variant="h5" fontWeight={700}>{t('movies.nowShowing')}</Typography>
           {movies.length > 0 && (
-            <MuiButton component={Link} to="/movies" variant="outlined" size="small">View All</MuiButton>
+            <MuiButton component={Link} to="/movies" variant="outlined" size="small">{t('common:actions.viewAll')}</MuiButton>
           )}
         </Box>
 

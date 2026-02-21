@@ -48,7 +48,14 @@ public class TicketTypeRepository : ITicketTypeRepository
 
     public async Task<TicketType> UpdateAsync(TicketType ticketType, CancellationToken ct = default)
     {
-        _context.TicketTypes.Update(ticketType);
+        // Load the tracked entity first so EF Core preserves the original-value snapshot.
+        // Without this, calling Update() on a detached record sets OriginalValues = CurrentValues,
+        // making the audit log show identical old and new values.
+        var existing = await _context.TicketTypes.FindAsync([ticketType.Id], ct);
+        if (existing is null)
+            return ticketType;
+
+        _context.Entry(existing).CurrentValues.SetValues(ticketType);
         await _context.SaveChangesAsync(ct);
         return ticketType;
     }
@@ -58,8 +65,9 @@ public class TicketTypeRepository : ITicketTypeRepository
         var existing = await _context.TicketTypes.FindAsync([id], ct);
         if (existing is not null)
         {
-            var deactivated = existing with { IsActive = false };
-            _context.TicketTypes.Update(deactivated);
+            // Use the property API so EF Core retains the original IsActive value in the
+            // change-tracker snapshot, giving the audit log a correct before/after diff.
+            _context.Entry(existing).Property(t => t.IsActive).CurrentValue = false;
             await _context.SaveChangesAsync(ct);
         }
     }

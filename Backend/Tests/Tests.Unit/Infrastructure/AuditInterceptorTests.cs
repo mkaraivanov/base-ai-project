@@ -30,7 +30,7 @@ public class AuditInterceptorTests : IDisposable
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    private CinemaDbContext BuildContext(ClaimsPrincipal? user)
+    private CinemaDbContext BuildContext(ClaimsPrincipal? user, IAuditCaptureService? auditCapture = null)
     {
         if (user is not null)
         {
@@ -42,7 +42,10 @@ public class AuditInterceptorTests : IDisposable
             _httpContextAccessorMock.Setup(x => x.HttpContext).Returns((HttpContext?)null);
         }
 
-        var interceptor = new AuditInterceptor(_httpContextAccessorMock.Object);
+        var interceptor = new AuditInterceptor(
+            _httpContextAccessorMock.Object,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<AuditInterceptor>.Instance,
+            auditCapture);
 
         var options = new DbContextOptionsBuilder<CinemaDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString()) // unique DB per test
@@ -285,5 +288,129 @@ public class AuditInterceptorTests : IDisposable
         auditLog.UserId.Should().BeNull();
         auditLog.UserEmail.Should().BeNull();
         auditLog.UserRole.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Regression test: the primary production flow uses IAuditCaptureService to
+    /// register old values BEFORE CurrentValues.SetValues() is called.  This ensures
+    /// correct old/new diffs even when GetDatabaseValuesAsync() would return stale data
+    /// (which can happen with SQL Server and EF Core 9 record entities).
+    /// </summary>
+    [Fact]
+    public async Task Update_WithPreCapture_AuditContainsCorrectOldAndNewValues()
+    {
+        // Arrange – build a context that has an IAuditCaptureService wired in
+        var captureService = new AuditCaptureService();
+        await _db.DisposeAsync();
+        _db = BuildContext(user: null, auditCapture: captureService);
+
+        var movie = MakeMovie("Before Title");
+        _db.Movies.Add(movie);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        // Act – mirror what MovieRepository.UpdateAsync does
+        var existing = await _db.Movies.FindAsync([movie.Id]);
+        var entry = _db.Entry(existing!);
+
+        // Capture OLD values exactly as the repository does, before SetValues
+        var oldValues = entry.Properties
+            .Where(p => !p.Metadata.IsShadowProperty())
+            .ToDictionary(p => p.Metadata.Name, p => (object?)p.CurrentValue);
+        captureService.RegisterPreUpdateValues(typeof(Movie), movie.Id.ToString(), oldValues);
+
+        var updated = existing! with { Title = "After Title" };
+        entry.CurrentValues.SetValues(updated);
+        await _db.SaveChangesAsync();
+
+        // Assert
+        var log = await _db.AuditLogs.SingleAsync(a => a.Action == "Updated");
+        var oldDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(log.OldValues!);
+        var newDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(log.NewValues!);
+
+        oldDict.Should().ContainKey("Title");
+        oldDict!["Title"].GetString().Should().Be("Before Title",
+            "old-values must reflect the title that was in the DB before the update");
+
+        newDict.Should().ContainKey("Title");
+        newDict!["Title"].GetString().Should().Be("After Title",
+            "new-values must reflect the updated title");
+
+        // Only the changed property should appear in the diff
+        oldDict.Should().NotContainKey("Genre");
+        newDict.Should().NotContainKey("Genre");
+    }
+
+
+    /// Before the fix, repositories called Update(detachedEntity) which caused EF Core
+    /// to set OriginalValues = CurrentValues = new values, making both old and new identical.
+    /// With the fix (FindAsync + CurrentValues.SetValues), only changed properties are marked
+    /// Modified and the original-value snapshot is preserved.
+    /// </summary>
+    [Fact]
+    public async Task Update_UsingCurrentValuesSetValues_AuditCapturesCorrectDiff()
+    {
+        // Arrange – seed entity and detach so the context is clean (simulates service layer)
+        var movie = MakeMovie("Original Title");
+        _db.Movies.Add(movie);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        // Act – simulate the repository UpdateAsync pattern: FindAsync then SetValues
+        var existing = await _db.Movies.FindAsync([movie.Id]);
+        var updated = existing! with { Title = "New Title" };
+        _db.Entry(existing).CurrentValues.SetValues(updated);
+        await _db.SaveChangesAsync();
+
+        // Assert – old contains "Original Title", new contains "New Title"
+        var log = await _db.AuditLogs.SingleAsync(a => a.Action == "Updated");
+        var oldDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(log.OldValues!);
+        var newDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(log.NewValues!);
+
+        oldDict.Should().ContainKey("Title");
+        oldDict!["Title"].GetString().Should().Be("Original Title");
+        newDict.Should().ContainKey("Title");
+        newDict!["Title"].GetString().Should().Be("New Title");
+
+        // Only the changed property should appear — not the full entity snapshot
+        oldDict.Should().NotContainKey("Genre");
+        newDict.Should().NotContainKey("Genre");
+    }
+
+    /// <summary>
+    /// Regression test for the soft-delete audit bug.
+    /// Before the fix, DeleteAsync used "existing with { IsActive = false } + Update()"
+    /// which caused EF Core to lose the original-value snapshot so both OldValues and
+    /// NewValues showed IsActive = false.  With the fix (property API on tracked entity),
+    /// the audit log correctly shows IsActive: true → false.
+    /// </summary>
+    [Fact]
+    public async Task SoftDelete_UsingPropertyApi_AuditShowsIsActiveChangeFromTrueToFalse()
+    {
+        // Arrange – seed an active movie
+        var movie = MakeMovie();
+        movie = movie with { IsActive = true };
+        _db.Movies.Add(movie);
+        await _db.SaveChangesAsync();
+        _db.ChangeTracker.Clear();
+
+        // Act – simulate the fixed repository DeleteAsync pattern: FindAsync + property API
+        var existing = await _db.Movies.FindAsync([movie.Id]);
+        _db.Entry(existing!).Property(m => m.IsActive).CurrentValue = false;
+        await _db.SaveChangesAsync();
+
+        // Assert – audit shows only IsActive in diff, with correct before/after values
+        var log = await _db.AuditLogs.SingleAsync(a => a.Action == "Updated");
+        var oldDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(log.OldValues!);
+        var newDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(log.NewValues!);
+
+        oldDict.Should().ContainKey("IsActive");
+        oldDict!["IsActive"].GetBoolean().Should().BeTrue("old value must be the active state before deactivation");
+        newDict.Should().ContainKey("IsActive");
+        newDict!["IsActive"].GetBoolean().Should().BeFalse("new value must reflect deactivation");
+
+        // Only IsActive changed — other fields must not appear in the diff
+        oldDict.Should().NotContainKey("Title");
+        newDict.Should().NotContainKey("Title");
     }
 }

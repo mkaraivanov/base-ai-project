@@ -22,7 +22,8 @@
     "submit": "Submit",
     "search": "Search",
     "close": "Close",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "viewAll": "View All"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

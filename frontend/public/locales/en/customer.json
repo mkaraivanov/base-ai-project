@@ -2,7 +2,11 @@
   "home": {
     "title": "Welcome",
     "subtitle": "Book your next movie experience",
-    "selectCinema": "Select a Cinema"
+    "selectCinema": "Select a Cinema",
+    "heroTagline": "Your cinema experience starts here",
+    "heroTitle": "Welcome to CineBook",
+    "heroDescription": "Book your favorite movie tickets in seconds. Browse movies, pick seats, and enjoy the show!",
+    "browseMovies": "Browse Movies"
   },
   "movies": {
     "title": "Movies",

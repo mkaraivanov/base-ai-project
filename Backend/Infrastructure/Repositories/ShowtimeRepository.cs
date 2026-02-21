@@ -80,42 +80,30 @@ public class ShowtimeRepository : IShowtimeRepository
 
     public async Task<Showtime> UpdateAsync(Showtime showtime, CancellationToken ct = default)
     {
-        // Detach navigation properties to avoid EF attempting to update related entities
-        var detached = showtime with { Movie = null, CinemaHall = null };
+        // Load the tracked entity first so EF Core preserves the original-value snapshot.
+        // Without this, calling Update() on a detached record sets OriginalValues = CurrentValues,
+        // making the audit log show identical old and new values.
+        // CurrentValues.SetValues() only copies scalar/FK properties — navigation properties
+        // (Movie, CinemaHall) are intentionally ignored, so no related entities are touched.
+        var existing = await _context.Showtimes.FindAsync([showtime.Id], ct);
+        if (existing is null)
+            return showtime;
 
-        // Detach any already-tracked instance with the same key to avoid duplicate tracking errors
-        var tracked = _context.ChangeTracker.Entries<Showtime>()
-            .FirstOrDefault(e => e.Entity.Id == detached.Id);
-        if (tracked is not null)
-            tracked.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
-
-        _context.Showtimes.Update(detached);
+        _context.Entry(existing).CurrentValues.SetValues(showtime);
         await _context.SaveChangesAsync(ct);
-        return detached;
+        return showtime;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var showtime = await _context.Showtimes
-            .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == id, ct);
+        var showtime = await _context.Showtimes.FindAsync([id], ct);
         if (showtime is not null)
         {
-            // Clear all tracked entities to prevent conflicts from prior AsNoTracking queries
-            // that may still leave entries in EF Core's internal identity map
-            _context.ChangeTracker.Clear();
-            var updated = showtime with { IsActive = false, Movie = null, CinemaHall = null };
-            _context.Showtimes.Update(updated);
+            // Use the property API so EF Core retains the original IsActive value in the
+            // change-tracker snapshot, giving the audit log a correct before/after diff.
+            _context.Entry(showtime).Property(s => s.IsActive).CurrentValue = false;
             await _context.SaveChangesAsync(ct);
         }
-    }
-
-    private void DetachTracked(Guid id)
-    {
-        var tracked = _context.ChangeTracker.Entries<Showtime>()
-            .FirstOrDefault(e => e.Entity.Id == id);
-        if (tracked is not null)
-            tracked.State = EntityState.Detached;
     }
 
     public async Task<bool> HasOverlappingShowtimeAsync(

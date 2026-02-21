@@ -60,6 +60,10 @@ builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
 // HTTP context accessor (required by AuditInterceptor)
 builder.Services.AddHttpContextAccessor();
 
+// Audit capture service — repositories register pre-SetValues snapshots here so
+// the interceptor can produce correct old/new diffs for record entities on SQL Server.
+builder.Services.AddScoped<IAuditCaptureService, AuditCaptureService>();
+
 // Audit interceptor (scoped so it can access IHttpContextAccessor per-request)
 builder.Services.AddScoped<AuditInterceptor>();
 
