@@ -32,7 +32,7 @@ export const ConfirmationPage: React.FC = () => {
         const data = await bookingApi.getByBookingNumber(bookingNumber);
         setBooking(data);
       } catch (err: unknown) {
-        setError(extractErrorMessage(err, 'Failed to load booking details'));
+        setError(extractErrorMessage(err, t('confirmation.loadFailed')));
       } finally {
         setLoading(false);
       }

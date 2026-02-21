@@ -38,5 +38,13 @@
   "status": {
     "active": "Активен",
     "inactive": "Неактивен"
+  },
+  "theme": {
+    "switchToLight": "Превключи към светла тема",
+    "switchToDark": "Превключи към тъмна тема"
+  },
+  "footer": {
+    "tagline": "Твоето кино, по твой начин.",
+    "copyright": "© {{year}} CineBook. Всички права запазени."
   }
 }

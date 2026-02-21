@@ -38,5 +38,13 @@
   "status": {
     "active": "Active",
     "inactive": "Inactive"
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "footer": {
+    "tagline": "Your cinema, your way.",
+    "copyright": "© {{year}} CineBook. All rights reserved."
   }
 }

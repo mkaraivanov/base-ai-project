@@ -32,7 +32,7 @@ export const MovieDetailPage: React.FC = () => {
         setMovie(movieData);
         setShowtimes(showtimeData);
       } catch (err: unknown) {
-        setError(extractErrorMessage(err, 'Failed to load movie details'));
+        setError(extractErrorMessage(err, t('movieDetail.loadFailed')));
       } finally {
         setLoading(false);
       }

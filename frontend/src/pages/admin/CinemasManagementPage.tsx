@@ -48,7 +48,7 @@ export const CinemasManagementPage: React.FC = () => {
 
   const load = async () => {
     try { setLoading(true); setCinemas(await cinemaApi.getAll(false)); }
-    catch { toast.error('Failed to load cinemas'); }
+    catch { toast.error(t('cinemas.toasts.loadFailed')); }
     finally { setLoading(false); }
   };
 
@@ -69,20 +69,20 @@ export const CinemasManagementPage: React.FC = () => {
     try {
       if (editingId) {
         await cinemaApi.update(editingId, { name: form.name, address: form.address, city: form.city, country: form.country, phoneNumber: form.phoneNumber || null, email: form.email || null, logoUrl: form.logoUrl || null, openTime: form.openTime, closeTime: form.closeTime, isActive: form.isActive } as UpdateCinemaDto);
-        toast.success('Cinema updated.');
+        toast.success(t('cinemas.toasts.updated'));
       } else {
         await cinemaApi.create({ name: form.name, address: form.address, city: form.city, country: form.country, phoneNumber: form.phoneNumber || null, email: form.email || null, logoUrl: form.logoUrl || null, openTime: form.openTime, closeTime: form.closeTime } as CreateCinemaDto);
-        toast.success('Cinema created.');
+        toast.success(t('cinemas.toasts.created'));
       }
       setShowForm(false); setEditingId(null); await load();
-    } catch (err) { toast.error(extractErrorMessage(err, 'Failed to save cinema')); }
+    } catch (err) { toast.error(extractErrorMessage(err, t('cinemas.toasts.saveFailed'))); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    try { await cinemaApi.delete(deleteId); toast.success('Cinema deleted.'); await load(); }
-    catch (err) { toast.error(extractErrorMessage(err, 'Failed to delete cinema')); }
+    try { await cinemaApi.delete(deleteId); toast.success(t('cinemas.toasts.deleted')); await load(); }
+    catch (err) { toast.error(extractErrorMessage(err, t('cinemas.toasts.deleteFailed'))); }
     finally { setDeleteId(null); }
   };
 
@@ -95,7 +95,7 @@ export const CinemasManagementPage: React.FC = () => {
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(99,102,241,0.1)', color: '#6366f1' }}><Building2 size={24} /></Box>
             <Box>
               <Typography variant="h5" component="h1" fontWeight={700}>{t('cinemas.title')}</Typography>
-              <Typography variant="body2" color="text.secondary">{cinemas.length} location{cinemas.length !== 1 ? 's' : ''}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('cinemas.count', { count: cinemas.length })}</Typography>
             </Box>
           </Box>
           <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('cinemas.addCinema')}</MuiButton>
@@ -112,35 +112,35 @@ export const CinemasManagementPage: React.FC = () => {
                 </Box>
                 <Grid container spacing={2}>
                   <Grid size={12}>
-                    <TextField label="Cinema Name *" name="name" value={form.name} onChange={e => set('name', e.target.value)} required fullWidth size="small" placeholder="Grand Cinema" />
+                    <TextField label={t('cinemas.form.name')} name="name" value={form.name} onChange={e => set('name', e.target.value)} required fullWidth size="small" placeholder="Grand Cinema" />
                   </Grid>
                   <Grid size={12}>
-                    <TextField label="Address *" name="address" value={form.address} onChange={e => set('address', e.target.value)} required fullWidth size="small" placeholder="123 Main Street" />
+                    <TextField label={t('cinemas.form.address')} name="address" value={form.address} onChange={e => set('address', e.target.value)} required fullWidth size="small" placeholder="123 Main Street" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="City *" name="city" value={form.city} onChange={e => set('city', e.target.value)} required fullWidth size="small" placeholder="London" />
+                    <TextField label={t('cinemas.form.city')} name="city" value={form.city} onChange={e => set('city', e.target.value)} required fullWidth size="small" placeholder="London" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Country *" name="country" value={form.country} onChange={e => set('country', e.target.value)} required fullWidth size="small" placeholder="UK" />
+                    <TextField label={t('cinemas.form.country')} name="country" value={form.country} onChange={e => set('country', e.target.value)} required fullWidth size="small" placeholder="UK" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Phone" value={form.phoneNumber} onChange={e => set('phoneNumber', e.target.value)} fullWidth size="small" />
+                    <TextField label={t('cinemas.form.phone')} value={form.phoneNumber} onChange={e => set('phoneNumber', e.target.value)} fullWidth size="small" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Email" type="email" value={form.email} onChange={e => set('email', e.target.value)} fullWidth size="small" />
+                    <TextField label={t('cinemas.form.email')} type="email" value={form.email} onChange={e => set('email', e.target.value)} fullWidth size="small" />
                   </Grid>
                   <Grid size={12}>
-                    <TextField label="Logo URL" value={form.logoUrl} onChange={e => set('logoUrl', e.target.value)} fullWidth size="small" placeholder="https://..." />
+                    <TextField label={t('cinemas.form.logoUrl')} value={form.logoUrl} onChange={e => set('logoUrl', e.target.value)} fullWidth size="small" placeholder="https://..." />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Opening Time *" name="openTime" type="time" value={form.openTime} onChange={e => set('openTime', e.target.value)} required fullWidth size="small" />
+                    <TextField label={t('cinemas.form.openTime')} name="openTime" type="time" value={form.openTime} onChange={e => set('openTime', e.target.value)} required fullWidth size="small" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Closing Time *" name="closeTime" type="time" value={form.closeTime} onChange={e => set('closeTime', e.target.value)} required fullWidth size="small" />
+                    <TextField label={t('cinemas.form.closeTime')} name="closeTime" type="time" value={form.closeTime} onChange={e => set('closeTime', e.target.value)} required fullWidth size="small" />
                   </Grid>
                   {editingId && (
                     <Grid size={12}>
-                      <FormControlLabel control={<Checkbox name="isActive" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label="Active" />
+                      <FormControlLabel control={<Checkbox name="isActive" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label={t('cinemas.form.activeLabel')} />
                     </Grid>
                   )}
                 </Grid>
@@ -159,7 +159,7 @@ export const CinemasManagementPage: React.FC = () => {
         ) : cinemas.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 10 }}>
             <Building2 size={48} color="rgba(128,128,128,0.3)" style={{ marginBottom: 16 }} />
-            <Typography color="text.secondary">No cinemas yet. Add your first one!</Typography>
+            <Typography color="text.secondary">{t('cinemas.emptyState')}</Typography>
           </Box>
         ) : (
           <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
@@ -214,10 +214,10 @@ export const CinemasManagementPage: React.FC = () => {
                     </TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                        <Tooltip title="Edit">
+                        <Tooltip title={t('common.edit')}>
                           <IconButton aria-label="Edit" size="small" onClick={() => openEdit(cinema)}><Pencil size={14} /></IconButton>
                         </Tooltip>
-                        <Tooltip title="Delete">
+                        <Tooltip title={t('common.delete')}>
                           <IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(cinema.id)} sx={{ color: 'error.main' }}><Trash2 size={14} /></IconButton>
                         </Tooltip>
                       </Box>

@@ -36,7 +36,7 @@ export const CinemaMovieDetailPage: React.FC = () => {
         setShowtimes(showtimeData);
         setCinema(cinemaData);
       } catch (err: unknown) {
-        setError(extractErrorMessage(err, 'Failed to load movie details'));
+        setError(extractErrorMessage(err, t('movieDetail.loadFailed')));
       } finally {
         setLoading(false);
       }

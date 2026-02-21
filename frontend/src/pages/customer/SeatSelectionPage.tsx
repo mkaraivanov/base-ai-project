@@ -59,7 +59,7 @@ export const SeatSelectionPage: React.FC = () => {
         setAvailability(availabilityData);
         setTicketTypes(ticketTypeData);
       } catch (err: unknown) {
-        setError(extractErrorMessage(err, 'Failed to load seat availability'));
+        setError(extractErrorMessage(err, t('seatSelection.loadFailed')));
       } finally {
         setLoading(false);
       }
@@ -73,7 +73,7 @@ export const SeatSelectionPage: React.FC = () => {
       const data = await bookingApi.getSeatAvailability(showtimeId);
       setAvailability(data);
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, 'Failed to reload seat availability'));
+      setError(extractErrorMessage(err, t('seatSelection.reloadFailed')));
     }
   };
 
@@ -133,7 +133,7 @@ export const SeatSelectionPage: React.FC = () => {
       const res = await bookingApi.createReservation(showtimeId, seats);
       setReservation(res);
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, 'Failed to reserve seats. Please try again.'));
+      setError(extractErrorMessage(err, t('seatSelection.reserveFailed')));
       await reloadAvailability();
       clearSelection();
       setSeatTickets(new Map());

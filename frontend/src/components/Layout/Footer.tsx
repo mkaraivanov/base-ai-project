@@ -2,8 +2,10 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Film } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const Footer: React.FC = () => {
+  const { t } = useTranslation('common');
   return (
     <Box
       component="footer"
@@ -44,10 +46,10 @@ export const Footer: React.FC = () => {
             <Film size={12} />
           </Box>
           <Typography variant="body2" fontWeight={500}>CineBook</Typography>
-          <Typography variant="body2" color="text.secondary">— Your cinema, your way.</Typography>
+          <Typography variant="body2" color="text.secondary">— {t('footer.tagline')}</Typography>
         </Box>
         <Typography variant="caption" color="text.secondary">
-          © {new Date().getFullYear()} CineBook. All rights reserved.
+          {t('footer.copyright', { year: new Date().getFullYear() })}
         </Typography>
       </Box>
     </Box>

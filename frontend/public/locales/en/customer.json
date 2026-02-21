@@ -28,7 +28,8 @@
     "fromPrice": "From {{price}}",
     "seatsLeft": "{{count}} seats left",
     "selectSeats": "Select Seats",
-    "notFound": "Movie not found"
+    "notFound": "Movie not found",
+    "loadFailed": "Failed to load movie details"
   },
   "cinemaSelection": {
     "title": "Select Cinema",
@@ -73,7 +74,10 @@
     "reserveSeats": "Reserve Seats ({{count}})",
     "proceedToCheckout": "Proceed to Checkout",
     "reservationExpired": "Your reservation has expired. Please select seats again.",
-    "timeRemaining": "Time remaining: {{minutes}}:{{seconds}}"
+    "timeRemaining": "Time remaining: {{minutes}}:{{seconds}}",
+    "loadFailed": "Failed to load seat availability",
+    "reloadFailed": "Failed to reload seat availability",
+    "reserveFailed": "Failed to reserve seats. Please try again."
   },
   "checkout": {
     "title": "Checkout",
@@ -90,6 +94,8 @@
     "fillPaymentFields": "Please fill in all payment fields.",
     "invalidPlate": "Car license plate must be a valid Bulgarian format (e.g. CB1234AB).",
     "paymentFailed": "Payment failed. Please try again.",
+    "loadFailed": "Failed to load reservation",
+    "bookingConfirmed": "Booking confirmed!",
     "paymentMethod": "Payment Method",
     "creditCard": "Credit Card",
     "debitCard": "Debit Card",
@@ -119,7 +125,8 @@
     "parking": "Parking",
     "viewMyBookings": "View My Bookings",
     "browseMoreMovies": "Browse More Movies",
-    "notFound": "Booking not found"
+    "notFound": "Booking not found",
+    "loadFailed": "Failed to load booking details"
   },
   "myBookings": {
     "title": "My Bookings",
@@ -140,6 +147,7 @@
     "parking": "Parking",
     "cancelBooking": "Cancel Booking",
     "cancelConfirm": "Are you sure you want to cancel this booking?",
+    "cancelledSuccess": "Booking cancelled successfully.",
     "failedToCancel": "Failed to cancel booking",
     "failedToLoad": "Failed to load bookings",
     "columns": {

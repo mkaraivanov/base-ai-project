@@ -58,7 +58,7 @@ export const ShowtimesManagementPage: React.FC = () => {
 
   const loadShowtimes = useCallback(async () => {
     try { setLoading(true); setShowtimes(await showtimeApi.getAll(filterCinemaId || undefined)); }
-    catch { toast.error('Failed to load showtimes'); }
+    catch { toast.error(t('showtimes.toasts.loadFailed')); }
     finally { setLoading(false); }
   }, [filterCinemaId]);
 
@@ -87,20 +87,20 @@ export const ShowtimesManagementPage: React.FC = () => {
     try {
       if (editingId) {
         await showtimeApi.update(editingId, { basePrice: parseFloat(form.basePrice), isActive: form.isActive } as UpdateShowtimeDto);
-        toast.success('Showtime updated.');
+        toast.success(t('showtimes.toasts.updated'));
       } else {
         await showtimeApi.create({ movieId: form.movieId, cinemaHallId: form.cinemaHallId, startTime: new Date(form.startTime).toISOString(), basePrice: parseFloat(form.basePrice) } as CreateShowtimeDto);
-        toast.success('Showtime created.');
+        toast.success(t('showtimes.toasts.created'));
       }
       setShowForm(false); setEditingId(null); await loadShowtimes();
-    } catch (err) { toast.error(extractErrorMessage(err, 'Failed to save showtime')); }
+    } catch (err) { toast.error(extractErrorMessage(err, t('showtimes.toasts.saveFailed'))); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    try { await showtimeApi.delete(deleteId); toast.success('Showtime deleted.'); await loadShowtimes(); }
-    catch (err) { toast.error(extractErrorMessage(err, 'Failed to delete showtime')); }
+    try { await showtimeApi.delete(deleteId); toast.success(t('showtimes.toasts.deleted')); await loadShowtimes(); }
+    catch (err) { toast.error(extractErrorMessage(err, t('showtimes.toasts.deleteFailed'))); }
     finally { setDeleteId(null); }
   };
 
@@ -116,7 +116,7 @@ export const ShowtimesManagementPage: React.FC = () => {
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}><Calendar size={24} /></Box>
             <Box>
               <Typography variant="h5" component="h1" fontWeight={700}>{t('showtimes.title')}</Typography>
-              <Typography variant="body2" color="text.secondary">{showtimes.length} showtime{showtimes.length !== 1 ? 's' : ''}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('showtimes.count', { count: showtimes.length })}</Typography>
             </Box>
           </Box>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -142,37 +142,37 @@ export const ShowtimesManagementPage: React.FC = () => {
                 <Grid container spacing={2}>
                   <Grid size={12}>
                     <FormControl size="small" fullWidth required disabled={!!editingId}>
-                      <InputLabel>Movie *</InputLabel>
-                      <Select inputProps={{ name: 'movieId', required: true }} value={form.movieId} label="Movie *" onChange={(e: SelectChangeEvent) => set('movieId', e.target.value)}>
+                      <InputLabel>{t('showtimes.form.movie')}</InputLabel>
+                      <Select inputProps={{ name: 'movieId', required: true }} value={form.movieId} label={t('showtimes.form.movie')} onChange={(e: SelectChangeEvent) => set('movieId', e.target.value)}>
                         {movies.map(m => <MenuItem key={m.id} value={m.id}>{m.title}</MenuItem>)}
                       </Select>
                     </FormControl>
                   </Grid>
                   <Grid size={6}>
                     <FormControl size="small" fullWidth required disabled={!!editingId}>
-                      <InputLabel>Cinema *</InputLabel>
-                      <Select value={form.formCinemaId} label="Cinema *" onChange={(e: SelectChangeEvent) => set('formCinemaId', e.target.value)} inputProps={{ name: 'formCinemaId' }}>
+                      <InputLabel>{t('showtimes.form.cinema')}</InputLabel>
+                      <Select value={form.formCinemaId} label={t('showtimes.form.cinema')} onChange={(e: SelectChangeEvent) => set('formCinemaId', e.target.value)} inputProps={{ name: 'formCinemaId' }}>
                         {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                       </Select>
                     </FormControl>
                   </Grid>
                   <Grid size={6}>
                     <FormControl size="small" fullWidth required disabled={!!editingId || !form.formCinemaId}>
-                      <InputLabel>Hall *</InputLabel>
-                      <Select inputProps={{ name: 'cinemaHallId', required: true }} value={form.cinemaHallId} label="Hall *" onChange={(e: SelectChangeEvent) => set('cinemaHallId', e.target.value)}>
+                      <InputLabel>{t('showtimes.form.hall')}</InputLabel>
+                      <Select inputProps={{ name: 'cinemaHallId', required: true }} value={form.cinemaHallId} label={t('showtimes.form.hall')} onChange={(e: SelectChangeEvent) => set('cinemaHallId', e.target.value)}>
                         {filteredHalls.map(h => <MenuItem key={h.id} value={h.id}>{h.name}</MenuItem>)}
                       </Select>
                     </FormControl>
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Start Time *" name="startTime" type="datetime-local" value={form.startTime} onChange={e => set('startTime', e.target.value)} required fullWidth size="small" slotProps={{ inputLabel: { shrink: true } }} disabled={!!editingId} />
+                    <TextField label={t('showtimes.form.startTime')} name="startTime" type="datetime-local" value={form.startTime} onChange={e => set('startTime', e.target.value)} required fullWidth size="small" slotProps={{ inputLabel: { shrink: true } }} disabled={!!editingId} />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Base Price *" name="basePrice" type="number" slotProps={{ htmlInput: { min: 0, step: 0.01 } }} value={form.basePrice} onChange={e => set('basePrice', e.target.value)} required fullWidth size="small" />
+                    <TextField label={t('showtimes.form.basePrice')} name="basePrice" type="number" slotProps={{ htmlInput: { min: 0, step: 0.01 } }} value={form.basePrice} onChange={e => set('basePrice', e.target.value)} required fullWidth size="small" />
                   </Grid>
                   {editingId && (
                     <Grid size={12}>
-                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label="Active" />
+                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label={t('showtimes.form.activeLabel')} />
                     </Grid>
                   )}
                 </Grid>
@@ -232,8 +232,8 @@ export const ShowtimesManagementPage: React.FC = () => {
                       <TableCell><Badge variant={st.isActive ? 'success' : 'secondary'}>{st.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                          <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(st)}><Pencil size={13} /></IconButton></Tooltip>
-                          <Tooltip title="Delete"><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(st.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
+                          <Tooltip title={t('common.edit')}><IconButton aria-label="Edit" size="small" onClick={() => openEdit(st)}><Pencil size={13} /></IconButton></Tooltip>
+                          <Tooltip title={t('common.delete')}><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(st.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>

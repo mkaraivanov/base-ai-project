@@ -63,7 +63,7 @@ export const CheckoutPage: React.FC = () => {
         const res = await bookingApi.getReservation(reservationId);
         setReservation(res);
       } catch (err: unknown) {
-        setError(extractErrorMessage(err, 'Failed to load reservation'));
+        setError(extractErrorMessage(err, t('checkout.loadFailed')));
       } finally {
         setLoading(false);
       }
@@ -83,10 +83,10 @@ export const CheckoutPage: React.FC = () => {
         paymentMethod: form.paymentMethod,
         parkingPlate: form.parkingPlate || null,
       });
-      toast.success('Booking confirmed!');
+      toast.success(t('checkout.bookingConfirmed'));
       navigate(`/confirmation/${booking.id}`);
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, 'Payment failed. Please try again.'));
+      setError(extractErrorMessage(err, t('checkout.paymentFailed')));
     } finally {
       setSubmitting(false);
     }

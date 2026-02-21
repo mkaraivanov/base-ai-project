@@ -65,7 +65,7 @@ export const HallsManagementPage: React.FC = () => {
 
   const loadHalls = useCallback(async () => {
     try { setLoading(true); setHalls(await hallApi.getAll(false, filterCinemaId || undefined)); }
-    catch { toast.error('Failed to load halls'); }
+    catch { toast.error(t('halls.toasts.loadFailed')); }
     finally { setLoading(false); }
   }, [filterCinemaId]);
 
@@ -89,21 +89,21 @@ export const HallsManagementPage: React.FC = () => {
       if (editingId) {
         const existingSeatLayout = form.seatLayout ?? generateSeatLayout(rows, seatsPerRow);
         await hallApi.update(editingId, { name: form.name, seatLayout: existingSeatLayout, isActive: form.isActive });
-        toast.success('Hall updated.');
+        toast.success(t('halls.toasts.updated'));
       } else {
         const layout = generateSeatLayout(rows, seatsPerRow);
         await hallApi.create({ cinemaId: form.cinemaId, name: form.name, seatLayout: layout });
-        toast.success('Hall created.');
+        toast.success(t('halls.toasts.created'));
       }
       setShowForm(false); setEditingId(null); await loadHalls();
-    } catch (err) { toast.error(extractErrorMessage(err, 'Failed to save hall')); }
+    } catch (err) { toast.error(extractErrorMessage(err, t('halls.toasts.saveFailed'))); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    try { await hallApi.delete(deleteId); toast.success('Hall deleted.'); await loadHalls(); }
-    catch (err) { toast.error(extractErrorMessage(err, 'Failed to delete hall')); }
+    try { await hallApi.delete(deleteId); toast.success(t('halls.toasts.deleted')); await loadHalls(); }
+    catch (err) { toast.error(extractErrorMessage(err, t('halls.toasts.deleteFailed'))); }
     finally { setDeleteId(null); }
   };
 
@@ -118,7 +118,7 @@ export const HallsManagementPage: React.FC = () => {
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(139,92,246,0.1)', color: '#8b5cf6' }}><LayoutGrid size={24} /></Box>
             <Box>
               <Typography variant="h5" component="h1" fontWeight={700}>{t('halls.title')}</Typography>
-              <Typography variant="body2" color="text.secondary">{halls.length} hall{halls.length !== 1 ? 's' : ''}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('halls.count', { count: halls.length })}</Typography>
             </Box>
           </Box>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -145,28 +145,28 @@ export const HallsManagementPage: React.FC = () => {
                   {!editingId && (
                     <Grid size={12}>
                       <FormControl size="small" fullWidth required>
-                        <InputLabel>Cinema *</InputLabel>
-                        <Select value={form.cinemaId} label="Cinema *" onChange={(e: SelectChangeEvent) => set('cinemaId', e.target.value)} inputProps={{ name: 'cinemaId', required: true }}>
+                        <InputLabel>{t('halls.form.cinema')}</InputLabel>
+                        <Select value={form.cinemaId} label={t('halls.form.cinema')} onChange={(e: SelectChangeEvent) => set('cinemaId', e.target.value)} inputProps={{ name: 'cinemaId', required: true }}>
                           {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
                         </Select>
                       </FormControl>
                     </Grid>
                   )}
                   <Grid size={12}>
-                    <TextField label="Hall Name *" name="name" id="name" value={form.name} onChange={e => set('name', e.target.value)} required fullWidth size="small" />
+                    <TextField label={t('halls.form.name')} name="name" id="name" value={form.name} onChange={e => set('name', e.target.value)} required fullWidth size="small" />
                   </Grid>
                   {!editingId && (
                     <>
                       <Grid size={6}>
-                        <TextField label="Rows (1–26) *" name="rows" type="number" slotProps={{ htmlInput: { min: 1, max: 26 } }} value={form.rows} onChange={e => set('rows', e.target.value)} required fullWidth size="small" />
+                        <TextField label={t('halls.form.rowsLabel')} name="rows" type="number" slotProps={{ htmlInput: { min: 1, max: 26 } }} value={form.rows} onChange={e => set('rows', e.target.value)} required fullWidth size="small" />
                       </Grid>
                       <Grid size={6}>
-                        <TextField label="Seats per Row (1–30) *" name="seatsPerRow" type="number" slotProps={{ htmlInput: { min: 1, max: 30 } }} value={form.seatsPerRow} onChange={e => set('seatsPerRow', e.target.value)} required fullWidth size="small" />
+                        <TextField label={t('halls.form.seatsPerRowLabel')} name="seatsPerRow" type="number" slotProps={{ htmlInput: { min: 1, max: 30 } }} value={form.seatsPerRow} onChange={e => set('seatsPerRow', e.target.value)} required fullWidth size="small" />
                       </Grid>
                       {totalPrev > 0 && (
                         <Grid size={12}>
                           <Alert severity="info" sx={{ borderRadius: 2 }}>
-                            Total: <strong>{totalPrev} seats</strong> — last 2 rows will be <strong>Premium (×1.5)</strong>
+                            {t('halls.form.totalSeats', { count: totalPrev })} — {t('halls.form.premiumInfo')}
                           </Alert>
                         </Grid>
                       )}
@@ -174,7 +174,7 @@ export const HallsManagementPage: React.FC = () => {
                   )}
                   {editingId && (
                     <Grid size={12}>
-                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label="Active" />
+                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label={t('halls.form.activeLabel')} />
                     </Grid>
                   )}
                 </Grid>
@@ -214,8 +214,8 @@ export const HallsManagementPage: React.FC = () => {
                     <TableCell><Badge variant={h.isActive ? 'success' : 'secondary'}>{h.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                        <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(h)}><Pencil size={13} /></IconButton></Tooltip>
-                        <Tooltip title="Delete"><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(h.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
+                        <Tooltip title={t('common.edit')}><IconButton aria-label="Edit" size="small" onClick={() => openEdit(h)}><Pencil size={13} /></IconButton></Tooltip>
+                        <Tooltip title={t('common.delete')}><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(h.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>

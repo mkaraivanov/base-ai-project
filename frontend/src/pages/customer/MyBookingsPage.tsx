@@ -40,7 +40,7 @@ export const MyBookingsPage: React.FC = () => {
         setBookings(bookingsData);
         setLoyaltyCard(loyaltyData);
       } catch (err: unknown) {
-        toast.error(extractErrorMessage(err, 'Failed to load bookings'));
+        toast.error(extractErrorMessage(err, t('myBookings.failedToLoad')));
       } finally {
         setLoading(false);
       }
@@ -53,9 +53,9 @@ export const MyBookingsPage: React.FC = () => {
     try {
       const updated = await bookingApi.cancelBooking(cancelId);
       setBookings(prev => prev.map(b => (b.id === cancelId ? updated : b)));
-      toast.success('Booking cancelled successfully.');
+      toast.success(t('myBookings.cancelledSuccess'));
     } catch (err: unknown) {
-      toast.error(extractErrorMessage(err, 'Failed to cancel booking'));
+      toast.error(extractErrorMessage(err, t('myBookings.failedToCancel')));
     } finally {
       setCancelId(null);
     }

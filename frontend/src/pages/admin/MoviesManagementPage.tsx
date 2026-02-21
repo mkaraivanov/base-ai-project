@@ -49,7 +49,7 @@ export const MoviesManagementPage: React.FC = () => {
 
   const load = async () => {
     try { setLoading(true); setMovies(await movieApi.getAll(false)); }
-    catch { toast.error('Failed to load movies'); }
+    catch { toast.error(t('movies.toasts.loadFailed')); }
     finally { setLoading(false); }
   };
 
@@ -70,20 +70,20 @@ export const MoviesManagementPage: React.FC = () => {
     try {
       if (editingId) {
         await movieApi.update(editingId, { title: form.title, description: form.description, genre: form.genre, durationMinutes: parseInt(form.durationMinutes, 10), rating: form.rating, posterUrl: form.posterUrl, releaseDate: form.releaseDate, isActive: form.isActive } as UpdateMovieDto);
-        toast.success('Movie updated.');
+        toast.success(t('movies.toasts.updated'));
       } else {
         await movieApi.create({ title: form.title, description: form.description, genre: form.genre, durationMinutes: parseInt(form.durationMinutes, 10), rating: form.rating, posterUrl: form.posterUrl, releaseDate: form.releaseDate } as CreateMovieDto);
-        toast.success('Movie created.');
+        toast.success(t('movies.toasts.created'));
       }
       setShowForm(false); setEditingId(null); await load();
-    } catch (err) { toast.error(extractErrorMessage(err, 'Failed to save movie')); }
+    } catch (err) { toast.error(extractErrorMessage(err, t('movies.toasts.saveFailed'))); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    try { await movieApi.delete(deleteId); toast.success('Movie deleted.'); await load(); }
-    catch (err) { toast.error(extractErrorMessage(err, 'Failed to delete movie')); }
+    try { await movieApi.delete(deleteId); toast.success(t('movies.toasts.deleted')); await load(); }
+    catch (err) { toast.error(extractErrorMessage(err, t('movies.toasts.deleteFailed'))); }
     finally { setDeleteId(null); }
   };
 
@@ -95,7 +95,7 @@ export const MoviesManagementPage: React.FC = () => {
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(168,85,247,0.1)', color: '#a855f7' }}><Film size={24} /></Box>
             <Box>
               <Typography variant="h5" component="h1" fontWeight={700}>{t('movies.title')}</Typography>
-              <Typography variant="body2" color="text.secondary">{movies.length} title{movies.length !== 1 ? 's' : ''}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('movies.count', { count: movies.length })}</Typography>
             </Box>
           </Box>
           <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('movies.addMovie')}</MuiButton>
@@ -111,29 +111,29 @@ export const MoviesManagementPage: React.FC = () => {
                 </Box>
                 <Grid container spacing={2}>
                   <Grid size={12}>
-                    <TextField label="Title *" name="title" value={form.title} onChange={e => set('title', e.target.value)} required fullWidth size="small" />
+                    <TextField label={t('movies.form.title')} name="title" value={form.title} onChange={e => set('title', e.target.value)} required fullWidth size="small" />
                   </Grid>
                   <Grid size={12}>
-                    <TextField label="Description *" name="description" value={form.description} onChange={e => set('description', e.target.value)} required fullWidth multiline rows={3} size="small" />
+                    <TextField label={t('movies.form.description')} name="description" value={form.description} onChange={e => set('description', e.target.value)} required fullWidth multiline rows={3} size="small" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Genre *" name="genre" value={form.genre} onChange={e => set('genre', e.target.value)} required fullWidth size="small" />
+                    <TextField label={t('movies.form.genre')} name="genre" value={form.genre} onChange={e => set('genre', e.target.value)} required fullWidth size="small" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Rating *" name="rating" value={form.rating} onChange={e => set('rating', e.target.value)} required fullWidth size="small" placeholder="PG-13" />
+                    <TextField label={t('movies.form.rating')} name="rating" value={form.rating} onChange={e => set('rating', e.target.value)} required fullWidth size="small" placeholder={t('movies.form.ratingPlaceholder')} />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Duration (min) *" name="durationMinutes" type="number" slotProps={{ htmlInput: { min: 1 } }} value={form.durationMinutes} onChange={e => set('durationMinutes', e.target.value)} required fullWidth size="small" />
+                    <TextField label={t('movies.form.duration')} name="durationMinutes" type="number" slotProps={{ htmlInput: { min: 1 } }} value={form.durationMinutes} onChange={e => set('durationMinutes', e.target.value)} required fullWidth size="small" />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Release Date *" name="releaseDate" type="date" value={form.releaseDate} onChange={e => set('releaseDate', e.target.value)} required fullWidth size="small" slotProps={{ inputLabel: { shrink: true } }} />
+                    <TextField label={t('movies.form.releaseDate')} name="releaseDate" type="date" value={form.releaseDate} onChange={e => set('releaseDate', e.target.value)} required fullWidth size="small" slotProps={{ inputLabel: { shrink: true } }} />
                   </Grid>
                   <Grid size={12}>
-                    <TextField label="Poster URL" name="posterUrl" value={form.posterUrl} onChange={e => set('posterUrl', e.target.value)} fullWidth size="small" />
+                    <TextField label={t('movies.form.posterUrl')} name="posterUrl" value={form.posterUrl} onChange={e => set('posterUrl', e.target.value)} fullWidth size="small" />
                   </Grid>
                   {editingId && (
                     <Grid size={12}>
-                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label="Active" />
+                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label={t('movies.form.activeLabel')} />
                     </Grid>
                   )}
                 </Grid>
@@ -169,8 +169,8 @@ export const MoviesManagementPage: React.FC = () => {
                     <TableCell><Badge variant={movie.isActive ? 'success' : 'secondary'}>{movie.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                        <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(movie)}><Pencil size={13} /></IconButton></Tooltip>
-                        <Tooltip title="Delete"><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(movie.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
+                        <Tooltip title={t('common.edit')}><IconButton aria-label="Edit" size="small" onClick={() => openEdit(movie)}><Pencil size={13} /></IconButton></Tooltip>
+                        <Tooltip title={t('common.delete')}><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(movie.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>

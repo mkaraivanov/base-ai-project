@@ -32,12 +32,12 @@ import { AlertDialog } from '../../components/ui/alert-dialog';
 interface TicketTypeFormData { name: string; description: string; priceModifier: string; sortOrder: string; isActive: boolean; }
 const EMPTY: TicketTypeFormData = { name: '', description: '', priceModifier: '1.00', sortOrder: '0', isActive: true };
 
-function formatModifier(mod: number): string {
+function formatModifier(mod: number, fullPriceLabel: string): string {
   if (isNaN(mod)) return '–';
-  if (mod === 1.0) return '×1.00 (full price)';
+  if (mod === 1.0) return `\u00d71.00 (${fullPriceLabel})`;
   const pct = Math.round((mod - 1) * 100);
   const label = pct > 0 ? `+${pct}%` : `${pct}%`;
-  return `×${mod.toFixed(2)} (${label})`;
+  return `\u00d7${mod.toFixed(2)} (${label})`;
 }
 
 export const TicketTypesManagementPage: React.FC = () => {
@@ -52,7 +52,7 @@ export const TicketTypesManagementPage: React.FC = () => {
 
   const load = async () => {
     try { setLoading(true); setTicketTypes(await ticketTypeApi.getAll()); }
-    catch { toast.error('Failed to load ticket types'); }
+    catch { toast.error(t('ticketTypes.toasts.loadFailed')); }
     finally { setLoading(false); }
   };
 
@@ -73,24 +73,24 @@ export const TicketTypesManagementPage: React.FC = () => {
       const payload = { name: form.name, description: form.description || null, priceModifier: parseFloat(form.priceModifier), sortOrder: parseInt(form.sortOrder, 10) };
       if (editingId) {
         await ticketTypeApi.update(editingId, { ...payload, isActive: form.isActive } as UpdateTicketTypeDto);
-        toast.success('Ticket type updated.');
+        toast.success(t('ticketTypes.toasts.updated'));
       } else {
         await ticketTypeApi.create(payload as CreateTicketTypeDto);
-        toast.success('Ticket type created.');
+        toast.success(t('ticketTypes.toasts.created'));
       }
       setShowForm(false); setEditingId(null); await load();
-    } catch (err) { toast.error(extractErrorMessage(err, 'Failed to save ticket type')); }
+    } catch (err) { toast.error(extractErrorMessage(err, t('ticketTypes.toasts.saveFailed'))); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    try { await ticketTypeApi.delete(deleteId); toast.success('Ticket type deleted.'); await load(); }
-    catch (err) { toast.error(extractErrorMessage(err, 'Failed to delete ticket type')); }
+    try { await ticketTypeApi.delete(deleteId); toast.success(t('ticketTypes.toasts.deleted')); await load(); }
+    catch (err) { toast.error(extractErrorMessage(err, t('ticketTypes.toasts.deleteFailed'))); }
     finally { setDeleteId(null); }
   };
 
-  const modifierPreview = formatModifier(parseFloat(form.priceModifier));
+  const modifierPreview = formatModifier(parseFloat(form.priceModifier), t('ticketTypes.form.fullPrice'));
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -100,7 +100,7 @@ export const TicketTypesManagementPage: React.FC = () => {
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(16,185,129,0.1)', color: '#10b981' }}><Ticket size={24} /></Box>
             <Box>
               <Typography variant="h5" fontWeight={700}>{t('ticketTypes.title')}</Typography>
-              <Typography variant="body2" color="text.secondary">{ticketTypes.length} type{ticketTypes.length !== 1 ? 's' : ''}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('ticketTypes.count', { count: ticketTypes.length })}</Typography>
             </Box>
           </Box>
           <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('ticketTypes.addType')}</MuiButton>
@@ -116,28 +116,28 @@ export const TicketTypesManagementPage: React.FC = () => {
                 </Box>
                 <Grid container spacing={2}>
                   <Grid size={6}>
-                    <TextField label="Name *" value={form.name} onChange={e => set('name', e.target.value)} required fullWidth size="small" placeholder="Student" />
+                    <TextField label={t('ticketTypes.form.name')} value={form.name} onChange={e => set('name', e.target.value)} required fullWidth size="small" placeholder={t('ticketTypes.form.namePlaceholder')} />
                   </Grid>
                   <Grid size={6}>
-                    <TextField label="Sort Order" type="number" value={form.sortOrder} onChange={e => set('sortOrder', e.target.value)} fullWidth size="small" />
+                    <TextField label={t('ticketTypes.form.sortOrder')} type="number" value={form.sortOrder} onChange={e => set('sortOrder', e.target.value)} fullWidth size="small" />
                   </Grid>
                   <Grid size={12}>
-                    <TextField label="Description" value={form.description} onChange={e => set('description', e.target.value)} fullWidth multiline rows={2} size="small" />
+                    <TextField label={t('ticketTypes.form.description')} value={form.description} onChange={e => set('description', e.target.value)} fullWidth multiline rows={2} size="small" />
                   </Grid>
                   <Grid size={12}>
                     <TextField
-                      label="Price Modifier *"
+                      label={t('ticketTypes.form.priceModifier')}
                       type="number"
                       slotProps={{ htmlInput: { min: 0.01, max: 5, step: 0.01 } }}
                       value={form.priceModifier}
                       onChange={e => set('priceModifier', e.target.value)}
                       required fullWidth size="small"
-                      helperText={`Preview: ${modifierPreview}`}
+                      helperText={t('ticketTypes.form.priceModifierPreview', { value: modifierPreview })}
                     />
                   </Grid>
                   {editingId && (
                     <Grid size={12}>
-                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label="Active" />
+                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label={t('ticketTypes.form.activeLabel')} />
                     </Grid>
                   )}
                 </Grid>
@@ -155,7 +155,7 @@ export const TicketTypesManagementPage: React.FC = () => {
         ) : ticketTypes.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 10 }}>
             <Ticket size={48} color="rgba(128,128,128,0.3)" style={{ marginBottom: 16 }} />
-            <Typography color="text.secondary">No ticket types yet.</Typography>
+            <Typography color="text.secondary">{t('ticketTypes.emptyState')}</Typography>
           </Box>
         ) : (
           <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
@@ -176,14 +176,14 @@ export const TicketTypesManagementPage: React.FC = () => {
                     <TableCell><Typography variant="body2" fontWeight={500}>{tt.name}</Typography></TableCell>
                     <TableCell><Typography variant="body2" color="text.secondary">{tt.description ?? '–'}</Typography></TableCell>
                     <TableCell>
-                      <Chip label={formatModifier(tt.priceModifier)} size="small" variant="outlined" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }} />
+                        <Chip label={formatModifier(tt.priceModifier, t('ticketTypes.form.fullPrice'))} size="small" variant="outlined" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }} />
                     </TableCell>
                     <TableCell><Typography variant="body2" fontFamily="monospace">{tt.sortOrder}</Typography></TableCell>
                     <TableCell><Badge variant={tt.isActive ? 'success' : 'secondary'}>{tt.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                        <Tooltip title="Edit"><IconButton size="small" onClick={() => openEdit(tt)}><Pencil size={13} /></IconButton></Tooltip>
-                        <Tooltip title="Delete"><IconButton size="small" onClick={() => setDeleteId(tt.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
+                        <Tooltip title={t('common.edit')}><IconButton size="small" onClick={() => openEdit(tt)}><Pencil size={13} /></IconButton></Tooltip>
+                        <Tooltip title={t('common.delete')}><IconButton size="small" onClick={() => setDeleteId(tt.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>
