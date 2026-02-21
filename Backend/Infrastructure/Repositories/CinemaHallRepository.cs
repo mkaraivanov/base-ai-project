@@ -7,10 +7,12 @@ namespace Infrastructure.Repositories;
 public class CinemaHallRepository : ICinemaHallRepository
 {
     private readonly CinemaDbContext _context;
+    private readonly IAuditCaptureService _auditCapture;
 
-    public CinemaHallRepository(CinemaDbContext context)
+    public CinemaHallRepository(CinemaDbContext context, IAuditCaptureService auditCapture)
     {
         _context = context;
+        _auditCapture = auditCapture;
     }
 
     public async Task<List<CinemaHall>> GetAllAsync(bool activeOnly = true, Guid? cinemaId = null, CancellationToken ct = default)
@@ -49,21 +51,34 @@ public class CinemaHallRepository : ICinemaHallRepository
 
     public async Task<CinemaHall> UpdateAsync(CinemaHall hall, CancellationToken ct = default)
     {
-        await _context.CinemaHalls
-            .Where(h => h.Id == hall.Id)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(h => h.Name, hall.Name)
-                .SetProperty(h => h.TotalSeats, hall.TotalSeats)
-                .SetProperty(h => h.SeatLayoutJson, hall.SeatLayoutJson)
-                .SetProperty(h => h.IsActive, hall.IsActive),
-                ct);
+        var existing = await _context.CinemaHalls.FindAsync([hall.Id], ct);
+        if (existing is null)
+            return hall;
+
+        // Capture old values from the tracked entry BEFORE SetValues overwrites them.
+        // The AuditInterceptor reads these from IAuditCaptureService so it can produce
+        // a correct before/after diff without relying on GetDatabaseValuesAsync(),
+        // which can be unreliable for record entities on SQL Server (EF Core 9).
+        var entry = _context.Entry(existing);
+        var oldValues = entry.Properties
+            .Where(p => !p.Metadata.IsShadowProperty())
+            .ToDictionary(p => p.Metadata.Name, p => p.CurrentValue);
+        _auditCapture.RegisterPreUpdateValues(typeof(CinemaHall), hall.Id.ToString(), oldValues);
+
+        entry.CurrentValues.SetValues(hall);
+        await _context.SaveChangesAsync(ct);
         return hall;
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        await _context.CinemaHalls
-            .Where(h => h.Id == id)
-            .ExecuteUpdateAsync(s => s.SetProperty(h => h.IsActive, false), ct);
+        var hall = await _context.CinemaHalls.FindAsync([id], ct);
+        if (hall is not null)
+        {
+            // Use the property API so EF Core retains the original IsActive value in the
+            // change-tracker snapshot, giving the audit log a correct before/after diff.
+            _context.Entry(hall).Property(h => h.IsActive).CurrentValue = false;
+            await _context.SaveChangesAsync(ct);
+        }
     }
 }
