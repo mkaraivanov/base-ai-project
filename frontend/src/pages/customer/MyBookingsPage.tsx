@@ -14,6 +14,7 @@ import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
+import { useTranslation } from 'react-i18next';
 import { bookingApi } from '../../api/bookingApi';
 import { loyaltyApi } from '../../api/loyaltyApi';
 import type { BookingDto, LoyaltyCardDto } from '../../types';
@@ -22,6 +23,7 @@ import { extractErrorMessage } from '../../utils/errorHandler';
 import { AlertDialog } from '../../components/ui/alert-dialog';
 
 export const MyBookingsPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const [bookings, setBookings] = useState<readonly BookingDto[]>([]);
   const [loyaltyCard, setLoyaltyCard] = useState<LoyaltyCardDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,7 +93,7 @@ export const MyBookingsPage: React.FC = () => {
       />
 
       <Container maxWidth="md" sx={{ py: 5 }}>
-        <Typography variant="h5" component="h1" fontWeight={700} mb={4}>My Bookings</Typography>
+        <Typography variant="h5" component="h1" fontWeight={700} mb={4}>{t('myBookings.title')}</Typography>
 
         {/* Loyalty card */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
@@ -107,8 +109,8 @@ export const MyBookingsPage: React.FC = () => {
             <Box sx={{ position: 'relative' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2.5 }}>
                 <Box>
-                  <Typography fontWeight={700} fontSize={18}>Movie Loyalty Card</Typography>
-                  <Typography sx={{ color: '#c7d2fe', fontSize: 14 }}>{stamps} / {stampsRequired} movies watched</Typography>
+                  <Typography fontWeight={700} fontSize={18}>{t('myBookings.loyaltyProgram')}</Typography>
+                  <Typography sx={{ color: '#c7d2fe', fontSize: 14 }}>{t('myBookings.moviesWatched', { stamps, total: stampsRequired })}</Typography>
                 </Box>
                 <Ticket size={28} color="rgba(255,255,255,0.35)" />
               </Box>
@@ -138,14 +140,14 @@ export const MyBookingsPage: React.FC = () => {
 
               {loyaltyCard && loyaltyCard.stampsRemaining > 0 && (
                 <Typography sx={{ color: '#c7d2fe', fontSize: 12 }}>
-                  {loyaltyCard.stampsRemaining} more to earn a free ticket
+                  {t('myBookings.moreToFreeTicket', { count: loyaltyCard.stampsRemaining })}
                 </Typography>
               )}
 
               {loyaltyCard && loyaltyCard.activeVouchers.length > 0 && (
                 <Box sx={{ mt: 2.5, pt: 2.5, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
                   <Typography sx={{ fontSize: 14, fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Gift size={14} /> Free Ticket Vouchers
+                    <Gift size={14} /> {t('myBookings.freeTicketVouchers')}
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     {loyaltyCard.activeVouchers.map(v => (
@@ -168,7 +170,7 @@ export const MyBookingsPage: React.FC = () => {
 
         {tabList[activeTab].length === 0 ? (
           <Typography className="empty-state" color="text.secondary" textAlign="center" py={6}>
-            {activeTab === 0 ? 'No upcoming bookings.' : 'No past bookings.'}
+            {t('myBookings.noBookings')}
           </Typography>
         ) : (
           <Stack className="bookings-list" spacing={2}>
@@ -212,7 +214,7 @@ export const MyBookingsPage: React.FC = () => {
                           startIcon={<X size={13} />}
                           onClick={() => setCancelId(booking.id)}
                         >
-                          Cancel
+                          {t('myBookings.cancelBooking')}
                         </MuiButton>
                       )}
                   </Box>

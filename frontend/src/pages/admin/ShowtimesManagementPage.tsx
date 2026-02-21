@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, X, Calendar, Film, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -42,6 +43,7 @@ interface ShowtimeFormData {
 const EMPTY: ShowtimeFormData = { movieId: '', formCinemaId: '', cinemaHallId: '', startTime: '', basePrice: '', isActive: true };
 
 export const ShowtimesManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [showtimes, setShowtimes] = useState<readonly ShowtimeDto[]>([]);
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
@@ -113,19 +115,19 @@ export const ShowtimesManagementPage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}><Calendar size={24} /></Box>
             <Box>
-              <Typography variant="h5" component="h1" fontWeight={700}>Showtimes Management</Typography>
+              <Typography variant="h5" component="h1" fontWeight={700}>{t('showtimes.title')}</Typography>
               <Typography variant="body2" color="text.secondary">{showtimes.length} showtime{showtimes.length !== 1 ? 's' : ''}</Typography>
             </Box>
           </Box>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <FormControl size="small" sx={{ minWidth: 180 }}>
-              <InputLabel>Filter by Cinema</InputLabel>
-              <Select value={filterCinemaId} label="Filter by Cinema" onChange={(e: SelectChangeEvent) => setFilterCinemaId(e.target.value)}>
-                <MenuItem value="">All Cinemas</MenuItem>
+              <InputLabel>{t('common.allCinemas')}</InputLabel>
+              <Select value={filterCinemaId} label={t('common.allCinemas')} onChange={(e: SelectChangeEvent) => setFilterCinemaId(e.target.value)}>
+                <MenuItem value="">{t('common.allCinemas')}</MenuItem>
                 {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
               </Select>
             </FormControl>
-            <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>Add Showtime</MuiButton>
+            <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('showtimes.addShowtime')}</MuiButton>
           </Box>
         </Box>
 
@@ -134,7 +136,7 @@ export const ShowtimesManagementPage: React.FC = () => {
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ marginBottom: 32 }}>
               <Paper variant="outlined" sx={{ borderRadius: 3, p: 3 }} component="form" onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? 'Edit Showtime' : 'Schedule Showtime'}</Typography>
+                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? t('showtimes.editShowtime') : t('showtimes.scheduleShowtime')}</Typography>
                   <IconButton size="small" onClick={() => setShowForm(false)}><X size={18} /></IconButton>
                 </Box>
                 <Grid container spacing={2}>
@@ -175,8 +177,8 @@ export const ShowtimesManagementPage: React.FC = () => {
                   )}
                 </Grid>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
-                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>Cancel</MuiButton>
-                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</MuiButton>
+                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>{t('common.cancel')}</MuiButton>
+                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}</MuiButton>
                 </Box>
               </Paper>
             </motion.div>
@@ -190,13 +192,13 @@ export const ShowtimesManagementPage: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'action.hover' } }}>
-                  <TableCell>Movie</TableCell>
-                  <TableCell>Cinema / Hall</TableCell>
-                  <TableCell>Start Time</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Seats</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell>{t('showtimes.columns.movie')}</TableCell>
+                  <TableCell>{t('showtimes.columns.cinema')} / {t('showtimes.columns.hall')}</TableCell>
+                  <TableCell>{t('showtimes.columns.startTime')}</TableCell>
+                  <TableCell>{t('showtimes.columns.price')}</TableCell>
+                  <TableCell>{t('showtimes.columns.availableSeats')}</TableCell>
+                  <TableCell>{t('showtimes.columns.status')}</TableCell>
+                  <TableCell align="right">{t('showtimes.columns.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -227,7 +229,7 @@ export const ShowtimesManagementPage: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell><Typography variant="body2">{st.availableSeats}</Typography></TableCell>
-                      <TableCell><Badge variant={st.isActive ? 'success' : 'secondary'}>{st.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                      <TableCell><Badge variant={st.isActive ? 'success' : 'secondary'}>{st.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
                           <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(st)}><Pencil size={13} /></IconButton></Tooltip>
@@ -243,7 +245,7 @@ export const ShowtimesManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title="Delete Showtime?" description="This will permanently remove the showtime. Existing bookings may be affected." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('showtimes.confirmDelete')} description={t('showtimes.confirmDelete')} confirmLabel={t('common.delete')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };

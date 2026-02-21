@@ -11,6 +11,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import type { RegisterDto } from '../../types';
 import { extractErrorMessage } from '../../utils/errorHandler';
@@ -18,6 +19,7 @@ import { extractErrorMessage } from '../../utils/errorHandler';
 const POSTER = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80';
 
 export const RegisterPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
     password: '', confirmPassword: '', phoneNumber: '',
@@ -36,8 +38,8 @@ export const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) { toast.error('Passwords do not match.'); return; }
-    if (form.password.length < 6) { toast.error('Password must be at least 6 characters.'); return; }
+    if (form.password !== form.confirmPassword) { toast.error(t('register.passwordMismatch')); return; }
+    if (form.password.length < 6) { toast.error(t('register.passwordTooShort')); return; }
     try {
       setLoading(true);
       const registerData: RegisterDto = {
@@ -47,7 +49,7 @@ export const RegisterPage: React.FC = () => {
       await register(registerData);
       navigate('/');
     } catch (err: unknown) {
-      toast.error(extractErrorMessage(err, 'Registration failed. Please try again.'));
+      toast.error(extractErrorMessage(err, t('register.failed')));
     } finally {
       setLoading(false);
     }
@@ -92,32 +94,32 @@ export const RegisterPage: React.FC = () => {
             CineBook
           </Box>
 
-          <Typography variant="h5" fontWeight={700} mb={0.5}>Create an account</Typography>
+          <Typography variant="h5" fontWeight={700} mb={0.5}>{t('register.title')}</Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            Fill in your details to get started.
+            {t('register.subtitle')}
           </Typography>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={1.5}>
               <Grid size={6}>
-                <TextField label="First name" name="firstName" value={form.firstName} onChange={handleChange} required autoComplete="given-name" fullWidth size="small" />
+                <TextField label={t('register.firstName')} name="firstName" value={form.firstName} onChange={handleChange} required autoComplete="given-name" fullWidth size="small" />
               </Grid>
               <Grid size={6}>
-                <TextField label="Last name" name="lastName" value={form.lastName} onChange={handleChange} required autoComplete="family-name" fullWidth size="small" />
+                <TextField label={t('register.lastName')} name="lastName" value={form.lastName} onChange={handleChange} required autoComplete="family-name" fullWidth size="small" />
               </Grid>
             </Grid>
 
-            <TextField label="Email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required autoComplete="email" fullWidth size="small" />
+            <TextField label={t('register.email')} name="email" type="email" value={form.email} onChange={handleChange} placeholder={t('register.emailPlaceholder')} required autoComplete="email" fullWidth size="small" />
 
-            <TextField label="Phone number" name="phoneNumber" type="tel" value={form.phoneNumber} onChange={handleChange} placeholder="+1 (555) 000-0000" required autoComplete="tel" fullWidth size="small" />
+            <TextField label={t('register.phone')} name="phoneNumber" type="tel" value={form.phoneNumber} onChange={handleChange} placeholder={t('register.phonePlaceholder')} required autoComplete="tel" fullWidth size="small" />
 
             <TextField
-              label="Password"
+              label={t('register.password')}
               name="password"
               type={showPassword ? 'text' : 'password'}
               value={form.password}
               onChange={handleChange}
-              placeholder="••••••••"
+              placeholder={t('register.passwordPlaceholder')}
               required
               autoComplete="new-password"
               fullWidth
@@ -136,12 +138,12 @@ export const RegisterPage: React.FC = () => {
             />
 
             <TextField
-              label="Confirm password"
+              label={t('register.confirmPassword')}
               name="confirmPassword"
               type={showConfirm ? 'text' : 'password'}
               value={form.confirmPassword}
               onChange={handleChange}
-              placeholder="••••••••"
+              placeholder={t('register.passwordPlaceholder')}
               required
               autoComplete="new-password"
               fullWidth
@@ -160,14 +162,14 @@ export const RegisterPage: React.FC = () => {
             />
 
             <MuiButton type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 1, py: 1.25 }}>
-              {loading ? <CircularProgress size={20} color="inherit" /> : 'Create Account'}
+              {loading ? <CircularProgress size={20} color="inherit" /> : t('register.submit')}
             </MuiButton>
           </Box>
 
           <Typography variant="body2" color="text.secondary" textAlign="center" mt={3}>
-            Already have an account?{' '}
+            {t('register.hasAccount')}{' '}
             <Box component={Link} to="/login" sx={{ color: 'primary.main', fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
-              Sign in
+              {t('register.loginLink')}
             </Box>
           </Typography>
         </motion.div>

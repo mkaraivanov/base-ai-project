@@ -13,6 +13,7 @@ import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import { useTranslation } from 'react-i18next';
 import { SeatMap } from '../../components/SeatMap/SeatMap';
 import { BookingTimer } from '../../components/BookingTimer/BookingTimer';
 import { bookingApi } from '../../api/bookingApi';
@@ -31,6 +32,7 @@ interface SeatTicketSelection {
 }
 
 export const SeatSelectionPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { showtimeId } = useParams<{ showtimeId: string }>();
   const navigate = useNavigate();
   const [showtime, setShowtime] = useState<ShowtimeDto | null>(null);
@@ -143,7 +145,7 @@ export const SeatSelectionPage: React.FC = () => {
     clearSelection();
     setSeatTickets(new Map());
     await reloadAvailability();
-    setError('Your reservation has expired. Please select your seats again.');
+    setError(t('seatSelection.reservationExpired'));
   };
 
   if (loading) return (
@@ -162,7 +164,7 @@ export const SeatSelectionPage: React.FC = () => {
 
   if (!availability) return (
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Typography color="text.secondary">No data available</Typography>
+      <Typography color="text.secondary">{t('seatSelection.noDataAvailable')}</Typography>
     </Box>
   );
 
@@ -191,7 +193,7 @@ export const SeatSelectionPage: React.FC = () => {
               <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
                 <BookingTimer expiresAt={new Date(reservation.expiresAt)} onExpire={handleReservationExpire} />
                 <MuiButton variant="contained" size="small" onClick={() => navigate(`/checkout/${reservation.id}`)}>
-                  Proceed to Checkout
+                  {t('seatSelection.proceedToCheckout')}
                 </MuiButton>
               </Paper>
             )}
@@ -199,9 +201,9 @@ export const SeatSelectionPage: React.FC = () => {
           </Box>
 
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, alignSelf: 'start', position: { md: 'sticky' }, top: { md: 160 } }}>
-            <Typography fontWeight={600} mb={2}>Booking Summary</Typography>
+            <Typography fontWeight={600} mb={2}>{t('seatSelection.bookingSummary')}</Typography>
             {selectedSeats.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">Select seats on the map to begin.</Typography>
+              <Typography variant="body2" color="text.secondary">{t('seatSelection.noSeatsSelected')}</Typography>
             ) : (
               <>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
@@ -249,12 +251,12 @@ export const SeatSelectionPage: React.FC = () => {
                 <Divider sx={{ mb: 2 }} />
 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography fontWeight={600}>Total</Typography>
+                  <Typography fontWeight={600}>{t('seatSelection.totalLabel')}</Typography>
                   <Typography variant="h6" fontWeight={700} color="primary.main">{formatCurrency(totalPrice)}</Typography>
                 </Box>
                 {!reservation && (
                   <MuiButton variant="contained" fullWidth onClick={handleReserve} disabled={selectedSeats.length === 0}>
-                    Reserve {selectedSeats.length} Seat{selectedSeats.length !== 1 ? 's' : ''}
+                    {t('seatSelection.reserveSeats', { count: selectedSeats.length })}
                   </MuiButton>
                 )}
               </>

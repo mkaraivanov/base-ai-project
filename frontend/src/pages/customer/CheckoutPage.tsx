@@ -18,6 +18,7 @@ import Stack from '@mui/material/Stack';
 import Skeleton from '@mui/material/Skeleton';
 import Alert from '@mui/material/Alert';
 import { CreditCard, Ticket, Lock, Car } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { bookingApi } from '../../api/bookingApi';
 import type { ReservationDto } from '../../types';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
@@ -45,6 +46,7 @@ const EMPTY: CheckoutForm = {
 };
 
 export const CheckoutPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { reservationId } = useParams<{ reservationId: string }>();
   const navigate = useNavigate();
   const [reservation, setReservation] = useState<ReservationDto | null>(null);
@@ -108,7 +110,7 @@ export const CheckoutPage: React.FC = () => {
   return (
     <Box sx={{ minHeight: '100vh' }}>
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h5" fontWeight={700} mb={4}>Complete your booking</Typography>
+        <Typography variant="h5" fontWeight={700} mb={4}>{t('checkout.title')}</Typography>
 
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
@@ -122,13 +124,13 @@ export const CheckoutPage: React.FC = () => {
 
               <Stack spacing={2.5}>
                 <FormControl fullWidth>
-                  <InputLabel>Payment Method</InputLabel>
+                  <InputLabel>{t('checkout.paymentMethod')}</InputLabel>
                   <Select
                     value={form.paymentMethod}
-                    label="Payment Method"
+                    label={t('checkout.paymentMethod')}
                     onChange={(e: SelectChangeEvent) => set('paymentMethod', e.target.value)}
                   >
-                    <MenuItem value="card">Credit / Debit Card</MenuItem>
+                    <MenuItem value="card">{t('checkout.creditCard')} / {t('checkout.debitCard')}</MenuItem>
                     <MenuItem value="paypal">PayPal</MenuItem>
                     <MenuItem value="applepay">Apple Pay</MenuItem>
                   </Select>
@@ -137,7 +139,7 @@ export const CheckoutPage: React.FC = () => {
                 {form.paymentMethod === 'card' && (
                   <>
                     <TextField
-                      label="Cardholder Name"
+                      label={t('checkout.cardHolderName')}
                       value={form.cardholderName}
                       onChange={e => set('cardholderName', e.target.value)}
                       required
@@ -145,7 +147,7 @@ export const CheckoutPage: React.FC = () => {
                       placeholder="John Smith"
                     />
                     <TextField
-                      label="Card Number"
+                      label={t('checkout.cardNumber')}
                       value={form.cardNumber}
                       onChange={e => set('cardNumber', e.target.value.replace(/\D/g, '').slice(0, 16))}
                       required
@@ -156,7 +158,7 @@ export const CheckoutPage: React.FC = () => {
                     <Grid container spacing={2}>
                       <Grid size={6}>
                         <TextField
-                          label="Expiry Date"
+                          label={t('checkout.expiryDate')}
                           value={form.expiryDate}
                           onChange={e => set('expiryDate', e.target.value)}
                           required
@@ -167,7 +169,7 @@ export const CheckoutPage: React.FC = () => {
                       </Grid>
                       <Grid size={6}>
                         <TextField
-                          label="CVV"
+                          label={t('checkout.cvv')}
                           value={form.cvv}
                           onChange={e => set('cvv', e.target.value.replace(/\D/g, '').slice(0, 4))}
                           required
@@ -184,7 +186,7 @@ export const CheckoutPage: React.FC = () => {
                 <Divider />
 
                 <TextField
-                  label="Parking Plate (optional)"
+                  label={`${t('checkout.carLicensePlate')} ${t('checkout.carLicensePlateOptional')}`}
                   value={form.parkingPlate}
                   onChange={e => set('parkingPlate', e.target.value.toUpperCase())}
                   fullWidth
@@ -207,7 +209,7 @@ export const CheckoutPage: React.FC = () => {
                   disabled={submitting}
                   startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : undefined}
                 >
-                  {submitting ? 'Processing…' : `Pay ${formatCurrency(totalPrice)}`}
+                  {submitting ? t('checkout.processing') : `${t('checkout.pay')} ${formatCurrency(totalPrice)}`}
                 </MuiButton>
               </Stack>
             </Paper>
@@ -216,7 +218,7 @@ export const CheckoutPage: React.FC = () => {
           {/* Order summary */}
           <Paper variant="outlined" sx={{ borderRadius: 3, p: 3, alignSelf: 'flex-start' }}>
             <Typography fontWeight={600} mb={2} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Ticket size={18} /> Order Summary
+              <Ticket size={18} /> {t('checkout.orderSummary')}
             </Typography>
             {reservation && (
               <Stack spacing={1.5}>
@@ -228,13 +230,13 @@ export const CheckoutPage: React.FC = () => {
                 <Divider />
                 {reservation.seats?.map((seat) => (
                   <Box key={seat.seatId} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Seat {seat.seatNumber} · {seat.ticketTypeName}</Typography>
+                    <Typography variant="body2">{t('checkout.seats')} {seat.seatNumber} · {seat.ticketTypeName}</Typography>
                     <Typography variant="body2">{formatCurrency(seat.price)}</Typography>
                   </Box>
                 ))}
                 <Divider />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography fontWeight={700}>Total</Typography>
+                  <Typography fontWeight={700}>{t('checkout.total')}</Typography>
                   <Typography fontWeight={700} color="primary.main">{formatCurrency(totalPrice)}</Typography>
                 </Box>
               </Stack>

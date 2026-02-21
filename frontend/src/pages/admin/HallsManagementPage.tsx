@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, X, LayoutGrid, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -51,6 +52,7 @@ function generateSeatLayout(rows: number, seatsPerRow: number): SeatLayout {
 }
 
 export const HallsManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,19 +117,19 @@ export const HallsManagementPage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(139,92,246,0.1)', color: '#8b5cf6' }}><LayoutGrid size={24} /></Box>
             <Box>
-              <Typography variant="h5" component="h1" fontWeight={700}>Cinema Halls Management</Typography>
+              <Typography variant="h5" component="h1" fontWeight={700}>{t('halls.title')}</Typography>
               <Typography variant="body2" color="text.secondary">{halls.length} hall{halls.length !== 1 ? 's' : ''}</Typography>
             </Box>
           </Box>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <FormControl size="small" sx={{ minWidth: 180 }}>
-              <InputLabel>Filter by Cinema</InputLabel>
-              <Select value={filterCinemaId} label="Filter by Cinema" onChange={(e: SelectChangeEvent) => setFilterCinemaId(e.target.value)}>
-                <MenuItem value="">All Cinemas</MenuItem>
+              <InputLabel>{t('common.allCinemas')}</InputLabel>
+              <Select value={filterCinemaId} label={t('common.allCinemas')} onChange={(e: SelectChangeEvent) => setFilterCinemaId(e.target.value)}>
+                <MenuItem value="">{t('common.allCinemas')}</MenuItem>
                 {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
               </Select>
             </FormControl>
-            <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>Add Hall</MuiButton>
+            <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('halls.addHall')}</MuiButton>
           </Box>
         </Box>
 
@@ -136,7 +138,7 @@ export const HallsManagementPage: React.FC = () => {
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ marginBottom: 32 }}>
               <Paper className="modal" variant="outlined" sx={{ borderRadius: 3, p: 3 }} component="form" onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? 'Edit Hall' : 'Add Hall'}</Typography>
+                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? t('halls.editHall') : t('halls.addHall')}</Typography>
                   <IconButton size="small" onClick={() => setShowForm(false)}><X size={18} /></IconButton>
                 </Box>
                 <Grid container spacing={2}>
@@ -177,8 +179,8 @@ export const HallsManagementPage: React.FC = () => {
                   )}
                 </Grid>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
-                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>Cancel</MuiButton>
-                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</MuiButton>
+                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>{t('common.cancel')}</MuiButton>
+                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}</MuiButton>
                 </Box>
               </Paper>
             </motion.div>
@@ -192,12 +194,12 @@ export const HallsManagementPage: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'action.hover' } }}>
-                  <TableCell>Hall</TableCell>
-                  <TableCell>Cinema</TableCell>
-                  <TableCell>Layout</TableCell>
-                  <TableCell>Seats</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell>{t('halls.columns.name')}</TableCell>
+                  <TableCell>{t('halls.columns.cinema')}</TableCell>
+                  <TableCell>{t('halls.columns.layout')}</TableCell>
+                  <TableCell>{t('halls.columns.totalSeats')}</TableCell>
+                  <TableCell>{t('halls.columns.status')}</TableCell>
+                  <TableCell align="right">{t('halls.columns.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -209,7 +211,7 @@ export const HallsManagementPage: React.FC = () => {
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><Users size={13} /><Typography variant="body2">{h.totalSeats}</Typography></Box>
                     </TableCell>
-                    <TableCell><Badge variant={h.isActive ? 'success' : 'secondary'}>{h.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell><Badge variant={h.isActive ? 'success' : 'secondary'}>{h.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
                         <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(h)}><Pencil size={13} /></IconButton></Tooltip>
@@ -224,7 +226,7 @@ export const HallsManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title="Delete Hall?" description="This will permanently remove the hall and all its seats. This action cannot be undone." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('halls.confirmDelete')} description={t('halls.confirmDelete')} confirmLabel={t('common.delete')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };

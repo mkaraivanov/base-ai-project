@@ -11,6 +11,7 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Chip from '@mui/material/Chip';
+import { useTranslation } from 'react-i18next';
 import { cinemaApi } from '../../api/cinemaApi';
 import type { CinemaDto } from '../../types';
 
@@ -18,6 +19,7 @@ const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } 
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 
 export const CinemaSelectionPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,13 +31,13 @@ export const CinemaSelectionPage: React.FC = () => {
         const data = await cinemaApi.getAll(true);
         setCinemas(data);
       } catch {
-        setError('Failed to load cinemas. Please try again.');
+        setError(t('cinemaSelection.error'));
       } finally {
         setLoading(false);
       }
     };
     loadCinemas();
-  }, []);
+  }, [t]);
 
   const filtered = cinemas.filter(
     c =>
@@ -110,7 +112,7 @@ export const CinemaSelectionPage: React.FC = () => {
         ) : error ? (
           <Typography color="error" textAlign="center" py={6}>{error}</Typography>
         ) : filtered.length === 0 ? (
-          <Typography color="text.secondary" textAlign="center" py={6} className="empty-state">No cinemas found.</Typography>
+          <Typography color="text.secondary" textAlign="center" py={6} className="empty-state">{t('cinemaSelection.noCinemas')}</Typography>
         ) : (
           <motion.div variants={container} initial="hidden" animate="show">
             <Grid container spacing={3}>
@@ -152,7 +154,7 @@ export const CinemaSelectionPage: React.FC = () => {
                           <Clock size={11} />
                           {cinema.openTime} – {cinema.closeTime}
                         </Typography>
-                        <Chip label={`${cinema.hallCount} hall${cinema.hallCount !== 1 ? 's' : ''}`} size="small" variant="outlined" />
+                        <Chip label={t('cinemaSelection.halls', { count: cinema.hallCount })} size="small" variant="outlined" />
                       </Box>
                     </Paper>
                   </motion.div>

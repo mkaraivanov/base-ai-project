@@ -11,12 +11,14 @@ import MuiButton from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
+import { useTranslation } from 'react-i18next';
 import { bookingApi } from '../../api/bookingApi';
 import type { BookingDto } from '../../types';
 import { formatDateTime, formatCurrency } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const ConfirmationPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { bookingNumber } = useParams<{ bookingNumber: string }>();
   const [booking, setBooking] = useState<BookingDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,16 +65,16 @@ export const ConfirmationPage: React.FC = () => {
 
   if (!booking) return (
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Typography color="text.secondary">Booking not found</Typography>
+      <Typography color="text.secondary">{t('confirmation.notFound')}</Typography>
     </Box>
   );
 
   const detailRows = [
-    { icon: Ticket, label: 'Movie', value: booking.movieTitle },
-    { icon: Calendar, label: 'Showtime', value: formatDateTime(booking.showtimeStart) },
-    { icon: MapPin, label: 'Hall', value: booking.hallName },
-    { icon: Armchair, label: 'Seats', value: booking.seatNumbers.join(', ') },
-    ...(booking.carLicensePlate ? [{ icon: Car, label: 'Parking', value: booking.carLicensePlate }] : []),
+    { icon: Ticket, label: t('confirmation.movie'), value: booking.movieTitle },
+    { icon: Calendar, label: t('confirmation.showtime'), value: formatDateTime(booking.showtimeStart) },
+    { icon: MapPin, label: t('confirmation.hall'), value: booking.hallName },
+    { icon: Armchair, label: t('confirmation.seats'), value: booking.seatNumbers.join(', ') },
+    ...(booking.carLicensePlate ? [{ icon: Car, label: t('confirmation.parking'), value: booking.carLicensePlate }] : []),
   ];
 
   return (
@@ -91,9 +93,9 @@ export const ConfirmationPage: React.FC = () => {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <Typography variant="h5" fontWeight={700} textAlign="center" mb={0.5}>Booking Confirmed!</Typography>
+          <Typography variant="h5" fontWeight={700} textAlign="center" mb={0.5}>{t('confirmation.bookingConfirmed')}</Typography>
           <Typography variant="body2" color="text.secondary" textAlign="center" mb={4}>
-            Your tickets have been booked successfully.
+            {t('confirmation.successMessage')}
           </Typography>
 
           {/* Ticket card */}
@@ -131,7 +133,7 @@ export const ConfirmationPage: React.FC = () => {
 
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <Receipt size={14} /> Total Paid
+                  <Receipt size={14} /> {t('confirmation.totalPaid')}
                 </Typography>
                 <Typography variant="h6" fontWeight={700} color="primary.main">
                   {formatCurrency(booking.totalAmount)}
@@ -142,10 +144,10 @@ export const ConfirmationPage: React.FC = () => {
 
           <Stack spacing={1.5}>
             <MuiButton component={Link} to="/my-bookings" variant="contained" fullWidth size="large">
-              View My Bookings
+              {t('confirmation.viewMyBookings')}
             </MuiButton>
             <MuiButton component={Link} to="/movies" variant="outlined" fullWidth size="large">
-              Browse More Movies
+              {t('confirmation.browseMoreMovies')}
             </MuiButton>
           </Stack>
         </motion.div>

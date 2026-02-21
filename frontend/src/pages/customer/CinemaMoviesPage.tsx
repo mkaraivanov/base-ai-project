@@ -9,6 +9,7 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Paper from '@mui/material/Paper';
 import MuiButton from '@mui/material/Button';
+import { useTranslation } from 'react-i18next';
 import { cinemaApi } from '../../api/cinemaApi';
 import { showtimeApi } from '../../api/showtimeApi';
 import { movieApi } from '../../api/movieApi';
@@ -16,6 +17,7 @@ import { MovieCard } from '../../components/MovieCard/MovieCard';
 import type { CinemaDto, MovieDto } from '../../types';
 
 export const CinemaMoviesPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { cinemaId } = useParams<{ cinemaId: string }>();
   const [cinema, setCinema] = useState<CinemaDto | null>(null);
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
@@ -36,13 +38,13 @@ export const CinemaMoviesPage: React.FC = () => {
         const movieIdsWithShowtimes = new Set(showtimes.map(s => s.movieId));
         setMovies(allMovies.filter(m => movieIdsWithShowtimes.has(m.id)));
       } catch {
-        setError('Failed to load movies for this cinema.');
+        setError(t('cinemaMovies.error'));
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [cinemaId]);
+  }, [cinemaId, t]);
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -58,7 +60,7 @@ export const CinemaMoviesPage: React.FC = () => {
               color="inherit"
               sx={{ mb: 2, color: 'text.secondary', '&:hover': { color: 'primary.main' } }}
             >
-              All Cinemas
+              {t('cinemaMovies.allCinemas')}
             </MuiButton>
           </Box>
 
@@ -91,7 +93,7 @@ export const CinemaMoviesPage: React.FC = () => {
 
       {/* Movies */}
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography variant="h6" component="h2" fontWeight={600} mb={3}>Now Showing</Typography>
+        <Typography variant="h6" component="h2" fontWeight={600} mb={3}>{t('cinemaMovies.nowShowing')}</Typography>
 
         {loading ? (
           <Grid container spacing={2}>
@@ -106,7 +108,7 @@ export const CinemaMoviesPage: React.FC = () => {
         ) : error ? (
           <Typography className="empty-state" color="error">{error}</Typography>
         ) : movies.length === 0 ? (
-          <Typography className="empty-state" color="text.secondary">No movies are currently showing at this cinema.</Typography>
+          <Typography className="empty-state" color="text.secondary">{t('cinemaMovies.noMovies')}</Typography>
         ) : (
           <Grid container spacing={2}>
             {movies.map(movie => (

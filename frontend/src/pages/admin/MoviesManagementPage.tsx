@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, X, Film } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -37,6 +38,7 @@ interface MovieFormData {
 const EMPTY: MovieFormData = { title: '', description: '', genre: '', durationMinutes: '', rating: '', posterUrl: '', releaseDate: '', isActive: true };
 
 export const MoviesManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -92,11 +94,11 @@ export const MoviesManagementPage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(168,85,247,0.1)', color: '#a855f7' }}><Film size={24} /></Box>
             <Box>
-              <Typography variant="h5" component="h1" fontWeight={700}>Movies Management</Typography>
+              <Typography variant="h5" component="h1" fontWeight={700}>{t('movies.title')}</Typography>
               <Typography variant="body2" color="text.secondary">{movies.length} title{movies.length !== 1 ? 's' : ''}</Typography>
             </Box>
           </Box>
-          <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>Add Movie</MuiButton>
+          <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('movies.addMovie')}</MuiButton>
         </Box>
 
         <AnimatePresence>
@@ -104,7 +106,7 @@ export const MoviesManagementPage: React.FC = () => {
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ marginBottom: 32 }}>
               <Paper variant="outlined" sx={{ borderRadius: 3, p: 3 }} component="form" onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? 'Edit Movie' : 'Add Movie'}</Typography>
+                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? t('movies.editMovie') : t('movies.addMovie')}</Typography>
                   <IconButton size="small" onClick={() => setShowForm(false)}><X size={18} /></IconButton>
                 </Box>
                 <Grid container spacing={2}>
@@ -136,8 +138,8 @@ export const MoviesManagementPage: React.FC = () => {
                   )}
                 </Grid>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
-                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>Cancel</MuiButton>
-                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</MuiButton>
+                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>{t('common.cancel')}</MuiButton>
+                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}</MuiButton>
                 </Box>
               </Paper>
             </motion.div>
@@ -151,7 +153,7 @@ export const MoviesManagementPage: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'action.hover' } }}>
-                  {['Title', 'Genre', 'Duration', 'Rating', 'Release', 'Status', ''].map(h => (
+                  {[t('movies.columns.title'), t('movies.columns.genre'), t('movies.columns.duration'), t('movies.columns.rating'), t('movies.columns.releaseDate'), t('movies.columns.status'), ''].map(h => (
                     <TableCell key={h}><Typography variant="caption" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>{h}</Typography></TableCell>
                   ))}
                 </TableRow>
@@ -164,7 +166,7 @@ export const MoviesManagementPage: React.FC = () => {
                     <TableCell><Typography variant="body2" color="text.secondary">{formatDuration(movie.durationMinutes)}</Typography></TableCell>
                     <TableCell><Typography variant="body2" color="text.secondary">{movie.rating}</Typography></TableCell>
                     <TableCell><Typography variant="body2" color="text.secondary">{formatDate(movie.releaseDate)}</Typography></TableCell>
-                    <TableCell><Badge variant={movie.isActive ? 'success' : 'secondary'}>{movie.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell><Badge variant={movie.isActive ? 'success' : 'secondary'}>{movie.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
                         <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(movie)}><Pencil size={13} /></IconButton></Tooltip>
@@ -179,7 +181,7 @@ export const MoviesManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title="Delete Movie?" description="This will permanently remove the movie. This action cannot be undone." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('movies.deleteMovie')} description={t('movies.confirmDelete')} confirmLabel={t('common.delete')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };

@@ -5,6 +5,7 @@ import Container from '@mui/material/Container';
 import Skeleton from '@mui/material/Skeleton';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 import { movieApi } from '../../api/movieApi';
 import { showtimeApi } from '../../api/showtimeApi';
 import { cinemaApi } from '../../api/cinemaApi';
@@ -13,6 +14,7 @@ import { extractErrorMessage } from '../../utils/errorHandler';
 import { MovieDetailLayout } from '../../components/MovieDetail/MovieDetailLayout';
 
 export const CinemaMovieDetailPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const { cinemaId, movieId } = useParams<{ cinemaId: string; movieId: string }>();
   const [cinema, setCinema] = useState<CinemaDto | null>(null);
   const [movie, setMovie] = useState<MovieDto | null>(null);
@@ -69,7 +71,7 @@ export const CinemaMovieDetailPage: React.FC = () => {
 
   if (!movie) return (
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Typography color="text.secondary">Movie not found</Typography>
+      <Typography color="text.secondary">{t('movieDetail.notFound')}</Typography>
     </Box>
   );
 

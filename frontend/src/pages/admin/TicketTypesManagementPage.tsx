@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, X, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -40,6 +41,7 @@ function formatModifier(mod: number): string {
 }
 
 export const TicketTypesManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [ticketTypes, setTicketTypes] = useState<readonly TicketTypeDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -97,11 +99,11 @@ export const TicketTypesManagementPage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(16,185,129,0.1)', color: '#10b981' }}><Ticket size={24} /></Box>
             <Box>
-              <Typography variant="h5" fontWeight={700}>Ticket Types</Typography>
+              <Typography variant="h5" fontWeight={700}>{t('ticketTypes.title')}</Typography>
               <Typography variant="body2" color="text.secondary">{ticketTypes.length} type{ticketTypes.length !== 1 ? 's' : ''}</Typography>
             </Box>
           </Box>
-          <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>Add Ticket Type</MuiButton>
+          <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('ticketTypes.addType')}</MuiButton>
         </Box>
 
         <AnimatePresence>
@@ -109,7 +111,7 @@ export const TicketTypesManagementPage: React.FC = () => {
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ marginBottom: 32 }}>
               <Paper variant="outlined" sx={{ borderRadius: 3, p: 3 }} component="form" onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                  <Typography fontWeight={600}>{editingId ? 'Edit Ticket Type' : 'Add Ticket Type'}</Typography>
+                  <Typography fontWeight={600}>{editingId ? t('ticketTypes.editType') : t('ticketTypes.addType')}</Typography>
                   <IconButton size="small" onClick={() => setShowForm(false)}><X size={18} /></IconButton>
                 </Box>
                 <Grid container spacing={2}>
@@ -140,8 +142,8 @@ export const TicketTypesManagementPage: React.FC = () => {
                   )}
                 </Grid>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
-                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>Cancel</MuiButton>
-                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</MuiButton>
+                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>{t('common.cancel')}</MuiButton>
+                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}</MuiButton>
                 </Box>
               </Paper>
             </motion.div>
@@ -160,28 +162,28 @@ export const TicketTypesManagementPage: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'action.hover' } }}>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Price Modifier</TableCell>
-                  <TableCell>Sort</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell>{t('ticketTypes.columns.name')}</TableCell>
+                  <TableCell>{t('ticketTypes.columns.description')}</TableCell>
+                  <TableCell>{t('ticketTypes.columns.modifier')}</TableCell>
+                  <TableCell>{t('ticketTypes.columns.sortOrder')}</TableCell>
+                  <TableCell>{t('ticketTypes.columns.status')}</TableCell>
+                  <TableCell align="right">{t('ticketTypes.columns.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {ticketTypes.map(t => (
-                  <TableRow key={t.id} hover>
-                    <TableCell><Typography variant="body2" fontWeight={500}>{t.name}</Typography></TableCell>
-                    <TableCell><Typography variant="body2" color="text.secondary">{t.description ?? '–'}</Typography></TableCell>
+                {ticketTypes.map(tt => (
+                  <TableRow key={tt.id} hover>
+                    <TableCell><Typography variant="body2" fontWeight={500}>{tt.name}</Typography></TableCell>
+                    <TableCell><Typography variant="body2" color="text.secondary">{tt.description ?? '–'}</Typography></TableCell>
                     <TableCell>
-                      <Chip label={formatModifier(t.priceModifier)} size="small" variant="outlined" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }} />
+                      <Chip label={formatModifier(tt.priceModifier)} size="small" variant="outlined" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }} />
                     </TableCell>
-                    <TableCell><Typography variant="body2" fontFamily="monospace">{t.sortOrder}</Typography></TableCell>
-                    <TableCell><Badge variant={t.isActive ? 'success' : 'secondary'}>{t.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell><Typography variant="body2" fontFamily="monospace">{tt.sortOrder}</Typography></TableCell>
+                    <TableCell><Badge variant={tt.isActive ? 'success' : 'secondary'}>{tt.isActive ? t('common.active') : t('common.inactive')}</Badge></TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                        <Tooltip title="Edit"><IconButton size="small" onClick={() => openEdit(t)}><Pencil size={13} /></IconButton></Tooltip>
-                        <Tooltip title="Delete"><IconButton size="small" onClick={() => setDeleteId(t.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
+                        <Tooltip title="Edit"><IconButton size="small" onClick={() => openEdit(tt)}><Pencil size={13} /></IconButton></Tooltip>
+                        <Tooltip title="Delete"><IconButton size="small" onClick={() => setDeleteId(tt.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -192,7 +194,7 @@ export const TicketTypesManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title="Delete Ticket Type?" description="This will permanently remove this ticket type." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('ticketTypes.confirmDeactivate')} description={t('ticketTypes.confirmDeactivate')} confirmLabel={t('common.delete')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };

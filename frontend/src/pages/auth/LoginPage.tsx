@@ -10,12 +10,14 @@ import MuiButton from '@mui/material/Button';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 const POSTER = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80';
 
 export const LoginPage: React.FC = () => {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,13 +28,13 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { toast.error('Please fill in all fields.'); return; }
+    if (!email || !password) { toast.error(t('login.fillAllFields')); return; }
     try {
       setLoading(true);
       await login(email, password);
       navigate('/');
     } catch (err: unknown) {
-      toast.error(extractErrorMessage(err, 'Invalid email or password.'));
+      toast.error(extractErrorMessage(err, t('login.error')));
     } finally {
       setLoading(false);
     }
@@ -77,19 +79,19 @@ export const LoginPage: React.FC = () => {
             CineBook
           </Box>
 
-          <Typography variant="h5" fontWeight={700} mb={0.5}>Welcome back</Typography>
+          <Typography variant="h5" fontWeight={700} mb={0.5}>{t('login.title')}</Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            Sign in to your account to continue.
+            {t('login.subtitle')}
           </Typography>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField
               id="email"
-              label="Email"
+              label={t('login.email')}
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t('login.emailPlaceholder')}
               required
               autoComplete="email"
               fullWidth
@@ -98,7 +100,7 @@ export const LoginPage: React.FC = () => {
 
             <TextField
               id="password"
-              label="Password"
+              label={t('login.password')}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -127,14 +129,14 @@ export const LoginPage: React.FC = () => {
               disabled={loading}
               sx={{ mt: 1, py: 1.25 }}
             >
-              {loading ? <CircularProgress size={20} color="inherit" /> : 'Sign In'}
+              {loading ? <CircularProgress size={20} color="inherit" /> : t('login.submit')}
             </MuiButton>
           </Box>
 
           <Typography variant="body2" color="text.secondary" textAlign="center" mt={3}>
-            Don&apos;t have an account?{' '}
+            {t('login.noAccount')}{' '}
             <Box component={Link} to="/register" sx={{ color: 'primary.main', fontWeight: 500, '&:hover': { textDecoration: 'underline' } }}>
-              Sign up free
+              {t('login.signUpLink')}
             </Box>
           </Typography>
         </motion.div>

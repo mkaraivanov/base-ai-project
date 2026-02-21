@@ -10,11 +10,13 @@ import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Paper from '@mui/material/Paper';
+import { useTranslation } from 'react-i18next';
 import { movieApi } from '../../api/movieApi';
 import { MovieCard } from '../../components/MovieCard/MovieCard';
 import type { MovieDto } from '../../types';
 
 export const MoviesPage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,12 +61,12 @@ export const MoviesPage: React.FC = () => {
       >
         <Container maxWidth="lg" disableGutters>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, alignItems: { sm: 'center' } }}>
-            <Typography variant="h6" fontWeight={700} flexShrink={0}>Now Showing</Typography>
+            <Typography variant="h6" fontWeight={700} flexShrink={0}>{t('movies.nowShowing')}</Typography>
             <Box sx={{ flex: 1, display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
               <TextField
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Search movies…"
+                placeholder={t('movies.searchPlaceholder')}
                 size="small"
                 sx={{ minWidth: 200, flex: 1 }}
                 slotProps={{
@@ -81,7 +83,7 @@ export const MoviesPage: React.FC = () => {
                 {genres.map(g => (
                   <Chip
                     key={g}
-                    label={g === '' ? 'All' : g}
+                    label={g === '' ? t('movies.allGenres') : g}
                     size="small"
                     onClick={() => setGenreFilter(g)}
                     variant={genreFilter === g ? 'filled' : 'outlined'}
@@ -109,7 +111,7 @@ export const MoviesPage: React.FC = () => {
         ) : filteredMovies.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <Typography color="text.secondary" textAlign="center" py={10}>
-              No movies match your search.
+              {t('movies.noResults')}
             </Typography>
           </motion.div>
         ) : (

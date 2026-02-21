@@ -8,11 +8,13 @@ import Typography from '@mui/material/Typography';
 import MuiButton from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
+import { useTranslation } from 'react-i18next';
 import { movieApi } from '../../api/movieApi';
 import { MovieCard } from '../../components/MovieCard/MovieCard';
 import type { MovieDto } from '../../types';
 
 export const HomePage: React.FC = () => {
+  const { t } = useTranslation('customer');
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -86,7 +88,7 @@ export const HomePage: React.FC = () => {
       {/* Now Showing */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
-          <Typography variant="h5" fontWeight={700}>Now Showing</Typography>
+          <Typography variant="h5" fontWeight={700}>{t('movies.nowShowing')}</Typography>
           {movies.length > 0 && (
             <MuiButton component={Link} to="/movies" variant="outlined" size="small">View All</MuiButton>
           )}
@@ -104,7 +106,7 @@ export const HomePage: React.FC = () => {
           </Grid>
         ) : movies.length === 0 ? (
           <Typography color="text.secondary" textAlign="center" py={8}>
-            No movies available at the moment.
+            {t('movies.noMovies')}
           </Typography>
         ) : (
           <Grid container spacing={2}>

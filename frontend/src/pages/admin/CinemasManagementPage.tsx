@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Pencil, Trash2, X, Building2, MapPin, Clock, Phone, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -36,6 +37,7 @@ interface CinemaFormData {
 const EMPTY: CinemaFormData = { name: '', address: '', city: '', country: '', phoneNumber: '', email: '', logoUrl: '', openTime: '09:00', closeTime: '23:00', isActive: true };
 
 export const CinemasManagementPage: React.FC = () => {
+  const { t } = useTranslation('admin');
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -92,11 +94,11 @@ export const CinemasManagementPage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(99,102,241,0.1)', color: '#6366f1' }}><Building2 size={24} /></Box>
             <Box>
-              <Typography variant="h5" component="h1" fontWeight={700}>Cinemas Management</Typography>
+              <Typography variant="h5" component="h1" fontWeight={700}>{t('cinemas.title')}</Typography>
               <Typography variant="body2" color="text.secondary">{cinemas.length} location{cinemas.length !== 1 ? 's' : ''}</Typography>
             </Box>
           </Box>
-          <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>Add Cinema</MuiButton>
+          <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>{t('cinemas.addCinema')}</MuiButton>
         </Box>
 
         {/* Inline form */}
@@ -105,7 +107,7 @@ export const CinemasManagementPage: React.FC = () => {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', marginBottom: 32 }}>
               <Paper variant="outlined" sx={{ borderRadius: 3, p: 3 }} component="form" onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? 'Edit Cinema' : 'Add Cinema'}</Typography>
+                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? t('cinemas.editCinema') : t('cinemas.addCinema')}</Typography>
                   <IconButton size="small" onClick={() => setShowForm(false)}><X size={18} /></IconButton>
                 </Box>
                 <Grid container spacing={2}>
@@ -143,8 +145,8 @@ export const CinemasManagementPage: React.FC = () => {
                   )}
                 </Grid>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
-                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>Cancel</MuiButton>
-                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update Cinema' : 'Create Cinema'}</MuiButton>
+                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>{t('common.cancel')}</MuiButton>
+                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}</MuiButton>
                 </Box>
               </Paper>
             </motion.div>
@@ -164,13 +166,13 @@ export const CinemasManagementPage: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'action.hover' } }}>
-                  <TableCell>Cinema</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Location</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Contact</TableCell>
-                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Hours</TableCell>
-                  <TableCell align="center">Halls</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions</TableCell>
+                  <TableCell>{t('cinemas.columns.name')}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('cinemas.columns.location')}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{t('cinemas.columns.contact')}</TableCell>
+                  <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('cinemas.columns.hours')}</TableCell>
+                  <TableCell align="center">{t('cinemas.columns.halls')}</TableCell>
+                  <TableCell>{t('cinemas.columns.status')}</TableCell>
+                  <TableCell align="right">{t('cinemas.columns.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -208,7 +210,7 @@ export const CinemasManagementPage: React.FC = () => {
                       <Typography variant="body2" fontFamily="monospace">{cinema.hallCount}</Typography>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={cinema.isActive ? 'success' : 'secondary'}>{cinema.isActive ? 'Active' : 'Inactive'}</Badge>
+                      <Badge variant={cinema.isActive ? 'success' : 'secondary'}>{cinema.isActive ? t('common.active') : t('common.inactive')}</Badge>
                     </TableCell>
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
@@ -228,7 +230,7 @@ export const CinemasManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title="Delete Cinema" description="Are you sure you want to delete this cinema? This action cannot be undone." confirmLabel="Delete" cancelLabel="Cancel" variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('cinemas.editCinema')} description={t('cinemas.confirmDelete')} confirmLabel={t('common.delete')} cancelLabel={t('common.cancel')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };
