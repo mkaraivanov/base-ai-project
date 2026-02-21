@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building2, Layers, Film, Clock4, Ticket, Gift, BarChart2 } from 'lucide-react';
+import { Building2, Layers, Film, Clock4, Ticket, Gift, BarChart2, ClipboardList } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -31,6 +31,7 @@ export const DashboardPage: React.FC = () => {
     { to: '/admin/ticket-types', icon: Ticket, label: t('dashboard.ticketTypes'), desc: t('dashboard.ticketTypesDesc'), color: '#06b6d4' },
     { to: '/admin/loyalty', icon: Gift, label: t('dashboard.loyalty'), desc: t('dashboard.loyaltyDesc'), color: '#14b8a6' },
     { to: '/admin/reports', icon: BarChart2, label: t('dashboard.reports'), desc: t('dashboard.reportsDesc'), color: '#f59e0b' },
+    { to: '/admin/audit', icon: ClipboardList, label: t('dashboard.auditLogs'), desc: t('dashboard.auditLogsDesc'), color: '#64748b' },
   ];
 
   return (

@@ -25,6 +25,7 @@ public class CinemaDbContext : DbContext
     public DbSet<LoyaltyCard> LoyaltyCards => Set<LoyaltyCard>();
     public DbSet<LoyaltyVoucher> LoyaltyVouchers => Set<LoyaltyVoucher>();
     public DbSet<LoyaltySettings> LoyaltySettings => Set<LoyaltySettings>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -439,6 +440,44 @@ public class CinemaDbContext : DbContext
         modelBuilder.Entity<LoyaltySettings>(entity =>
         {
             entity.HasKey(e => e.Id);
+        });
+
+        // AuditLog configuration — immutable, append-only
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.EntityName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.EntityId)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(e => e.Action)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            entity.Property(e => e.UserEmail)
+                .HasMaxLength(200);
+
+            entity.Property(e => e.UserRole)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.IpAddress)
+                .HasMaxLength(45); // IPv6 max length
+
+            entity.Property(e => e.OldValues)
+                .HasColumnType("nvarchar(max)");
+
+            entity.Property(e => e.NewValues)
+                .HasColumnType("nvarchar(max)");
+
+            entity.HasIndex(e => e.Timestamp);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.EntityName);
+            entity.HasIndex(e => e.Action);
         });
     }
 }

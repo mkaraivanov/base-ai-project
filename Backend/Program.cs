@@ -57,6 +57,12 @@ builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>()
 // Caching
 builder.Services.AddSingleton<ICacheService, MemoryCacheService>();
 
+// HTTP context accessor (required by AuditInterceptor)
+builder.Services.AddHttpContextAccessor();
+
+// Audit interceptor (scoped so it can access IHttpContextAccessor per-request)
+builder.Services.AddScoped<AuditInterceptor>();
+
 // Response Compression
 builder.Services.AddResponseCompression(options =>
 {
@@ -78,8 +84,11 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 });
 
 // Database
-builder.Services.AddDbContext<CinemaDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<CinemaDbContext>((sp, options) =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
+});
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -96,6 +105,7 @@ builder.Services.AddScoped<IReservationTicketRepository, ReservationTicketReposi
 builder.Services.AddScoped<IBookingTicketRepository, BookingTicketRepository>();
 builder.Services.AddScoped<ILoyaltyRepository, LoyaltyRepository>();
 builder.Services.AddScoped<IReportingRepository, ReportingRepository>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -108,6 +118,7 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ITicketTypeService, TicketTypeService>();
 builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
 builder.Services.AddScoped<IReportingService, ReportingService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddSingleton(TimeProvider.System);
 
 // Unit of Work
@@ -271,6 +282,10 @@ app.MapGroup("/api/ticket-types")
 app.MapGroup("/api/reports")
     .MapReportingEndpoints()
     .WithTags("Reports");
+
+app.MapGroup("/api/audit")
+    .MapAuditEndpoints()
+    .WithTags("Audit");
 
 app.Run();
 

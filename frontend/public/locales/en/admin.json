@@ -33,7 +33,51 @@
     "loyalty": "Loyalty Program",
     "loyaltyDesc": "Configure required visits for a free ticket reward",
     "reports": "Reports",
-    "reportsDesc": "Ticket sales reports by date, movie, showtime, and location"
+    "reportsDesc": "Ticket sales reports by date, movie, showtime, and location",
+    "auditLogs": "Audit Logs",
+    "auditLogsDesc": "Track all data changes: who changed what and when"
+  },
+  "auditLogs": {
+    "title": "Audit Logs",
+    "export": "Export CSV",
+    "viewDetails": "View details",
+    "drawerTitle": "Audit Entry Details",
+    "emptyState": "No audit log entries found.",
+    "oldValues": "Old Values",
+    "newValues": "New Values",
+    "filter": {
+      "dateFrom": "Date From",
+      "dateTo": "Date To",
+      "action": "Action",
+      "allActions": "All Actions",
+      "entityType": "Entity Type",
+      "allEntities": "All Entities",
+      "search": "Search",
+      "apply": "Apply",
+      "clear": "Clear filters"
+    },
+    "columns": {
+      "timestamp": "Timestamp",
+      "user": "User",
+      "entityType": "Entity Type",
+      "entityId": "Entity ID",
+      "action": "Action",
+      "ipAddress": "IP Address",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "total": "{{count}} entries"
+    },
+    "actionValues": {
+      "Created": "Created",
+      "Updated": "Updated",
+      "Deleted": "Deleted"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load audit logs",
+      "exported": "Audit log exported.",
+      "exportFailed": "Failed to export audit logs"
+    }
   },
   "movies": {
     "title": "Movies Management",
