@@ -16,10 +16,14 @@
     "loading": "Зареждане на филми...",
     "searchPlaceholder": "Търсене на филми...",
     "allGenres": "Всички жанрове",
-    "noResults": "Няма намерени филми."
+    "noResults": "Няма намерени филми.",
+    "noPoster": "Няма постер",
+    "bookNow": "Купи билет"
   },
   "movieDetail": {
     "synopsis": "Синопсис",
+    "about": "За филма",
+    "allMovies": "Всички филми",
     "bookTicket": "Купи билет",
     "selectShowtime": "Избери прожекция",
     "availableShowtimes": "Налични прожекции",

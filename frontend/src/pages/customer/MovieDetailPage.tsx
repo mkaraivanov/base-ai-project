@@ -77,7 +77,7 @@ export const MovieDetailPage: React.FC = () => {
       movie={movie}
       showtimes={showtimes}
       backTo="/movies"
-      backLabel="All Movies"
+      backLabel={t('movieDetail.allMovies')}
     />
   );
 };

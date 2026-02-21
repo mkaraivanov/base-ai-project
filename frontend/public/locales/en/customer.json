@@ -16,10 +16,14 @@
     "loading": "Loading movies...",
     "searchPlaceholder": "Search movies...",
     "allGenres": "All Genres",
-    "noResults": "No movies found matching your criteria."
+    "noResults": "No movies found matching your criteria.",
+    "noPoster": "No poster",
+    "bookNow": "Book Now"
   },
   "movieDetail": {
     "synopsis": "Synopsis",
+    "about": "About",
+    "allMovies": "All Movies",
     "bookTicket": "Book Ticket",
     "selectShowtime": "Select Showtime",
     "availableShowtimes": "Available Showtimes",

@@ -5,6 +5,7 @@ import { Clock, Star, Film } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MuiButton from '@mui/material/Button';
+import { useTranslation } from 'react-i18next';
 import type { MovieDto } from '../../types';
 import { formatDuration } from '../../utils/formatters';
 import { Badge } from '../UI/badge';
@@ -15,6 +16,7 @@ interface MovieCardProps {
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, detailPath }) => {
+  const { t } = useTranslation('customer');
   const linkPath = detailPath ?? `/movies/${movie.id}`;
   const [posterError, setPosterError] = useState(false);
   const showPoster = !!movie.posterUrl && !posterError;
@@ -66,7 +68,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, detailPath }) => {
           ) : (
             <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', borderStyle: 'dashed' }}>
               <Film size={36} color="var(--mui-palette-text-disabled)" />
-              <Typography variant="caption" color="text.disabled">No poster</Typography>
+              <Typography variant="caption" color="text.disabled">{t('movies.noPoster')}</Typography>
             </Box>
           )}
           {/* Hover overlay */}
@@ -79,7 +81,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, detailPath }) => {
               display: 'flex', alignItems: 'flex-end', p: 2,
             }}
           >
-            <Typography variant="body2" fontWeight={600} color="#fff">View Showtimes →</Typography>
+            <Typography variant="body2" fontWeight={600} color="#fff">{t('movies.viewShowtimes')} →</Typography>
           </Box>
         </Box>
 
@@ -118,7 +120,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, detailPath }) => {
             fullWidth
             sx={{ mt: 'auto' }}
           >
-            Book Now
+            {t('movies.bookNow')}
           </MuiButton>
         </Box>
       </Box>

@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import MuiButton from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
+import { useTranslation } from 'react-i18next';
 import type { MovieDto, ShowtimeDto } from '../../types';
 import { formatDate, formatDateTime, formatDuration, formatCurrency } from '../../utils/formatters';
 import { Badge } from '../UI/badge';
@@ -21,6 +22,7 @@ interface MovieDetailLayoutProps {
 export const MovieDetailLayout: React.FC<MovieDetailLayoutProps> = ({
   movie, showtimes, backTo, backLabel, cinemaName,
 }) => {
+  const { t } = useTranslation('customer');
   const activeShowtimes = showtimes.filter(
     st => st.isActive && new Date(st.startTime) > new Date(),
   );
@@ -108,18 +110,18 @@ export const MovieDetailLayout: React.FC<MovieDetailLayoutProps> = ({
       <Box sx={{ maxWidth: 1152, mx: 'auto', px: 2, py: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 300px' }, gap: 4 }}>
         {/* Description */}
         <Box>
-          <Typography variant="h6" fontWeight={600} mb={1.5}>About</Typography>
+          <Typography variant="h6" fontWeight={600} mb={1.5}>{t('movieDetail.about')}</Typography>
           <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>{movie.description}</Typography>
         </Box>
 
         {/* Showtimes */}
         <Box>
           <Typography variant="h6" fontWeight={600} mb={1.5}>
-            {cinemaName ? `Showtimes at ${cinemaName}` : 'Available Showtimes'}
+            {cinemaName ? t('cinemaMovieDetail.availableShowtimesAt', { cinema: cinemaName }) : t('movieDetail.availableShowtimes')}
           </Typography>
 
           {activeShowtimes.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">No upcoming showtimes available.</Typography>
+            <Typography variant="body2" color="text.secondary">{t('movieDetail.noShowtimes')}</Typography>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {Object.entries(grouped).map(([date, times]) => (
@@ -143,13 +145,13 @@ export const MovieDetailLayout: React.FC<MovieDetailLayoutProps> = ({
                             <Typography variant="caption" color="text.disabled">·</Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Ticket size={10} />
-                              <Typography variant="caption" color="text.secondary">{showtime.availableSeats} left</Typography>
+                              <Typography variant="caption" color="text.secondary">{t('movieDetail.seatsLeft', { count: showtime.availableSeats })}</Typography>
                             </Box>
                           </Box>
                         </Box>
                         <Box sx={{ textAlign: 'right', ml: 1.5 }}>
                           <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>
-                            from {formatCurrency(showtime.basePrice)}
+                            {t('movieDetail.fromPrice', { price: formatCurrency(showtime.basePrice) })}
                           </Typography>
                           <MuiButton
                             component={Link}
@@ -158,7 +160,7 @@ export const MovieDetailLayout: React.FC<MovieDetailLayoutProps> = ({
                             size="small"
                             sx={{ minWidth: 64, fontSize: 12 }}
                           >
-                            Book
+                            {t('movies.bookNow')}
                           </MuiButton>
                         </Box>
                       </Paper>
