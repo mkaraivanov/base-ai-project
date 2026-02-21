@@ -212,8 +212,9 @@ test.describe('Authentication Flow – Bulgarian locale', () => {
     await page.fill('input#password, input[type="password"]', 'WrongPassword1');
     await page.click('button[type="submit"]');
 
-    // The backend returns "Невалиден имейл или парола" for bg culture
-    const errorMessage = page.locator('.error-message, .error, [role="alert"]').first();
+    // The backend returns "Невалиден имейл или парола" for bg culture.
+    // The login page shows the error via sonner toast (data-type="error") or inline error element.
+    const errorMessage = page.locator('[data-type="error"], .error-message, .error, [role="alert"]').first();
     await expect(errorMessage).toBeVisible({ timeout: 10000 });
     await expect(errorMessage).toContainText('Невалиден имейл или парола');
   });

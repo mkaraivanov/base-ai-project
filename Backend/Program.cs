@@ -42,8 +42,9 @@ builder.Host.UseSerilog();
 // Add services to the container.
 builder.Services.AddOpenApi();
 
-// Localization
-builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+// Localization – no ResourcesPath so the factory resolves embedded resources
+// from each assembly's satellite .resources.dll (Application.resources.dll, etc.)
+builder.Services.AddLocalization();
 
 // Memory Cache
 builder.Services.AddMemoryCache();

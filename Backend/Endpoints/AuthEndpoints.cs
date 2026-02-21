@@ -68,6 +68,6 @@ public static class AuthEndpoints
 
         return result.IsSuccess
             ? Results.Ok(new ApiResponse<AuthResponseDto>(true, result.Value, null))
-            : Results.Unauthorized();
+            : Results.Json(new ApiResponse<AuthResponseDto>(false, null, result.Error), statusCode: 401);
     }
 }

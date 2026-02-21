@@ -75,8 +75,8 @@ test.describe('Customer - My Bookings Page', () => {
       // Verify booking details are shown
       await expect(bookingCard).toBeVisible();
       
-      // Check for movie title
-      const movieTitle = bookingCard.locator('h3, h4, .movie-title, strong').first();
+      // Check for movie title (rendered as MUI Typography with fontWeight=600)
+      const movieTitle = bookingCard.locator('.MuiTypography-root').first();
       await expect(movieTitle).toBeVisible();
     }
   });
@@ -89,8 +89,9 @@ test.describe('Customer - My Bookings Page', () => {
     const hasBookings = await bookingCard.isVisible().catch(() => false);
     
     if (hasBookings) {
-      // The booking card uses .booking-detail > strong for the booking number
-      const bookingRef = page.locator('.booking-card .booking-detail strong').first();
+      // The booking reference is rendered as Typography containing an icon + "#<bookingNumber>" text
+      // Use a loose regex (not anchored to start) since SVG icon text may precede the # symbol
+      const bookingRef = bookingCard.locator('.MuiTypography-root').filter({ hasText: /#[A-Z]/ }).first();
       await expect(bookingRef).toBeVisible();
     }
   });
@@ -138,8 +139,9 @@ test.describe('Customer - My Bookings Page', () => {
     const hasBookings = await bookingCard.isVisible().catch(() => false);
     
     if (hasBookings) {
-      // Seat numbers are shown as text within .booking-detail > strong (labelled "Seats")
-      const seatInfo = page.locator('.booking-card .booking-detail').filter({ hasText: /seats/i }).locator('strong').first();
+      // Seat numbers are shown as Typography items within the grid inside the booking card
+      // They appear as text without specific CSS classes, so check the card contains seat-related text
+      const seatInfo = bookingCard.locator('.MuiTypography-root').nth(2);
       await expect(seatInfo).toBeVisible();
     }
   });

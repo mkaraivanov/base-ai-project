@@ -1,10 +1,12 @@
 using Application.DTOs.Auth;
+using Application.Resources;
 using Application.Services;
 using Domain.Entities;
 using FluentAssertions;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Tests.Unit.Builders;
@@ -16,6 +18,7 @@ public class AuthServiceTests
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IConfiguration> _configurationMock;
     private readonly Mock<ILogger<AuthService>> _loggerMock;
+    private readonly Mock<IStringLocalizer<SharedResource>> _localizerMock;
     private readonly Mock<TimeProvider> _timeProviderMock;
     private readonly IAuthService _authService;
 
@@ -24,7 +27,12 @@ public class AuthServiceTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _configurationMock = new Mock<IConfiguration>();
         _loggerMock = new Mock<ILogger<AuthService>>();
+        _localizerMock = new Mock<IStringLocalizer<SharedResource>>();
         _timeProviderMock = new Mock<TimeProvider>();
+
+        // Default localizer returns the key as the value
+        _localizerMock.Setup(l => l[It.IsAny<string>()])
+            .Returns((string key) => new LocalizedString(key, key));
 
         // Setup JWT configuration
         var jwtSectionMock = new Mock<IConfigurationSection>();
@@ -40,6 +48,7 @@ public class AuthServiceTests
             _userRepositoryMock.Object,
             _configurationMock.Object,
             _loggerMock.Object,
+            _localizerMock.Object,
             _timeProviderMock.Object);
     }
 
