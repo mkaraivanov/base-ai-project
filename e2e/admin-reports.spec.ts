@@ -17,14 +17,14 @@ test.describe('Admin - Reports Page', () => {
   test('should show Reports link on admin dashboard', async ({ page }) => {
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
-    const reportsCard = page.locator('.admin-card').filter({ hasText: /reports/i }).first();
+    const reportsCard = page.locator('a[href="/admin/reports"]').first();
     await expect(reportsCard).toBeVisible();
   });
 
   test('should navigate to reports page from dashboard', async ({ page }) => {
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
-    await page.locator('.admin-card').filter({ hasText: /reports/i }).first().click();
+    await page.locator('a[href="/admin/reports"]').first().click();
     await expect(page).toHaveURL('/admin/reports');
   });
 

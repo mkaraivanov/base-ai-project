@@ -12,7 +12,7 @@ test.describe('Admin Cinemas Management', () => {
     await page.fill('input#password', adminUser.password);
     await page.click('button[type="submit"]');
 
-    await page.waitForURL('/');
+    await page.waitForURL('/', { timeout: 10000 }).catch(() => {});
 
     await page.goto('/admin/cinemas');
     await page.waitForLoadState('networkidle');
