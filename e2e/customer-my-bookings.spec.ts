@@ -20,12 +20,13 @@ test.describe('Customer - My Bookings Page', () => {
   });
 
   test('should require authentication to access my bookings', async ({ page }) => {
-    // Logout first
-    const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out/i }).first();
-    const logoutExists = await logoutButton.isVisible().catch(() => false);
-    
-    if (logoutExists) {
-      await logoutButton.click();
+    // Logout via avatar menu
+    const avatarButton = page.getByRole('button', { name: /open user menu/i });
+    const avatarExists = await avatarButton.isVisible().catch(() => false);
+
+    if (avatarExists) {
+      await avatarButton.click();
+      await page.getByRole('menuitem', { name: /log out/i }).click();
       await page.waitForLoadState('networkidle');
     }
     

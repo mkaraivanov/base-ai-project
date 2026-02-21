@@ -209,8 +209,8 @@ app.UseRequestLocalization(options =>
     options.FallBackToParentUICultures = true;
 });
 
-app.UseHttpsRedirection();
 app.UseCors();
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSerilogRequestLogging();

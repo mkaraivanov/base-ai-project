@@ -1,6 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Skeleton from '@mui/material/Skeleton';
+import MuiButton from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Divider from '@mui/material/Divider';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import { SeatMap } from '../../components/SeatMap/SeatMap';
 import { BookingTimer } from '../../components/BookingTimer/BookingTimer';
 import { bookingApi } from '../../api/bookingApi';
@@ -19,10 +31,8 @@ interface SeatTicketSelection {
 }
 
 export const SeatSelectionPage: React.FC = () => {
-  const { t } = useTranslation('customer');
   const { showtimeId } = useParams<{ showtimeId: string }>();
   const navigate = useNavigate();
-
   const [showtime, setShowtime] = useState<ShowtimeDto | null>(null);
   const [availability, setAvailability] = useState<SeatAvailabilityDto | null>(null);
   const [ticketTypes, setTicketTypes] = useState<readonly TicketTypeDto[]>([]);
@@ -30,10 +40,8 @@ export const SeatSelectionPage: React.FC = () => {
   const [seatTickets, setSeatTickets] = useState<Map<string, SeatTicketSelection>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const { selectedSeats, toggleSeat, clearSelection } = useSeatSelection();
-
-  const defaultTicketType = ticketTypes.find((t) => t.isActive) ?? null;
+  const defaultTicketType = ticketTypes.find(t => t.isActive) ?? null;
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,8 +57,7 @@ export const SeatSelectionPage: React.FC = () => {
         setAvailability(availabilityData);
         setTicketTypes(ticketTypeData);
       } catch (err: unknown) {
-        const message = extractErrorMessage(err, 'Failed to load seat availability');
-        setError(message);
+        setError(extractErrorMessage(err, 'Failed to load seat availability'));
       } finally {
         setLoading(false);
       }
@@ -64,36 +71,24 @@ export const SeatSelectionPage: React.FC = () => {
       const data = await bookingApi.getSeatAvailability(showtimeId);
       setAvailability(data);
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Failed to reload seat availability');
-      setError(message);
+      setError(extractErrorMessage(err, 'Failed to reload seat availability'));
     }
   };
 
   const allSeats: readonly SeatDto[] = availability
-    ? [
-        ...availability.availableSeats,
-        ...availability.reservedSeats,
-        ...availability.bookedSeats,
-      ]
+    ? [...availability.availableSeats, ...availability.reservedSeats, ...availability.bookedSeats]
     : [];
 
   const handleToggleSeat = useCallback(
     (seatNumber: string) => {
       const wasSelected = selectedSeats.includes(seatNumber);
       toggleSeat(seatNumber);
-
       if (wasSelected) {
-        // Remove from ticket selections
-        setSeatTickets((prev) => {
-          const next = new Map(prev);
-          next.delete(seatNumber);
-          return next;
-        });
+        setSeatTickets(prev => { const next = new Map(prev); next.delete(seatNumber); return next; });
       } else if (defaultTicketType) {
-        // Auto-assign the default (first active) ticket type
-        const seat = allSeats.find((s) => s.seatNumber === seatNumber);
+        const seat = allSeats.find(s => s.seatNumber === seatNumber);
         const seatPrice = seat?.price ?? 0;
-        setSeatTickets((prev) => {
+        setSeatTickets(prev => {
           const next = new Map(prev);
           next.set(seatNumber, {
             ticketTypeId: defaultTicketType.id,
@@ -109,10 +104,10 @@ export const SeatSelectionPage: React.FC = () => {
   );
 
   const handleTicketTypeChange = (seatNumber: string, ticketTypeId: string) => {
-    const ticketType = ticketTypes.find((t) => t.id === ticketTypeId);
+    const ticketType = ticketTypes.find(t => t.id === ticketTypeId);
     if (!ticketType) return;
     const seatPrice = seatTickets.get(seatNumber)?.seatPrice ?? 0;
-    setSeatTickets((prev) => {
+    setSeatTickets(prev => {
       const next = new Map(prev);
       next.set(seatNumber, {
         ticketTypeId: ticketType.id,
@@ -124,25 +119,19 @@ export const SeatSelectionPage: React.FC = () => {
     });
   };
 
-  const totalPrice = Array.from(seatTickets.values()).reduce(
-    (sum, sel) => sum + sel.unitPrice,
-    0,
-  );
+  const totalPrice = Array.from(seatTickets.values()).reduce((sum, sel) => sum + sel.unitPrice, 0);
 
   const handleReserve = async () => {
     if (selectedSeats.length === 0 || !showtimeId) return;
-
-    const seats = selectedSeats.map((seatNumber) => ({
+    const seats = selectedSeats.map(seatNumber => ({
       seatNumber,
       ticketTypeId: seatTickets.get(seatNumber)?.ticketTypeId ?? defaultTicketType?.id ?? '',
     }));
-
     try {
       const res = await bookingApi.createReservation(showtimeId, seats);
       setReservation(res);
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Failed to reserve seats. Please try again.');
-      setError(message);
+      setError(extractErrorMessage(err, 'Failed to reserve seats. Please try again.'));
       await reloadAvailability();
       clearSelection();
       setSeatTickets(new Map());
@@ -154,133 +143,125 @@ export const SeatSelectionPage: React.FC = () => {
     clearSelection();
     setSeatTickets(new Map());
     await reloadAvailability();
-      setError(t('seatSelection.reservationExpired'));
+    setError('Your reservation has expired. Please select your seats again.');
   };
 
-  const handleProceedToCheckout = () => {
-    if (reservation) {
-      navigate(`/checkout/${reservation.id}`);
-    }
-  };
+  if (loading) return (
+    <Box sx={{ minHeight: '100vh', p: 4 }}>
+      <Skeleton height={40} width={256} sx={{ borderRadius: 2, mb: 1 }} />
+      <Skeleton height={20} width={160} sx={{ borderRadius: 1, mb: 4 }} />
+      <Skeleton variant="rectangular" height={280} sx={{ maxWidth: 640, mx: 'auto', borderRadius: 3 }} />
+    </Box>
+  );
 
-  if (loading) return <div className="page"><div className="loading">{t('seatSelection.loading')}</div></div>;
-  if (error && !availability) return <div className="page"><div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div></div>;
-  if (!availability) return <div className="page"><div className="error-message">{t('seatSelection.noDataAvailable')}</div></div>;
+  if (error && !availability) return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Typography color="error" sx={{ whiteSpace: 'pre-line' }}>{error}</Typography>
+    </Box>
+  );
+
+  if (!availability) return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Typography color="text.secondary">No data available</Typography>
+    </Box>
+  );
 
   return (
-    <div className="page">
-      <div className="container">
-        {showtime && (
-          <div className="showtime-header">
-            <h1>{showtime.movieTitle}</h1>
-            <p>
-              {formatDateTime(showtime.startTime)} &bull; {showtime.hallName}
-            </p>
-          </div>
-        )}
+    <Box sx={{ minHeight: '100vh' }}>
+      <Paper variant="outlined" square elevation={0} sx={{ position: 'sticky', top: 64, zIndex: 30, borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}>
+        <Container maxWidth="lg" sx={{ py: 1.5 }}>
+          {showtime && (
+            <Box>
+              <Typography variant="h6" fontWeight={700}>{showtime.movieTitle}</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {formatDateTime(showtime.startTime)} &bull; {showtime.hallName}
+              </Typography>
+            </Box>
+          )}
+        </Container>
+      </Paper>
 
-        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 300px' }, gap: 3 }}>
+          <Box>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2, whiteSpace: 'pre-line' }}>{error}</Alert>
+            )}
+            {reservation && (
+              <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                <BookingTimer expiresAt={new Date(reservation.expiresAt)} onExpire={handleReservationExpire} />
+                <MuiButton variant="contained" size="small" onClick={() => navigate(`/checkout/${reservation.id}`)}>
+                  Proceed to Checkout
+                </MuiButton>
+              </Paper>
+            )}
+            <SeatMap seats={allSeats} selectedSeats={[...selectedSeats]} onSeatClick={handleToggleSeat} />
+          </Box>
 
-        {reservation && (
-          <div className="reservation-banner">
-            <BookingTimer
-              expiresAt={new Date(reservation.expiresAt)}
-              onExpire={handleReservationExpire}
-            />
-            <button onClick={handleProceedToCheckout} className="btn btn-primary">
-              {t('seatSelection.proceedToCheckout')}
-            </button>
-          </div>
-        )}
-
-        <SeatMap
-          seats={allSeats}
-          selectedSeats={[...selectedSeats]}
-          onSeatClick={handleToggleSeat}
-        />
-
-        <div className="booking-summary">
-          <h3>{t('seatSelection.bookingSummary')}</h3>
-
-          {selectedSeats.length === 0 ? (
-            <p>{t('seatSelection.noSeatsSelected')}</p>
-          ) : (
-            <>
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatSelection.seat')}</th>
-                    <th style={{ textAlign: 'left', paddingBottom: '0.5rem' }}>{t('seatSelection.ticketType')}</th>
-                    <th style={{ textAlign: 'right', paddingBottom: '0.5rem' }}>{t('seatSelection.price')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedSeats.map((seatNumber) => {
+          <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, alignSelf: 'start', position: { md: 'sticky' }, top: { md: 160 } }}>
+            <Typography fontWeight={600} mb={2}>Booking Summary</Typography>
+            {selectedSeats.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">Select seats on the map to begin.</Typography>
+            ) : (
+              <>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+                  {selectedSeats.map(seatNumber => {
                     const sel = seatTickets.get(seatNumber);
                     return (
-                      <tr key={seatNumber}>
-                        <td style={{ padding: '0.25rem 0' }}>{seatNumber}</td>
-                        <td style={{ padding: '0.25rem 0.5rem' }}>
+                      <Box key={seatNumber} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip label={seatNumber} size="small" variant="outlined" sx={{ fontFamily: 'monospace', fontWeight: 500, minWidth: 48 }} />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
                           {ticketTypes.length > 1 ? (
-                            <select
-                              value={sel?.ticketTypeId ?? ''}
-                              onChange={(e) => handleTicketTypeChange(seatNumber, e.target.value)}
-                              className="form-control"
-                              style={{ padding: '0.2rem 0.4rem', fontSize: '0.9rem' }}
-                              disabled={!!reservation}
-                            >
-                              {ticketTypes.map((tt) => (
-                                <option key={tt.id} value={tt.id}>
-                                  {tt.name}
-                                </option>
-                              ))}
-                            </select>
+                            <FormControl size="small" fullWidth disabled={!!reservation}>
+                              <InputLabel sx={{ fontSize: 12 }}>Type</InputLabel>
+                              <Select
+                                value={sel?.ticketTypeId ?? ''}
+                                label="Type"
+                                onChange={e => handleTicketTypeChange(seatNumber, e.target.value)}
+                                sx={{ fontSize: 12 }}
+                              >
+                                {ticketTypes.map(tt => (
+                                  <MenuItem key={tt.id} value={tt.id} sx={{ fontSize: 12 }}>{tt.name}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
                           ) : (
-                            <span>{sel?.ticketTypeName ?? '—'}</span>
+                            <Typography variant="caption" color="text.secondary">{sel?.ticketTypeName ?? '—'}</Typography>
                           )}
-                        </td>
-                        <td style={{ textAlign: 'right', padding: '0.25rem 0' }}>
+                        </Box>
+                        <Box sx={{ flexShrink: 0, textAlign: 'right' }}>
                           {sel ? (
-                            <>
+                            <Box>
                               {sel.unitPrice < sel.seatPrice && (
-                                <small style={{ textDecoration: 'line-through', color: '#999', marginRight: '4px' }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ textDecoration: 'line-through', display: 'block' }}>
                                   {formatCurrency(sel.seatPrice)}
-                                </small>
+                                </Typography>
                               )}
-                              {formatCurrency(sel.unitPrice)}
-                            </>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                      </tr>
+                              <Typography variant="body2" fontWeight={500}>{formatCurrency(sel.unitPrice)}</Typography>
+                            </Box>
+                          ) : '—'}
+                        </Box>
+                      </Box>
                     );
                   })}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan={2} style={{ paddingTop: '0.75rem', fontWeight: 'bold' }}>{t('seatSelection.totalLabel')}</td>
-                    <td style={{ textAlign: 'right', paddingTop: '0.75rem', fontWeight: 'bold' }}>
-                      {formatCurrency(totalPrice)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+                </Box>
 
-              {!reservation && (
-                <button
-                  onClick={handleReserve}
-                  disabled={selectedSeats.length === 0}
-                  className="btn btn-primary"
-                >
-                  {t('seatSelection.reserveSeats', { count: selectedSeats.length })}
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+                <Divider sx={{ mb: 2 }} />
+
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                  <Typography fontWeight={600}>Total</Typography>
+                  <Typography variant="h6" fontWeight={700} color="primary.main">{formatCurrency(totalPrice)}</Typography>
+                </Box>
+                {!reservation && (
+                  <MuiButton variant="contained" fullWidth onClick={handleReserve} disabled={selectedSeats.length === 0}>
+                    Reserve {selectedSeats.length} Seat{selectedSeats.length !== 1 ? 's' : ''}
+                  </MuiButton>
+                )}
+              </>
+            )}
+          </Paper>
+        </Box>
+      </Container>
+    </Box>
   );
 };
-

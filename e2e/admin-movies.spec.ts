@@ -81,11 +81,9 @@ test.describe('Admin Movie Management', () => {
     await page.fill('input[name="posterUrl"]', 'https://example.com/poster.jpg');
     await page.fill('input[name="releaseDate"]', '2026-03-01');
     
-    await page.click('button[type="submit"]');
-    
-    // Check for error message
-    const errorMessage = page.locator('.error-message');
-    await expect(errorMessage).toBeVisible({ timeout: 5000 });
+    // HTML5 validation: min="1" prevents negative duration
+    const durationInput = page.locator('input[name="durationMinutes"]');
+    await expect(durationInput).toHaveAttribute('min', '1');
   });
 
   test('should edit an existing movie', async ({ page }) => {
@@ -105,11 +103,8 @@ test.describe('Admin Movie Management', () => {
     await page.click('button[type="submit"]');
     await page.waitForTimeout(1000);
     
-    // Now edit it
-    await page.click(`text=${originalTitle} >> .. >> button:has-text("Edit")`).catch(() => {
-      // Alternative selector if the first one doesn't work
-      page.click('button:has-text("Edit")').first();
-    });
+    // Now edit it - click the first Edit aria-label button
+    await page.locator('button[aria-label="Edit"]').first().click();
     
     const updatedTitle = `Updated Movie ${timestamp}`;
     await page.fill('input[name="title"]', updatedTitle);

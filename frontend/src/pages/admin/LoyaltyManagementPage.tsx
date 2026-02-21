@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Gift } from 'lucide-react';
+import { toast } from 'sonner';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
+import MuiButton from '@mui/material/Button';
+import MuiSkeleton from '@mui/material/Skeleton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import { loyaltyApi } from '../../api/loyaltyApi';
 import { extractErrorMessage } from '../../utils/errorHandler';
 
 export const LoyaltyManagementPage: React.FC = () => {
-  const { t } = useTranslation('admin');
   const [stampsRequired, setStampsRequired] = useState<number>(5);
   const [inputValue, setInputValue] = useState<string>('5');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -19,7 +27,7 @@ export const LoyaltyManagementPage: React.FC = () => {
         setStampsRequired(settings.stampsRequired);
         setInputValue(String(settings.stampsRequired));
       } catch (err: unknown) {
-        setError(extractErrorMessage(err, t('loyalty.failedToLoad')));
+        toast.error(extractErrorMessage(err, 'Failed to load loyalty settings'));
       } finally {
         setLoading(false);
       }
@@ -29,108 +37,78 @@ export const LoyaltyManagementPage: React.FC = () => {
 
   const handleSave = async () => {
     const parsed = parseInt(inputValue, 10);
-    if (isNaN(parsed) || parsed < 1) {
-      setError(t('loyalty.invalidVisits'));
-      return;
-    }
-
+    if (isNaN(parsed) || parsed < 1) { toast.error('Number of visits must be at least 1'); return; }
     setSaving(true);
-    setError(null);
-    setSuccess(null);
-
     try {
       const updated = await loyaltyApi.updateSettings({ stampsRequired: parsed });
       setStampsRequired(updated.stampsRequired);
       setInputValue(String(updated.stampsRequired));
-      setSuccess(t('loyalty.savedSuccess'));
+      toast.success('Loyalty settings saved.');
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, t('loyalty.failedToSave')));
+      toast.error(extractErrorMessage(err, 'Failed to save loyalty settings'));
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
-
   return (
-    <div className="page">
-      <div className="container">
-        <h1>{t('loyalty.pageTitle')}</h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px' }}>
-          {t('loyalty.pageSubtitle')}
-        </p>
+    <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="sm" sx={{ py: 5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+          <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: 'rgba(20,184,166,0.1)', color: '#14b8a6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Gift size={20} />
+          </Box>
+          <Box>
+            <Typography variant="h5" fontWeight={700}>Loyalty Program</Typography>
+            <Typography variant="body2" color="text.secondary">Configure the free ticket reward threshold.</Typography>
+          </Box>
+        </Box>
 
-        <div className="form-card" style={{
-          background: 'var(--color-surface)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '32px',
-          boxShadow: 'var(--shadow)',
-          maxWidth: '480px',
-        }}>
-          <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label htmlFor="stampsRequired" style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>
-              {t('loyalty.visitsRequired')}
-            </label>
-            <input
-              id="stampsRequired"
+        <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 3 }}>
+          {loading ? (
+            <MuiSkeleton height={56} sx={{ borderRadius: 2, mb: 2 }} />
+          ) : (
+            <TextField
+              label="Visits required for a free ticket"
               type="number"
-              min={1}
-              max={100}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              className="form-input"
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius)',
-                fontSize: '1rem',
-              }}
+              onChange={e => setInputValue(e.target.value)}
+              inputProps={{ min: 1, max: 100 }}
+              fullWidth
+              size="small"
+              sx={{ mb: 1.5 }}
             />
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginTop: '6px' }}
-              dangerouslySetInnerHTML={{ __html: t('loyalty.currentlySet', { count: stampsRequired }) }}
-            />
-          </div>
-
-          {error && (
-            <div className="error-message" style={{ marginBottom: '16px' }}>
-              {error}
-            </div>
           )}
-          {success && (
-            <div style={{
-              background: '#dcfce7',
-              color: '#166534',
-              borderRadius: 'var(--radius)',
-              padding: '10px 14px',
-              marginBottom: '16px',
-              fontSize: '0.9rem',
-            }}>
-              {success}
-            </div>
-          )}
-
-          <button
+          <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+            Currently set to <strong>{stampsRequired}</strong> visits.
+          </Typography>
+          <MuiButton
+            variant="contained"
+            fullWidth
             onClick={handleSave}
-            disabled={saving}
-            className="btn btn-primary"
-            style={{ width: '100%' }}
+            disabled={saving || loading}
           >
-            {saving ? t('loyalty.saving') : t('loyalty.saveSettings')}
-          </button>
-        </div>
+            {saving ? 'Saving…' : 'Save Settings'}
+          </MuiButton>
+        </Paper>
 
-        <div style={{ marginTop: '40px', maxWidth: '480px' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '12px' }}>{t('loyalty.howItWorks')}</h2>
-          <ul style={{ paddingLeft: '20px', lineHeight: '2', color: 'var(--color-text-secondary)' }}>
-            <li>{t('loyalty.bullet1')}</li>
-            <li>{t('loyalty.bullet2')}</li>
-            <li>{t('loyalty.bullet3')}</li>
-            <li>{t('loyalty.bullet4')}</li>
-            <li>{t('loyalty.bullet5')}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+        <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+          <Typography fontWeight={600} mb={2}>How it works</Typography>
+          <List dense disablePadding sx={{ '& li': { pl: 0 } }}>
+            {[
+              'Each qualifying booking awards the customer 1 stamp.',
+              'Multiple tickets in one transaction count as a single visit.',
+              'When a customer reaches the required stamps, they receive a free ticket voucher.',
+              'The stamp counter resets after each reward is issued.',
+            ].map((text, i) => (
+              <ListItem key={i} sx={{ px: 0, py: 0.5, alignItems: 'flex-start', gap: 1 }}>
+                <Box sx={{ mt: 0.7, width: 6, height: 6, borderRadius: '50%', bgcolor: 'text.secondary', flexShrink: 0 }} />
+                <ListItemText primary={text} primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }} />
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      </Container>
+    </Box>
   );
 };

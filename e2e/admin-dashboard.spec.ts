@@ -30,7 +30,7 @@ test.describe('Admin - Dashboard Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Check for dashboard heading
-    const heading = page.locator('h1, h2').filter({ hasText: /dashboard|admin/i }).first();
+    const heading = page.locator('h1, h2, h3, h4').filter({ hasText: /dashboard|admin/i }).first();
     await expect(heading).toBeVisible({ timeout: 10000 });
   });
 
@@ -38,11 +38,11 @@ test.describe('Admin - Dashboard Page', () => {
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
     
-    // Check for statistics/metrics cards
-    const statsCards = page.locator('.admin-card');
+    // Check for admin navigation cards (rendered as anchor links)
+    const statsCards = page.locator('a[href^="/admin/"]');
     const cardCount = await statsCards.count();
     
-    // Should have at least some statistics displayed
+    // Should have at least some navigation cards displayed
     expect(cardCount).toBeGreaterThan(0);
   });
 
@@ -51,15 +51,15 @@ test.describe('Admin - Dashboard Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Check for navigation to movies management
-    const moviesLink = page.locator('.admin-card').filter({ hasText: /movies/i }).first();
+    const moviesLink = page.locator('a[href="/admin/movies"]');
     await expect(moviesLink).toBeVisible();
     
     // Check for navigation to halls management
-    const hallsLink = page.locator('.admin-card').filter({ hasText: /halls/i }).first();
+    const hallsLink = page.locator('a[href="/admin/halls"]');
     await expect(hallsLink).toBeVisible();
     
     // Check for navigation to showtimes management
-    const showtimesLink = page.locator('.admin-card').filter({ hasText: /showtimes/i }).first();
+    const showtimesLink = page.locator('a[href="/admin/showtimes"]');
     await expect(showtimesLink).toBeVisible();
   });
 
@@ -68,7 +68,7 @@ test.describe('Admin - Dashboard Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Click on movies management link in admin grid
-    const moviesLink = page.locator('.admin-card').filter({ hasText: /movies/i }).first();
+    const moviesLink = page.locator('a[href="/admin/movies"]');
     await moviesLink.click();
     
     // Should navigate to movies management page
@@ -80,7 +80,7 @@ test.describe('Admin - Dashboard Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Click on halls management link in admin grid
-    const hallsLink = page.locator('.admin-card').filter({ hasText: /halls/i }).first();
+    const hallsLink = page.locator('a[href="/admin/halls"]');
     await hallsLink.click();
     
     // Should navigate to halls management page
@@ -92,7 +92,7 @@ test.describe('Admin - Dashboard Page', () => {
     await page.waitForLoadState('networkidle');
     
     // Click on showtimes management link in admin grid
-    const showtimesLink = page.locator('.admin-card').filter({ hasText: /showtimes/i }).first();
+    const showtimesLink = page.locator('a[href="/admin/showtimes"]');
     await showtimesLink.click();
     
     // Should navigate to showtimes management page
@@ -140,11 +140,12 @@ test.describe('Admin - Dashboard Page', () => {
 
   test('non-admin user should not access admin dashboard', async ({ page }) => {
     // Logout admin
-    const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out/i }).first();
-    const logoutExists = await logoutButton.isVisible().catch(() => false);
-    
-    if (logoutExists) {
-      await logoutButton.click();
+    // Open avatar menu and click log out
+    const avatarButton = page.getByRole('button', { name: /open user menu/i });
+    const menuExists = await avatarButton.isVisible().catch(() => false);
+    if (menuExists) {
+      await avatarButton.click();
+      await page.getByRole('menuitem', { name: /log out/i }).click();
       await page.waitForLoadState('networkidle');
     }
     

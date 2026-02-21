@@ -1,302 +1,249 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Plus, Pencil, Trash2, X, Calendar, Film, DollarSign } from 'lucide-react';
+import { toast } from 'sonner';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import MuiButton from '@mui/material/Button';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import { showtimeApi } from '../../api/showtimeApi';
 import { movieApi } from '../../api/movieApi';
 import { hallApi } from '../../api/hallApi';
 import { cinemaApi } from '../../api/cinemaApi';
-import type { ShowtimeDto, MovieDto, CinemaHallDto, CinemaDto, CreateShowtimeDto, UpdateShowtimeDto } from '../../types';
-import { formatDateTime, formatCurrency } from '../../utils/formatters';
+import type { ShowtimeDto, CreateShowtimeDto, UpdateShowtimeDto, MovieDto, CinemaHallDto, CinemaDto } from '../../types';
+import { formatCurrency } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/errorHandler';
+import { Badge } from '../../components/ui/badge';
+import { AlertDialog } from '../../components/ui/alert-dialog';
 
 interface ShowtimeFormData {
-  movieId: string;
-  formCinemaId: string;
-  cinemaHallId: string;
-  startTime: string;
-  basePrice: string;
-  isActive: boolean;
+  movieId: string; formCinemaId: string; cinemaHallId: string;
+  startTime: string; basePrice: string; isActive: boolean;
 }
-
-const EMPTY_FORM: ShowtimeFormData = {
-  movieId: '',
-  formCinemaId: '',
-  cinemaHallId: '',
-  startTime: '',
-  basePrice: '',
-  isActive: true,
-};
+const EMPTY: ShowtimeFormData = { movieId: '', formCinemaId: '', cinemaHallId: '', startTime: '', basePrice: '', isActive: true };
 
 export const ShowtimesManagementPage: React.FC = () => {
-  const { t } = useTranslation('admin');
   const [showtimes, setShowtimes] = useState<readonly ShowtimeDto[]>([]);
   const [movies, setMovies] = useState<readonly MovieDto[]>([]);
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
-  const [filterCinemaId, setFilterCinemaId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<ShowtimeFormData>(EMPTY_FORM);
-  const [filteredHalls, setFilteredHalls] = useState<readonly CinemaHallDto[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<ShowtimeFormData>(EMPTY);
+  const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [filterCinemaId, setFilterCinemaId] = useState('');
 
-  const loadData = async (cinemaId?: string) => {
-    try {
-      setLoading(true);
-      const [showtimeData, movieData, hallData, cinemaData] = await Promise.all([
-        showtimeApi.getAll(undefined, undefined, cinemaId || undefined),
-        movieApi.getAll(true),
-        hallApi.getAll(true),
-        cinemaApi.getAll(true),
-      ]);
-      setShowtimes(showtimeData);
-      setMovies(movieData);
-      setHalls(hallData);
-      setCinemas(cinemaData);
-    } catch {
-      setError('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData(filterCinemaId || undefined);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const loadShowtimes = useCallback(async () => {
+    try { setLoading(true); setShowtimes(await showtimeApi.getAll(filterCinemaId || undefined)); }
+    catch { toast.error('Failed to load showtimes'); }
+    finally { setLoading(false); }
   }, [filterCinemaId]);
 
-  // Filter halls for form when cinema selection changes
+  useEffect(() => { loadShowtimes(); }, [loadShowtimes]);
   useEffect(() => {
-    if (form.formCinemaId) {
-      setFilteredHalls(halls.filter((h) => h.cinemaId === form.formCinemaId));
-    } else {
-      setFilteredHalls(halls);
-    }
-  }, [form.formCinemaId, halls]);
+    Promise.all([movieApi.getAll(true), hallApi.getAll(true), cinemaApi.getAll(true)])
+      .then(([m, h, c]) => { setMovies(m); setHalls(h); setCinemas(c); })
+      .catch(() => {});
+  }, []);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setForm((prev) => ({ ...prev, [name]: checked }));
-      return;
-    }
-    setForm((prev) => {
-      const updated = { ...prev, [name]: value };
-      // Reset hall selection when cinema changes
-      if (name === 'formCinemaId') {
-        updated.cinemaHallId = '';
-      }
-      return updated;
-    });
-  };
+  const filteredHalls = useMemo(() => halls.filter(h => h.cinemaId === form.formCinemaId), [halls, form.formCinemaId]);
 
-  const handleCreate = () => {
-    setEditingId(null);
-    setForm(EMPTY_FORM);
+  const set = (name: keyof ShowtimeFormData, v: string | boolean) =>
+    setForm(p => name === 'formCinemaId' ? { ...p, [name]: v as string, cinemaHallId: '' } : { ...p, [name]: v });
+
+  const openCreate = () => { setEditingId(null); setForm(EMPTY); setShowForm(true); };
+  const openEdit = (st: ShowtimeDto) => {
+    setEditingId(st.id);
+    const hall = halls.find(h => h.id === st.cinemaHallId);
+    setForm({ movieId: st.movieId, formCinemaId: hall?.cinemaId ?? '', cinemaHallId: st.cinemaHallId, startTime: st.startTime.slice(0, 16), basePrice: st.basePrice.toString(), isActive: st.isActive });
     setShowForm(true);
-    setError(null);
-  };
-
-  const handleEdit = (showtime: ShowtimeDto) => {
-    setEditingId(showtime.id);
-    setForm({
-      movieId: showtime.movieId,
-      formCinemaId: showtime.cinemaId,
-      cinemaHallId: showtime.cinemaHallId,
-      startTime: showtime.startTime.slice(0, 16),
-      basePrice: showtime.basePrice.toString(),
-      isActive: showtime.isActive,
-    });
-    setShowForm(true);
-    setError(null);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm(t('showtimes.confirmDelete'))) return;
-    try {
-      await showtimeApi.delete(id);
-      await loadData(filterCinemaId || undefined);
-    } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Failed to delete showtime');
-      setError(message);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-
+    e.preventDefault(); setSaving(true);
     try {
       if (editingId) {
-        const updateData: UpdateShowtimeDto = {
-          startTime: new Date(form.startTime).toISOString(),
-          basePrice: parseFloat(form.basePrice),
-          isActive: form.isActive,
-        };
-        await showtimeApi.update(editingId, updateData);
+        await showtimeApi.update(editingId, { basePrice: parseFloat(form.basePrice), isActive: form.isActive } as UpdateShowtimeDto);
+        toast.success('Showtime updated.');
       } else {
-        const createData: CreateShowtimeDto = {
-          movieId: form.movieId,
-          cinemaHallId: form.cinemaHallId,
-          startTime: new Date(form.startTime).toISOString(),
-          basePrice: parseFloat(form.basePrice),
-        };
-        await showtimeApi.create(createData);
+        await showtimeApi.create({ movieId: form.movieId, cinemaHallId: form.cinemaHallId, startTime: new Date(form.startTime).toISOString(), basePrice: parseFloat(form.basePrice) } as CreateShowtimeDto);
+        toast.success('Showtime created.');
       }
-      setEditingId(null);
-      setShowForm(false);
-      setForm(EMPTY_FORM);
-      await loadData(filterCinemaId || undefined);
-    } catch (err: unknown) {
-      const message = extractErrorMessage(err, editingId ? 'Failed to update showtime' : 'Failed to create showtime');
-      setError(message);
-    } finally {
-      setSaving(false);
-    }
+      setShowForm(false); setEditingId(null); await loadShowtimes();
+    } catch (err) { toast.error(extractErrorMessage(err, 'Failed to save showtime')); }
+    finally { setSaving(false); }
   };
 
-  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try { await showtimeApi.delete(deleteId); toast.success('Showtime deleted.'); await loadShowtimes(); }
+    catch (err) { toast.error(extractErrorMessage(err, 'Failed to delete showtime')); }
+    finally { setDeleteId(null); }
+  };
+
+  const movieTitle = (id: string) => movies.find(m => m.id === id)?.title ?? id;
+  const hallName = (id: string) => halls.find(h => h.id === id)?.name ?? id;
+  const cinemaNamed = (id: string) => cinemas.find(c => c.id === id)?.name ?? '';
 
   return (
-    <div className="page">
-      <div className="container">
-        <div className="page-header">
-          <h1>{t('showtimes.title')}</h1>
-          <button onClick={handleCreate} className="btn btn-primary">
-            + {t('showtimes.addShowtime')}
-          </button>
-        </div>
+    <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}><Calendar size={24} /></Box>
+            <Box>
+              <Typography variant="h5" component="h1" fontWeight={700}>Showtimes Management</Typography>
+              <Typography variant="body2" color="text.secondary">{showtimes.length} showtime{showtimes.length !== 1 ? 's' : ''}</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <InputLabel>Filter by Cinema</InputLabel>
+              <Select value={filterCinemaId} label="Filter by Cinema" onChange={(e: SelectChangeEvent) => setFilterCinemaId(e.target.value)}>
+                <MenuItem value="">All Cinemas</MenuItem>
+                {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>Add Showtime</MuiButton>
+          </Box>
+        </Box>
 
-        <div className="filters">
-          <select
-            value={filterCinemaId}
-            onChange={(e) => setFilterCinemaId(e.target.value)}
-            className="input"
-            style={{ maxWidth: 260 }}
-          >
-            <option value="">{t('common.allCinemas')}</option>
-            {cinemas.map((c) => (
-              <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
-            ))}
-          </select>
-        </div>
-
-        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
-
-        {showForm && (
-          <div className="modal-overlay" onClick={() => setShowForm(false)}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingId ? t('showtimes.editShowtime') : t('showtimes.scheduleShowtime')}</h2>
-              <form onSubmit={handleSubmit} className="form">
-                <div className="form-group">
-                  <label htmlFor="movieId">{t('showtimes.form.movie')}</label>
-                  <select id="movieId" name="movieId" value={form.movieId} onChange={handleInputChange} className="input" required disabled={!!editingId}>
-                    <option value="">{t('showtimes.form.selectMovie')}</option>
-                    {movies.map((movie) => (
-                      <option key={movie.id} value={movie.id}>{movie.title}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="formCinemaId">{t('showtimes.form.cinema')}</label>
-                  <select id="formCinemaId" name="formCinemaId" value={form.formCinemaId} onChange={handleInputChange} className="input" required disabled={!!editingId}>
-                    <option value="">{t('showtimes.form.selectCinema')}</option>
-                    {cinemas.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="cinemaHallId">{t('showtimes.form.hall')}</label>
-                  <select id="cinemaHallId" name="cinemaHallId" value={form.cinemaHallId} onChange={handleInputChange} className="input" required disabled={!form.formCinemaId || !!editingId}>
-                    <option value="">{t('showtimes.form.selectHall')}</option>
-                    {filteredHalls.map((hall) => (
-                      <option key={hall.id} value={hall.id}>{hall.name} ({hall.totalSeats} seats)</option>
-                    ))}
-                  </select>
-                  {form.formCinemaId && filteredHalls.length === 0 && (
-                    <p className="form-help" style={{ color: '#e53e3e' }}>{t('halls.form.noActiveHalls')}</p>
+        <AnimatePresence>
+          {showForm && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ marginBottom: 32 }}>
+              <Paper variant="outlined" sx={{ borderRadius: 3, p: 3 }} component="form" onSubmit={handleSubmit}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? 'Edit Showtime' : 'Schedule Showtime'}</Typography>
+                  <IconButton size="small" onClick={() => setShowForm(false)}><X size={18} /></IconButton>
+                </Box>
+                <Grid container spacing={2}>
+                  <Grid size={12}>
+                    <FormControl size="small" fullWidth required disabled={!!editingId}>
+                      <InputLabel>Movie *</InputLabel>
+                      <Select inputProps={{ name: 'movieId', required: true }} value={form.movieId} label="Movie *" onChange={(e: SelectChangeEvent) => set('movieId', e.target.value)}>
+                        {movies.map(m => <MenuItem key={m.id} value={m.id}>{m.title}</MenuItem>)}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={6}>
+                    <FormControl size="small" fullWidth required disabled={!!editingId}>
+                      <InputLabel>Cinema *</InputLabel>
+                      <Select value={form.formCinemaId} label="Cinema *" onChange={(e: SelectChangeEvent) => set('formCinemaId', e.target.value)} inputProps={{ name: 'formCinemaId' }}>
+                        {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={6}>
+                    <FormControl size="small" fullWidth required disabled={!!editingId || !form.formCinemaId}>
+                      <InputLabel>Hall *</InputLabel>
+                      <Select inputProps={{ name: 'cinemaHallId', required: true }} value={form.cinemaHallId} label="Hall *" onChange={(e: SelectChangeEvent) => set('cinemaHallId', e.target.value)}>
+                        {filteredHalls.map(h => <MenuItem key={h.id} value={h.id}>{h.name}</MenuItem>)}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField label="Start Time *" name="startTime" type="datetime-local" value={form.startTime} onChange={e => set('startTime', e.target.value)} required fullWidth size="small" slotProps={{ inputLabel: { shrink: true } }} disabled={!!editingId} />
+                  </Grid>
+                  <Grid size={6}>
+                    <TextField label="Base Price *" name="basePrice" type="number" slotProps={{ htmlInput: { min: 0, step: 0.01 } }} value={form.basePrice} onChange={e => set('basePrice', e.target.value)} required fullWidth size="small" />
+                  </Grid>
+                  {editingId && (
+                    <Grid size={12}>
+                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label="Active" />
+                    </Grid>
                   )}
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="startTime">{t('showtimes.form.startTime')}</label>
-                    <input id="startTime" name="startTime" type="datetime-local" value={form.startTime} onChange={handleInputChange} className="input" required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="basePrice">{t('showtimes.form.basePrice')}</label>
-                    <input id="basePrice" name="basePrice" type="number" step="0.01" min="0" value={form.basePrice} onChange={handleInputChange} className="input" required />
-                  </div>
-                </div>
-                {editingId && (
-                  <div className="form-group">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="isActive"
-                        checked={form.isActive}
-                        onChange={handleInputChange}
-                      />
-                      {t('showtimes.form.activeLabel')}
-                    </label>
-                  </div>
-                )}
-                <div className="form-actions">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">{t('common.cancel')}</button>
-                  <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+                </Grid>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
+                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>Cancel</MuiButton>
+                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</MuiButton>
+                </Box>
+              </Paper>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="data-table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t('showtimes.columns.movie')}</th>
-                <th>{t('showtimes.columns.cinema')}</th>
-                <th>{t('showtimes.columns.hall')}</th>
-                <th>{t('showtimes.columns.startTime')}</th>
-                <th>{t('showtimes.columns.basePrice')}</th>
-                <th>{t('showtimes.columns.availableSeats')}</th>
-                <th>{t('showtimes.columns.status')}</th>
-                <th>{t('showtimes.columns.actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {showtimes.map((showtime) => (
-                <tr key={showtime.id}>
-                  <td>{showtime.movieTitle}</td>
-                  <td>{showtime.cinemaName}</td>
-                  <td>{showtime.hallName}</td>
-                  <td>{formatDateTime(showtime.startTime)}</td>
-                  <td>{formatCurrency(showtime.basePrice)}</td>
-                  <td>{showtime.availableSeats}</td>
-                  <td>
-                    <span className={`status-badge status-${showtime.isActive ? 'confirmed' : 'cancelled'}`}>
-                      {showtime.isActive ? t('common.active') : t('common.inactive')}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      <button onClick={() => handleEdit(showtime)} className="btn btn-sm btn-outline">{t('common.edit')}</button>
-                      <button onClick={() => handleDelete(showtime.id)} className="btn btn-sm btn-danger">{t('common.delete')}</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        {loading ? (
+          <Stack spacing={1}>{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height={48} sx={{ borderRadius: 2 }} />)}</Stack>
+        ) : (
+          <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'action.hover' } }}>
+                  <TableCell>Movie</TableCell>
+                  <TableCell>Cinema / Hall</TableCell>
+                  <TableCell>Start Time</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Seats</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {showtimes.map(st => {
+                  const hall = halls.find(h => h.id === st.cinemaHallId);
+                  return (
+                    <TableRow key={st.id} hover>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Film size={13} style={{ opacity: 0.5 }} />
+                          <Typography variant="body2" fontWeight={500}>{movieTitle(st.movieId)}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {hall ? `${cinemaNamed(hall.cinemaId)} / ${hallName(st.cinemaHallId)}` : hallName(st.cinemaHallId)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(st.startTime).toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <DollarSign size={12} style={{ opacity: 0.5 }} />
+                          <Typography variant="body2">{formatCurrency(st.basePrice)}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell><Typography variant="body2">{st.availableSeats}</Typography></TableCell>
+                      <TableCell><Badge variant={st.isActive ? 'success' : 'secondary'}>{st.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                      <TableCell align="right">
+                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                          <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(st)}><Pencil size={13} /></IconButton></Tooltip>
+                          <Tooltip title="Delete"><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(st.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Container>
+
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title="Delete Showtime?" description="This will permanently remove the showtime. Existing bookings may be affected." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} />
+    </Box>
   );
 };

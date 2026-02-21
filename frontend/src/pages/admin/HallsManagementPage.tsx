@@ -1,281 +1,230 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Plus, Pencil, Trash2, X, LayoutGrid, Users } from 'lucide-react';
+import { toast } from 'sonner';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import MuiButton from '@mui/material/Button';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Alert from '@mui/material/Alert';
 import { hallApi } from '../../api/hallApi';
 import { cinemaApi } from '../../api/cinemaApi';
-import type { CinemaDto, CinemaHallDto, CreateCinemaHallDto, UpdateCinemaHallDto, SeatLayout, SeatDefinition } from '../../types';
+import type { CinemaHallDto, CreateCinemaHallDto, UpdateCinemaHallDto, SeatLayout, SeatDefinition, CinemaDto } from '../../types';
 import { extractErrorMessage } from '../../utils/errorHandler';
+import { Badge } from '../../components/ui/badge';
+import { AlertDialog } from '../../components/ui/alert-dialog';
 
-interface HallFormData {
-  cinemaId: string;
-  name: string;
-  rows: string;
-  seatsPerRow: string;
-  isActive: boolean;
-}
+interface HallFormData { cinemaId: string; name: string; rows: string; seatsPerRow: string; isActive: boolean; seatLayout?: SeatLayout; }
+const EMPTY: HallFormData = { cinemaId: '', name: '', rows: '10', seatsPerRow: '15', isActive: true };
 
-const EMPTY_FORM: HallFormData = {
-  cinemaId: '',
-  name: '',
-  rows: '8',
-  seatsPerRow: '10',
-  isActive: true,
-};
-
-const generateSeatLayout = (rows: number, seatsPerRow: number): SeatLayout => {
+function generateSeatLayout(rows: number, seatsPerRow: number): SeatLayout {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const premiumStart = Math.max(0, rows - 2);
   const seats: SeatDefinition[] = [];
   for (let r = 0; r < rows; r++) {
-    const rowLetter = String.fromCharCode(65 + r);
-    for (let c = 1; c <= seatsPerRow; c++) {
-      const seatType = r >= rows - 2 ? 'Premium' : 'Regular';
-      seats.push({
-        seatNumber: `${rowLetter}${c}`,
-        row: r + 1,
-        column: c,
-        seatType,
-        priceMultiplier: seatType === 'Premium' ? 1.5 : 1.0,
-        isAvailable: true,
-      });
+    for (let s = 0; s < seatsPerRow; s++) {
+      const seatType = r >= premiumStart ? 'Premium' : 'Regular';
+      const priceMultiplier = seatType === 'Premium' ? 1.5 : 1.0;
+      seats.push({ seatNumber: `${letters[r]}${s + 1}`, row: r, column: s, seatType, priceMultiplier, isAvailable: true });
     }
   }
   return { rows, seatsPerRow, seats };
-};
+}
 
 export const HallsManagementPage: React.FC = () => {
-  const { t } = useTranslation('admin');
   const [halls, setHalls] = useState<readonly CinemaHallDto[]>([]);
   const [cinemas, setCinemas] = useState<readonly CinemaDto[]>([]);
-  const [filterCinemaId, setFilterCinemaId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<HallFormData>(EMPTY_FORM);
-  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<HallFormData>(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [filterCinemaId, setFilterCinemaId] = useState('');
 
-  const loadCinemas = async () => {
-    try {
-      const data = await cinemaApi.getAll(true);
-      setCinemas(data);
-    } catch {
-      // non-blocking
-    }
-  };
-
-  const loadHalls = async () => {
-    try {
-      setLoading(true);
-      const data = await hallApi.getAll(false, filterCinemaId || undefined);
-      setHalls(data);
-    } catch {
-      setError('Failed to load halls');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadCinemas();
-  }, []);
-
-  useEffect(() => {
-    loadHalls();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const loadHalls = useCallback(async () => {
+    try { setLoading(true); setHalls(await hallApi.getAll(false, filterCinemaId || undefined)); }
+    catch { toast.error('Failed to load halls'); }
+    finally { setLoading(false); }
   }, [filterCinemaId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      setForm((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
-    }
-  };
+  useEffect(() => { loadHalls(); }, [loadHalls]);
+  useEffect(() => { cinemaApi.getAll(true).then(setCinemas).catch(() => {}); }, []);
 
-  const handleCreate = () => {
-    setEditingId(null);
-    setForm({ ...EMPTY_FORM, cinemaId: cinemas[0]?.id ?? '' });
+  const set = (name: keyof HallFormData, v: string | boolean) => setForm(p => ({ ...p, [name]: v }));
+
+  const openCreate = () => { setEditingId(null); setForm(EMPTY); setShowForm(true); };
+  const openEdit = (h: CinemaHallDto) => {
+    setEditingId(h.id);
+    setForm({ cinemaId: h.cinemaId, name: h.name, rows: h.seatLayout.rows.toString(), seatsPerRow: h.seatLayout.seatsPerRow.toString(), isActive: h.isActive, seatLayout: h.seatLayout });
     setShowForm(true);
-    setError(null);
-  };
-
-  const handleEdit = (hall: CinemaHallDto) => {
-    setEditingId(hall.id);
-    setForm({
-      cinemaId: hall.cinemaId,
-      name: hall.name,
-      rows: hall.seatLayout.rows.toString(),
-      seatsPerRow: hall.seatLayout.seatsPerRow.toString(),
-      isActive: hall.isActive,
-    });
-    setShowForm(true);
-    setError(null);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm(t('halls.confirmDelete'))) return;
-    try {
-      await hallApi.delete(id);
-      await loadHalls();
-    } catch (err: unknown) {
-      const message = extractErrorMessage(err, 'Failed to delete hall');
-      setError(message);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-
-    const rows = parseInt(form.rows, 10);
-    const seatsPerRow = parseInt(form.seatsPerRow, 10);
-    const seatLayout = generateSeatLayout(rows, seatsPerRow);
-
+    e.preventDefault(); setSaving(true);
     try {
+      const rows = parseInt(form.rows, 10);
+      const seatsPerRow = parseInt(form.seatsPerRow, 10);
       if (editingId) {
-        const updateData: UpdateCinemaHallDto = {
-          name: form.name,
-          seatLayout,
-          isActive: form.isActive,
-        };
-        await hallApi.update(editingId, updateData);
+        const existingSeatLayout = form.seatLayout ?? generateSeatLayout(rows, seatsPerRow);
+        await hallApi.update(editingId, { name: form.name, seatLayout: existingSeatLayout, isActive: form.isActive });
+        toast.success('Hall updated.');
       } else {
-        const createData: CreateCinemaHallDto = {
-          cinemaId: form.cinemaId,
-          name: form.name,
-          seatLayout,
-        };
-        await hallApi.create(createData);
+        const layout = generateSeatLayout(rows, seatsPerRow);
+        await hallApi.create({ cinemaId: form.cinemaId, name: form.name, seatLayout: layout });
+        toast.success('Hall created.');
       }
-      setShowForm(false);
-      setForm(EMPTY_FORM);
-      setEditingId(null);
-      await loadHalls();
-    } catch (err: unknown) {
-      const message = extractErrorMessage(
-        err,
-        editingId ? 'Failed to update hall' : 'Failed to create hall'
-      );
-      setError(message);
-    } finally {
-      setSaving(false);
-    }
+      setShowForm(false); setEditingId(null); await loadHalls();
+    } catch (err) { toast.error(extractErrorMessage(err, 'Failed to save hall')); }
+    finally { setSaving(false); }
   };
 
-  if (loading) return <div className="page"><div className="loading">{t('common.loading')}</div></div>;
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try { await hallApi.delete(deleteId); toast.success('Hall deleted.'); await loadHalls(); }
+    catch (err) { toast.error(extractErrorMessage(err, 'Failed to delete hall')); }
+    finally { setDeleteId(null); }
+  };
+
+  const totalPrev = parseInt(form.rows || '0', 10) * parseInt(form.seatsPerRow || '0', 10);
+  const cinemaNamed = (id: string) => cinemas.find(c => c.id === id)?.name ?? id;
 
   return (
-    <div className="page">
-      <div className="container">
-        <div className="page-header">
-          <h1>{t('halls.title')}</h1>
-          <button onClick={handleCreate} className="btn btn-primary">
-            + {t('halls.addHall')}
-          </button>
-        </div>
+    <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(139,92,246,0.1)', color: '#8b5cf6' }}><LayoutGrid size={24} /></Box>
+            <Box>
+              <Typography variant="h5" component="h1" fontWeight={700}>Cinema Halls Management</Typography>
+              <Typography variant="body2" color="text.secondary">{halls.length} hall{halls.length !== 1 ? 's' : ''}</Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <InputLabel>Filter by Cinema</InputLabel>
+              <Select value={filterCinemaId} label="Filter by Cinema" onChange={(e: SelectChangeEvent) => setFilterCinemaId(e.target.value)}>
+                <MenuItem value="">All Cinemas</MenuItem>
+                {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <MuiButton variant="contained" startIcon={<Plus size={16} />} onClick={openCreate}>Add Hall</MuiButton>
+          </Box>
+        </Box>
 
-        <div className="filters">
-          <select
-            value={filterCinemaId}
-            onChange={(e) => setFilterCinemaId(e.target.value)}
-            className="input"
-            style={{ maxWidth: 260 }}
-          >
-            <option value="">{t('common.allCinemas')}</option>
-            {cinemas.map((c) => (
-              <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
-            ))}
-          </select>
-        </div>
+        <AnimatePresence>
+          {showForm && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ marginBottom: 32 }}>
+              <Paper className="modal" variant="outlined" sx={{ borderRadius: 3, p: 3 }} component="form" onSubmit={handleSubmit}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                  <Typography variant="h6" component="h2" fontWeight={600}>{editingId ? 'Edit Hall' : 'Add Hall'}</Typography>
+                  <IconButton size="small" onClick={() => setShowForm(false)}><X size={18} /></IconButton>
+                </Box>
+                <Grid container spacing={2}>
+                  {!editingId && (
+                    <Grid size={12}>
+                      <FormControl size="small" fullWidth required>
+                        <InputLabel>Cinema *</InputLabel>
+                        <Select value={form.cinemaId} label="Cinema *" onChange={(e: SelectChangeEvent) => set('cinemaId', e.target.value)} inputProps={{ name: 'cinemaId', required: true }}>
+                          {cinemas.map(c => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  )}
+                  <Grid size={12}>
+                    <TextField label="Hall Name *" name="name" id="name" value={form.name} onChange={e => set('name', e.target.value)} required fullWidth size="small" />
+                  </Grid>
+                  {!editingId && (
+                    <>
+                      <Grid size={6}>
+                        <TextField label="Rows (1–26) *" name="rows" type="number" slotProps={{ htmlInput: { min: 1, max: 26 } }} value={form.rows} onChange={e => set('rows', e.target.value)} required fullWidth size="small" />
+                      </Grid>
+                      <Grid size={6}>
+                        <TextField label="Seats per Row (1–30) *" name="seatsPerRow" type="number" slotProps={{ htmlInput: { min: 1, max: 30 } }} value={form.seatsPerRow} onChange={e => set('seatsPerRow', e.target.value)} required fullWidth size="small" />
+                      </Grid>
+                      {totalPrev > 0 && (
+                        <Grid size={12}>
+                          <Alert severity="info" sx={{ borderRadius: 2 }}>
+                            Total: <strong>{totalPrev} seats</strong> — last 2 rows will be <strong>Premium (×1.5)</strong>
+                          </Alert>
+                        </Grid>
+                      )}
+                    </>
+                  )}
+                  {editingId && (
+                    <Grid size={12}>
+                      <FormControlLabel control={<Checkbox checked={form.isActive} onChange={e => set('isActive', e.target.checked)} size="small" />} label="Active" />
+                    </Grid>
+                  )}
+                </Grid>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, mt: 3 }}>
+                  <MuiButton variant="outlined" onClick={() => setShowForm(false)}>Cancel</MuiButton>
+                  <MuiButton type="submit" variant="contained" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</MuiButton>
+                </Box>
+              </Paper>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
-
-        {showForm && (
-          <div className="modal-overlay" onClick={() => setShowForm(false)}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
-              <h2>{editingId ? t('halls.editHall') : t('halls.addHall')}</h2>
-              <form onSubmit={handleSubmit} className="form">
-                {!editingId && (
-                  <div className="form-group">
-                    <label htmlFor="cinemaId">{t('halls.form.cinema')}</label>
-                    <select id="cinemaId" name="cinemaId" value={form.cinemaId} onChange={handleInputChange} className="input" required>
-                      <option value="">{t('halls.form.selectCinema')}</option>
-                      {cinemas.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name} – {c.city}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <div className="form-group">
-                  <label htmlFor="name">{t('halls.form.name')}</label>
-                  <input id="name" name="name" value={form.name} onChange={handleInputChange} className="input" required />
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="rows">{t('halls.form.rows')}</label>
-                    <input id="rows" name="rows" type="number" min="1" max="26" value={form.rows} onChange={handleInputChange} className="input" required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="seatsPerRow">{t('halls.form.seatsPerRow')}</label>
-                    <input id="seatsPerRow" name="seatsPerRow" type="number" min="1" max="30" value={form.seatsPerRow} onChange={handleInputChange} className="input" required />
-                  </div>
-                </div>
-                <p className="form-help">{t('halls.form.totalSeats', { count: parseInt(form.rows || '0', 10) * parseInt(form.seatsPerRow || '0', 10) })}</p>
-                {editingId && (
-                  <div className="form-group form-check">
-                    <label>
-                      <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleInputChange} />
-                      {' '}{t('common.active')}
-                    </label>
-                  </div>
-                )}
-                <div className="form-actions">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">{t('common.cancel')}</button>
-                  <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+        {loading ? (
+          <Stack spacing={1}>{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height={48} sx={{ borderRadius: 2 }} />)}</Stack>
+        ) : (
+          <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 3 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ '& th': { fontWeight: 600, bgcolor: 'action.hover' } }}>
+                  <TableCell>Hall</TableCell>
+                  <TableCell>Cinema</TableCell>
+                  <TableCell>Layout</TableCell>
+                  <TableCell>Seats</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {halls.map(h => (
+                  <TableRow key={h.id} hover>
+                    <TableCell><Typography variant="body2" fontWeight={500}>{h.name}</Typography></TableCell>
+                    <TableCell><Typography variant="body2" color="text.secondary">{cinemaNamed(h.cinemaId)}</Typography></TableCell>
+                    <TableCell><Typography variant="body2" fontFamily="monospace">{h.rows} × {h.seatsPerRow}</Typography></TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><Users size={13} /><Typography variant="body2">{h.totalSeats}</Typography></Box>
+                    </TableCell>
+                    <TableCell><Badge variant={h.isActive ? 'success' : 'secondary'}>{h.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell align="right">
+                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                        <Tooltip title="Edit"><IconButton aria-label="Edit" size="small" onClick={() => openEdit(h)}><Pencil size={13} /></IconButton></Tooltip>
+                        <Tooltip title="Delete"><IconButton aria-label="Delete" size="small" onClick={() => setDeleteId(h.id)} sx={{ color: 'error.main' }}><Trash2 size={13} /></IconButton></Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
+      </Container>
 
-        <div className="data-table-container">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>{t('halls.columns.cinema')}</th>
-                <th>{t('halls.columns.name')}</th>
-                <th>{t('halls.columns.totalSeats')}</th>
-                <th>{t('halls.columns.layout')}</th>
-                <th>{t('halls.columns.status')}</th>
-                <th>{t('halls.columns.actions')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {halls.map((hall) => (
-                <tr key={hall.id}>
-                  <td>{hall.cinemaName}</td>
-                  <td>{hall.name}</td>
-                  <td>{hall.totalSeats}</td>
-                  <td>{hall.seatLayout.rows} x {hall.seatLayout.seatsPerRow}</td>
-                  <td>
-                    <span className={`status-badge status-${hall.isActive ? 'confirmed' : 'cancelled'}`}>
-                      {hall.isActive ? t('common.active') : t('common.inactive')}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      <button onClick={() => handleEdit(hall)} className="btn btn-sm btn-outline">{t('common.edit')}</button>
-                      <button onClick={() => handleDelete(hall.id)} className="btn btn-sm btn-danger">{t('common.delete')}</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title="Delete Hall?" description="This will permanently remove the hall and all its seats. This action cannot be undone." confirmLabel="Delete" variant="destructive" onConfirm={handleDelete} />
+    </Box>
   );
 };

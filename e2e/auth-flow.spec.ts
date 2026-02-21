@@ -42,8 +42,8 @@ test.describe('Authentication Flow', () => {
       await page.fill('input#password, input[type="password"]', 'wrongpassword');
       await page.click('button[type="submit"]');
 
-      // Wait for error message
-      const errorMessage = page.locator('.error-message, .error, [role="alert"]').first();
+      // Wait for error message (toast notification)
+      const errorMessage = page.locator('.error-message, .error, [role="alert"], [data-sonner-toast]').first();
       await expect(errorMessage).toBeVisible({ timeout: 10000 });
     });
 
@@ -82,8 +82,8 @@ test.describe('Authentication Flow', () => {
 
       await page.waitForURL('/');
 
-      // Check for user menu or profile indication
-      const userMenu = page.locator('[data-testid="user-menu"], .user-menu, button').filter({ hasText: /admin|profile|account/i }).first();
+      // Check for avatar/user menu button (indicates user is logged in)
+      const userMenu = page.getByRole('button', { name: /open user menu/i });
       await expect(userMenu).toBeVisible({ timeout: 10000 });
     });
 
@@ -94,9 +94,9 @@ test.describe('Authentication Flow', () => {
 
       await page.waitForURL('/');
 
-      // Check for logout button
-      const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out/i }).first();
-      await expect(logoutButton).toBeVisible({ timeout: 10000 });
+      // Check for avatar/user menu button (indicates user is logged in)
+      const avatarButton = page.getByRole('button', { name: /open user menu/i });
+      await expect(avatarButton).toBeVisible({ timeout: 10000 });
     });
   });
 
@@ -111,22 +111,24 @@ test.describe('Authentication Flow', () => {
     });
 
     test('should successfully logout', async ({ page }) => {
-      // Click logout button
-      const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out/i }).first();
-      await logoutButton.click();
+      // Open avatar menu and click Log out
+      const avatarButton = page.getByRole('button', { name: /open user menu/i });
+      await avatarButton.click();
+      await page.getByRole('menuitem', { name: /log out/i }).click();
 
-      // Wait for redirect to home or login page
+      // Wait for redirect to login page
       await page.waitForLoadState('networkidle');
 
-      // Verify user is logged out - login link should be visible
-      const loginLink = page.locator('nav a[href="/login"]');
+      // Verify user is logged out - login button should be visible
+      const loginLink = page.locator('a[href="/login"]').first();
       await expect(loginLink).toBeVisible({ timeout: 10000 });
     });
 
     test('should not access protected routes after logout', async ({ page }) => {
-      // Logout
-      const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out/i }).first();
-      await logoutButton.click();
+      // Open avatar menu and click Log out
+      const avatarButton = page.getByRole('button', { name: /open user menu/i });
+      await avatarButton.click();
+      await page.getByRole('menuitem', { name: /log out/i }).click();
       await page.waitForLoadState('networkidle');
 
       // Try to access protected route
@@ -190,9 +192,9 @@ test.describe('Authentication Flow', () => {
       await page.reload();
       await page.waitForLoadState('networkidle');
 
-      // Should still be logged in
-      const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out/i }).first();
-      await expect(logoutButton).toBeVisible({ timeout: 10000 });
+      // Should still be logged in - avatar button visible
+      const avatarButton = page.getByRole('button', { name: /open user menu/i });
+      await expect(avatarButton).toBeVisible({ timeout: 10000 });
     });
   });
 });

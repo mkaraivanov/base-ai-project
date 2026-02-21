@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface BookingTimerProps {
   readonly expiresAt: Date;
@@ -7,7 +8,6 @@ interface BookingTimerProps {
 }
 
 export const BookingTimer: React.FC<BookingTimerProps> = ({ expiresAt, onExpire }) => {
-  const { t } = useTranslation('customer');
   const calculateTimeLeft = useCallback((): number => {
     const now = Date.now();
     const expiry = new Date(expiresAt).getTime();
@@ -18,35 +18,43 @@ export const BookingTimer: React.FC<BookingTimerProps> = ({ expiresAt, onExpire 
 
   useEffect(() => {
     setTimeLeft(calculateTimeLeft());
-
     const interval = setInterval(() => {
       const remaining = calculateTimeLeft();
       setTimeLeft(remaining);
-
       if (remaining === 0) {
         clearInterval(interval);
         onExpire();
       }
     }, 1000);
-
     return () => clearInterval(interval);
   }, [expiresAt, onExpire, calculateTimeLeft]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
-  const getTimerClassName = (): string => {
-    if (timeLeft <= 60) return 'booking-timer timer-critical';
-    if (timeLeft <= 120) return 'booking-timer timer-warning';
-    return 'booking-timer timer-normal';
-  };
+  const timerColor =
+    timeLeft <= 60 ? 'error.main' :
+    timeLeft <= 120 ? 'warning.main' :
+    'text.secondary';
+
+  const pulseAnim = timeLeft <= 60 ? {
+    animation: 'pulse 1s ease-in-out infinite',
+  } : {};
 
   return (
-    <div className={getTimerClassName()}>
-      <span className="timer-icon">⏱️</span>
-      <span className="timer-text">
-        {t('seatSelection.timeRemaining', { minutes, seconds: seconds.toString().padStart(2, '0') })}
-      </span>
-    </div>
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 1,
+        color: timerColor,
+        ...pulseAnim,
+      }}
+    >
+      <span>⏱️</span>
+      <Typography variant="body2" fontWeight={600} color="inherit">
+        Time remaining: {minutes}:{seconds.toString().padStart(2, '0')}
+      </Typography>
+    </Box>
   );
 };

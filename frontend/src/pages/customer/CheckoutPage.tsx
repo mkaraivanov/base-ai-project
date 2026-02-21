@@ -1,229 +1,247 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import MuiButton from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Grid from '@mui/material/Grid';
+import Divider from '@mui/material/Divider';
+import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import Skeleton from '@mui/material/Skeleton';
+import Alert from '@mui/material/Alert';
+import { CreditCard, Ticket, Lock, Car } from 'lucide-react';
 import { bookingApi } from '../../api/bookingApi';
-import { BookingTimer } from '../../components/BookingTimer/BookingTimer';
-import type { ReservationDto, ConfirmBookingDto } from '../../types';
-import { formatCurrency } from '../../utils/formatters';
+import type { ReservationDto } from '../../types';
+import { formatCurrency, formatDateTime } from '../../utils/formatters';
 import { extractErrorMessage } from '../../utils/errorHandler';
+import { toast } from 'sonner';
 
-interface PaymentForm {
-  paymentMethod: string;
+type PaymentMethod = 'card' | 'paypal' | 'applepay';
+
+interface CheckoutForm {
+  paymentMethod: PaymentMethod;
+  cardholderName: string;
   cardNumber: string;
-  cardHolderName: string;
   expiryDate: string;
   cvv: string;
-  carLicensePlate: string;
+  parkingPlate: string;
 }
 
-const INITIAL_FORM: PaymentForm = {
-  paymentMethod: 'CreditCard',
+const EMPTY: CheckoutForm = {
+  paymentMethod: 'card',
+  cardholderName: '',
   cardNumber: '',
-  cardHolderName: '',
   expiryDate: '',
   cvv: '',
-  carLicensePlate: '',
+  parkingPlate: '',
 };
 
 export const CheckoutPage: React.FC = () => {
-  const { t } = useTranslation('customer');
   const { reservationId } = useParams<{ reservationId: string }>();
   const navigate = useNavigate();
-
   const [reservation, setReservation] = useState<ReservationDto | null>(null);
-  const [form, setForm] = useState<PaymentForm>(INITIAL_FORM);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<CheckoutForm>(EMPTY);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // We store the reservation info from the booking flow.
-    // In a real app, we'd fetch reservation details from the API.
-    // For now, we use what's available via the URL param.
-    if (reservationId) {
-      setReservation({
-        id: reservationId,
-        showtimeId: '',
-        seatNumbers: [],
-        totalAmount: 0,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-        status: 'Pending',
-        createdAt: new Date().toISOString(),
-      });
-    }
+    const load = async () => {
+      if (!reservationId) return;
+      try {
+        setLoading(true);
+        const res = await bookingApi.getReservation(reservationId);
+        setReservation(res);
+      } catch (err: unknown) {
+        setError(extractErrorMessage(err, 'Failed to load reservation'));
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [reservationId]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const set = (name: keyof CheckoutForm, value: string) =>
+    setForm(prev => ({ ...prev, [name]: value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reservationId) return;
-
-    if (!form.cardNumber || !form.cardHolderName || !form.expiryDate || !form.cvv) {
-      setError(t('checkout.fillPaymentFields'));
-      return;
-    }
-
-    const normalizedPlate = form.carLicensePlate.trim().toUpperCase() || undefined;
-    if (normalizedPlate && !/^[A-Z]{1,2}\d{4}[A-Z]{2}$/.test(normalizedPlate)) {
-      setError(t('checkout.invalidPlate'));
-      return;
-    }
-
+    setSubmitting(true);
     try {
-      setLoading(true);
-      setError(null);
-
-      // Remove spaces and dashes from card number before sending
-      const cleanedCardNumber = form.cardNumber.replace(/[\s-]/g, '');
-
-      const confirmData: ConfirmBookingDto = {
-        reservationId,
+      const booking = await bookingApi.confirmBooking(reservationId, {
         paymentMethod: form.paymentMethod,
-        cardNumber: cleanedCardNumber,
-        cardHolderName: form.cardHolderName,
-        expiryDate: form.expiryDate,
-        cvv: form.cvv,
-        carLicensePlate: normalizedPlate,
-      };
-
-      const booking = await bookingApi.confirmBooking(confirmData);
-      navigate(`/confirmation/${booking.bookingNumber}`);
+        parkingPlate: form.parkingPlate || null,
+      });
+      toast.success('Booking confirmed!');
+      navigate(`/confirmation/${booking.id}`);
     } catch (err: unknown) {
-      const message = extractErrorMessage(err, t('checkout.paymentFailed'));
-      setError(message);
+      setError(extractErrorMessage(err, 'Payment failed. Please try again.'));
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const handleExpire = () => {
-    navigate('/movies');
-  };
+  if (loading) return (
+    <Container maxWidth="md" sx={{ py: 6 }}>
+      <Skeleton height={40} sx={{ mb: 2 }} />
+      <Stack spacing={2}>{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height={56} sx={{ borderRadius: 2 }} />)}</Stack>
+    </Container>
+  );
+
+  if (error && !reservation) return (
+    <Container maxWidth="md" sx={{ py: 6 }}>
+      <Alert severity="error">{error}</Alert>
+    </Container>
+  );
+
+  const totalPrice = reservation?.totalPrice ?? 0;
 
   return (
-    <div className="page">
-      <div className="container container-sm">
-        <h1>{t('checkout.title')}</h1>
+    <Box sx={{ minHeight: '100vh' }}>
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Typography variant="h5" fontWeight={700} mb={4}>Complete your booking</Typography>
 
-        {reservation && (
-          <BookingTimer
-            expiresAt={new Date(reservation.expiresAt)}
-            onExpire={handleExpire}
-          />
-        )}
+        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-        {reservation && reservation.totalAmount > 0 && (
-          <div className="order-summary">
-            <h3>{t('checkout.orderSummary')}</h3>
-            <p>{t('checkout.orderSeats', { seats: reservation.seatNumbers.join(', ') })}</p>
-            <p className="total">{t('checkout.orderTotal', { amount: formatCurrency(reservation.totalAmount) })}</p>
-          </div>
-        )}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 340px' }, gap: 3 }}>
+          {/* Payment form */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+            <Paper variant="outlined" component="form" onSubmit={handleSubmit} sx={{ borderRadius: 3, p: 3 }}>
+              <Typography fontWeight={600} mb={3} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CreditCard size={20} /> Payment Details
+              </Typography>
 
-        {error && <div className="error-message" style={{ whiteSpace: 'pre-line' }}>{error}</div>}
+              <Stack spacing={2.5}>
+                <FormControl fullWidth>
+                  <InputLabel>Payment Method</InputLabel>
+                  <Select
+                    value={form.paymentMethod}
+                    label="Payment Method"
+                    onChange={(e: SelectChangeEvent) => set('paymentMethod', e.target.value)}
+                  >
+                    <MenuItem value="card">Credit / Debit Card</MenuItem>
+                    <MenuItem value="paypal">PayPal</MenuItem>
+                    <MenuItem value="applepay">Apple Pay</MenuItem>
+                  </Select>
+                </FormControl>
 
-        <form onSubmit={handleSubmit} className="form">
-          <div className="form-group">
-            <label htmlFor="paymentMethod">{t('checkout.paymentMethod')}</label>
-            <select
-              id="paymentMethod"
-              name="paymentMethod"
-              value={form.paymentMethod}
-              onChange={handleInputChange}
-              className="input"
-            >
-              <option value="CreditCard">{t('checkout.creditCard')}</option>
-              <option value="DebitCard">{t('checkout.debitCard')}</option>
-            </select>
-          </div>
+                {form.paymentMethod === 'card' && (
+                  <>
+                    <TextField
+                      label="Cardholder Name"
+                      value={form.cardholderName}
+                      onChange={e => set('cardholderName', e.target.value)}
+                      required
+                      fullWidth
+                      placeholder="John Smith"
+                    />
+                    <TextField
+                      label="Card Number"
+                      value={form.cardNumber}
+                      onChange={e => set('cardNumber', e.target.value.replace(/\D/g, '').slice(0, 16))}
+                      required
+                      fullWidth
+                      placeholder="1234 5678 9012 3456"
+                      slotProps={{ htmlInput: { maxLength: 16 } }}
+                    />
+                    <Grid container spacing={2}>
+                      <Grid size={6}>
+                        <TextField
+                          label="Expiry Date"
+                          value={form.expiryDate}
+                          onChange={e => set('expiryDate', e.target.value)}
+                          required
+                          fullWidth
+                          placeholder="MM/YY"
+                          slotProps={{ htmlInput: { maxLength: 5 } }}
+                        />
+                      </Grid>
+                      <Grid size={6}>
+                        <TextField
+                          label="CVV"
+                          value={form.cvv}
+                          onChange={e => set('cvv', e.target.value.replace(/\D/g, '').slice(0, 4))}
+                          required
+                          fullWidth
+                          type="password"
+                          placeholder="•••"
+                          slotProps={{ htmlInput: { maxLength: 4 } }}
+                        />
+                      </Grid>
+                    </Grid>
+                  </>
+                )}
 
-          <div className="form-group">
-            <label htmlFor="cardHolderName">{t('checkout.cardHolderName')}</label>
-            <input
-              type="text"
-              id="cardHolderName"
-              name="cardHolderName"
-              value={form.cardHolderName}
-              onChange={handleInputChange}
-              placeholder="John Doe"
-              className="input"
-              required
-            />
-          </div>
+                <Divider />
 
-          <div className="form-group">
-            <label htmlFor="cardNumber">{t('checkout.cardNumber')}</label>
-            <input
-              type="text"
-              id="cardNumber"
-              name="cardNumber"
-              value={form.cardNumber}
-              onChange={handleInputChange}
-              placeholder="4111 1111 1111 1111"
-              className="input"
-              maxLength={19}
-              required
-            />
-          </div>
+                <TextField
+                  label="Parking Plate (optional)"
+                  value={form.parkingPlate}
+                  onChange={e => set('parkingPlate', e.target.value.toUpperCase())}
+                  fullWidth
+                  placeholder="AB12 CDE"
+                  slotProps={{
+                    input: { startAdornment: <Car size={16} style={{ marginRight: 8, opacity: 0.5 }} /> },
+                  }}
+                />
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="expiryDate">{t('checkout.expiryDate')}</label>
-              <input
-                type="text"
-                id="expiryDate"
-                name="expiryDate"
-                value={form.expiryDate}
-                onChange={handleInputChange}
-                placeholder="MM/YY"
-                className="input"
-                maxLength={5}
-                required
-              />
-            </div>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                  <Lock size={14} />
+                  <Typography variant="caption">Your payment is encrypted and secure.</Typography>
+                </Box>
 
-            <div className="form-group">
-              <label htmlFor="cvv">{t('checkout.cvv')}</label>
-              <input
-                type="text"
-                id="cvv"
-                name="cvv"
-                value={form.cvv}
-                onChange={handleInputChange}
-                placeholder="123"
-                className="input"
-                maxLength={4}
-                required
-              />
-            </div>
-          </div>
+                <MuiButton
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  disabled={submitting}
+                  startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : undefined}
+                >
+                  {submitting ? 'Processing…' : `Pay ${formatCurrency(totalPrice)}`}
+                </MuiButton>
+              </Stack>
+            </Paper>
+          </motion.div>
 
-          <div className="form-group">
-            <label htmlFor="carLicensePlate">{t('checkout.carLicensePlate')} <span className="optional-label">{t('checkout.carLicensePlateOptional')}</span></label>
-            <input
-              type="text"
-              id="carLicensePlate"
-              name="carLicensePlate"
-              value={form.carLicensePlate}
-              onChange={handleInputChange}
-              placeholder="CB1234AB"
-              className="input"
-              maxLength={10}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary btn-lg btn-full"
-            disabled={loading}
-          >
-              {loading ? t('checkout.processing') : t('checkout.confirmAndPay')}
-          </button>
-        </form>
-      </div>
-    </div>
+          {/* Order summary */}
+          <Paper variant="outlined" sx={{ borderRadius: 3, p: 3, alignSelf: 'flex-start' }}>
+            <Typography fontWeight={600} mb={2} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Ticket size={18} /> Order Summary
+            </Typography>
+            {reservation && (
+              <Stack spacing={1.5}>
+                <Box>
+                  <Typography fontWeight={500}>{reservation.movieTitle}</Typography>
+                  <Typography variant="body2" color="text.secondary">{formatDateTime(reservation.startTime)}</Typography>
+                  <Typography variant="body2" color="text.secondary">{reservation.hallName}</Typography>
+                </Box>
+                <Divider />
+                {reservation.seats?.map((seat) => (
+                  <Box key={seat.seatId} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2">Seat {seat.seatNumber} · {seat.ticketTypeName}</Typography>
+                    <Typography variant="body2">{formatCurrency(seat.price)}</Typography>
+                  </Box>
+                ))}
+                <Divider />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography fontWeight={700}>Total</Typography>
+                  <Typography fontWeight={700} color="primary.main">{formatCurrency(totalPrice)}</Typography>
+                </Box>
+              </Stack>
+            )}
+          </Paper>
+        </Box>
+      </Container>
+    </Box>
   );
 };
