@@ -245,7 +245,7 @@ export const ShowtimesManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('showtimes.confirmDelete')} description={t('showtimes.confirmDelete')} confirmLabel={t('common.delete')} variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('showtimes.confirmDelete')} description={t('showtimes.confirmDelete')} confirmLabel={t('common.delete')} cancelLabel={t('common.cancel')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };

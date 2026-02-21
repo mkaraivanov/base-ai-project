@@ -181,7 +181,7 @@ export const MoviesManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('movies.deleteMovie')} description={t('movies.confirmDelete')} confirmLabel={t('common.delete')} variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('movies.deleteMovie')} description={t('movies.confirmDelete')} confirmLabel={t('common.delete')} cancelLabel={t('common.cancel')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };

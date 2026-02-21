@@ -194,7 +194,7 @@ export const TicketTypesManagementPage: React.FC = () => {
         )}
       </Container>
 
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('ticketTypes.confirmDeactivate')} description={t('ticketTypes.confirmDeactivate')} confirmLabel={t('common.delete')} variant="destructive" onConfirm={handleDelete} />
+      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }} title={t('ticketTypes.confirmDeactivate')} description={t('ticketTypes.confirmDeactivate')} confirmLabel={t('common.delete')} cancelLabel={t('common.cancel')} variant="destructive" onConfirm={handleDelete} />
     </Box>
   );
 };
