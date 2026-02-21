@@ -84,10 +84,10 @@ export const MyBookingsPage: React.FC = () => {
       <AlertDialog
         open={!!cancelId}
         onOpenChange={open => { if (!open) setCancelId(null); }}
-        title="Cancel Booking?"
-        description="This action cannot be undone. Your seats will be released."
-        confirmLabel="Yes, Cancel"
-        cancelLabel="Keep Booking"
+        title={t('myBookings.cancelTitle')}
+        description={t('myBookings.cancelDescription')}
+        confirmLabel={t('myBookings.cancelConfirmLabel')}
+        cancelLabel={t('myBookings.cancelKeepLabel')}
         variant="destructive"
         onConfirm={handleConfirmCancel}
       />
@@ -164,8 +164,8 @@ export const MyBookingsPage: React.FC = () => {
 
         {/* Tabs */}
         <MuiTabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 3 }}>
-          <MuiTab label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>Upcoming <Chip label={upcoming.length} size="small" sx={{ ml: 0.5, height: 20, fontSize: 11 }} /></Box>} />
-          <MuiTab label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>Past &amp; Cancelled <Chip label={past.length} size="small" sx={{ ml: 0.5, height: 20, fontSize: 11 }} /></Box>} />
+          <MuiTab label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>{t('myBookings.tabUpcoming')} <Chip label={upcoming.length} size="small" sx={{ ml: 0.5, height: 20, fontSize: 11 }} /></Box>} />
+          <MuiTab label={<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>{t('myBookings.tabPastCancelled')} <Chip label={past.length} size="small" sx={{ ml: 0.5, height: 20, fontSize: 11 }} /></Box>} />
         </MuiTabs>
 
         {tabList[activeTab].length === 0 ? (
@@ -180,7 +180,7 @@ export const MyBookingsPage: React.FC = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 1 }}>
                     <Typography fontWeight={600}>{booking.movieTitle}</Typography>
                     <Chip
-                      label={booking.status}
+                      label={t(`myBookings.status.${booking.status.toLowerCase()}`)}
                       size="small"
                       color={booking.status === 'Confirmed' ? 'success' : booking.status === 'Cancelled' ? 'error' : 'default'}
                       sx={{ flexShrink: 0 }}
