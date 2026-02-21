@@ -61,17 +61,17 @@ export const CinemaSelectionPage: React.FC = () => {
         <Container maxWidth="sm" sx={{ position: 'relative', textAlign: 'center' }}>
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}>
             <Typography variant="h3" fontWeight={800} color="#fff" mb={1.5}>
-              Book Your Experience
+              {t('home.heroTitle')}
             </Typography>
             <Typography sx={{ color: '#c7d2fe', mb: 4, fontSize: 18 }}>
-              Pick your nearest cinema and grab the best seats.
+              {t('home.heroDescription')}
             </Typography>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <TextField
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search by name or city…"
+              placeholder={t('movies.searchPlaceholder')}
               size="small"
               fullWidth
               sx={{
