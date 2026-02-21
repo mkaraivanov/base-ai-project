@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
@@ -10,7 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import Avatar from '@mui/material/Avatar';
 import MuiButton from '@mui/material/Button';
-import { Film, LayoutDashboard, LogOut, Ticket } from 'lucide-react';
+import { ChevronLeft, Film, LayoutDashboard, LogOut, Ticket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemeToggle } from '../UI/ThemeToggle';
@@ -20,7 +20,11 @@ export const Navbar: React.FC = () => {
   const { t } = useTranslation('common');
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const ROOT_PATHS = new Set(['/', '/movies', '/my-bookings', '/admin', '/login', '/register']);
+  const showBackButton = !ROOT_PATHS.has(location.pathname);
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
@@ -46,6 +50,18 @@ export const Navbar: React.FC = () => {
       }}
     >
       <Toolbar sx={{ maxWidth: 1280, width: '100%', mx: 'auto', gap: 2, px: { xs: 2, sm: 3 } }}>
+        {/* Back button */}
+        {showBackButton && (
+          <IconButton
+            onClick={() => navigate(-1)}
+            size="small"
+            aria-label={t('actions.back')}
+            sx={{ flexShrink: 0 }}
+          >
+            <ChevronLeft size={20} />
+          </IconButton>
+        )}
+
         {/* Brand */}
         <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit', flexShrink: 0 }}>
           <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: 'primary.main', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
