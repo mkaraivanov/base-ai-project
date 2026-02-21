@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SeatDto } from '../../types';
 import './SeatMap.css';
 
@@ -9,6 +10,7 @@ interface SeatMapProps {
 }
 
 export const SeatMap: React.FC<SeatMapProps> = ({ seats, selectedSeats, onSeatClick }) => {
+  const { t } = useTranslation('customer');
   const seatsByRow = seats.reduce<Record<string, SeatDto[]>>((acc, seat) => {
     const row = seat.seatNumber[0];
     return {
@@ -70,19 +72,19 @@ export const SeatMap: React.FC<SeatMapProps> = ({ seats, selectedSeats, onSeatCl
       <div className="legend">
         <div className="legend-item">
           <div className="seat seat-available legend-seat" />
-          <span>Available</span>
+          <span>{t('seatSelection.available')}</span>
         </div>
         <div className="legend-item">
           <div className="seat seat-selected legend-seat" />
-          <span>Selected</span>
+          <span>{t('seatSelection.selected')}</span>
         </div>
         <div className="legend-item">
           <div className="seat seat-reserved legend-seat" />
-          <span>Reserved</span>
+          <span>{t('seatSelection.reserved')}</span>
         </div>
         <div className="legend-item">
           <div className="seat seat-booked legend-seat" />
-          <span>Booked</span>
+          <span>{t('seatSelection.booked')}</span>
         </div>
       </div>
     </div>

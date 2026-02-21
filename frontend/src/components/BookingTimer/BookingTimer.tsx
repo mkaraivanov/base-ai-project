@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BookingTimerProps {
   readonly expiresAt: Date;
@@ -6,6 +7,7 @@ interface BookingTimerProps {
 }
 
 export const BookingTimer: React.FC<BookingTimerProps> = ({ expiresAt, onExpire }) => {
+  const { t } = useTranslation('customer');
   const calculateTimeLeft = useCallback((): number => {
     const now = Date.now();
     const expiry = new Date(expiresAt).getTime();
@@ -43,7 +45,7 @@ export const BookingTimer: React.FC<BookingTimerProps> = ({ expiresAt, onExpire 
     <div className={getTimerClassName()}>
       <span className="timer-icon">⏱️</span>
       <span className="timer-text">
-        Time remaining: {minutes}:{seconds.toString().padStart(2, '0')}
+        {t('seatSelection.timeRemaining', { minutes, seconds: seconds.toString().padStart(2, '0') })}
       </span>
     </div>
   );

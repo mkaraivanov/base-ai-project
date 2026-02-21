@@ -57,6 +57,8 @@
     "title": "Изберете места",
     "available": "Свободно",
     "selected": "Избрано",
+    "reserved": "Резервирано",
+    "booked": "Заето",
     "occupied": "Заето",
     "total": "Общо: {{amount}}",
     "proceed": "Продължи към плащане",
@@ -70,7 +72,8 @@
     "totalLabel": "Общо",
     "reserveSeats": "Резервирай места ({{count}})",
     "proceedToCheckout": "Продължи към плащане",
-    "reservationExpired": "Резервацията е изтекла. Моля, изберете места отново."
+    "reservationExpired": "Резервацията е изтекла. Моля, изберете места отново.",
+    "timeRemaining": "Оставащо време: {{minutes}}:{{seconds}}"
   },
   "checkout": {
     "title": "Плащане",

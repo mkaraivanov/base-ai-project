@@ -57,6 +57,8 @@
     "title": "Select Seats",
     "available": "Available",
     "selected": "Selected",
+    "reserved": "Reserved",
+    "booked": "Booked",
     "occupied": "Occupied",
     "total": "Total: {{amount}}",
     "proceed": "Proceed to Checkout",
@@ -70,7 +72,8 @@
     "totalLabel": "Total",
     "reserveSeats": "Reserve Seats ({{count}})",
     "proceedToCheckout": "Proceed to Checkout",
-    "reservationExpired": "Your reservation has expired. Please select seats again."
+    "reservationExpired": "Your reservation has expired. Please select seats again.",
+    "timeRemaining": "Time remaining: {{minutes}}:{{seconds}}"
   },
   "checkout": {
     "title": "Checkout",
