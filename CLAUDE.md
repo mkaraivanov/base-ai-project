@@ -13,7 +13,9 @@ Backend/          → ASP.NET Core Minimal API (C#)
   Middleware/     → Auth, error handling
   Models/         → Shared request/response models
   Tests/
-    Tests.Unit/   → xUnit unit tests (Services, Validators, Builders)
+    Tests.Unit/         → xUnit unit tests (Services, Validators, Builders)
+Tests/
+  Tests.Integration/    → Integration tests (API endpoints, concurrent booking, custom factory)
 frontend/src/     → Vite + React + TypeScript UI
 e2e/              → Playwright end-to-end tests
 rules/            → Always-on coding conventions (loaded per file type)
@@ -32,7 +34,7 @@ commands/         → Slash command workflows
 | Backend API | ASP.NET Core Minimal API (.NET 9) |
 | ORM | Entity Framework Core + SQL Server |
 | Rate Limiting | AspNetCoreRateLimit |
-| Frontend | React 18, Vite, TypeScript |
+| Frontend | React 19, Vite, TypeScript |
 | Auth | JWT (bearer tokens) |
 | Validation | FluentValidation (C#), Zod (TS) |
 | Testing (unit) | xUnit + FluentAssertions + Moq |
@@ -116,8 +118,9 @@ Invoke agents explicitly when needed. All agents are in `agents/`.
 
 ## Environment Configuration
 
-`appsettings.json` contains **development defaults** (local SQL Server, placeholder JWT key).
-In production, override via environment variables — never commit real secrets:
+Copy `.env.example` to `.env` for local setup. `appsettings.json` contains **development defaults**
+(local SQL Server, placeholder JWT key). In production, override via environment variables — never
+commit real secrets:
 
 ```
 ConnectionStrings__DefaultConnection=<prod-connection-string>
